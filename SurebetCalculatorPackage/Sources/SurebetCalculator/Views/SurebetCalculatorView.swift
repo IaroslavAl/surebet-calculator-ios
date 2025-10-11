@@ -30,7 +30,6 @@ struct SurebetCalculatorView: View {
                                 viewModel.send(.hideKeyboard)
                             }
                     )
-                    .focused($isFocused)
                 }
                 .onChange(of: viewModel.selectedNumberOfRows) { _ in
                     withAnimation {
@@ -38,10 +37,10 @@ struct SurebetCalculatorView: View {
                     }
                 }
             }
-            if !isFocused {
-                Banner.view
-                    .padding(.horizontal, horizontalPadding)
-            }
+//            if !isFocused {
+//                Banner.view
+//                    .padding(.horizontal, horizontalPadding)
+//            }
         }
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
@@ -50,6 +49,10 @@ struct SurebetCalculatorView: View {
         .font(font)
         .environmentObject(viewModel)
         .animation(.default, value: viewModel.selectedNumberOfRows)
+        .focused($isFocused)
+        .onTapGesture {
+            isFocused = false
+        }
     }
 }
 

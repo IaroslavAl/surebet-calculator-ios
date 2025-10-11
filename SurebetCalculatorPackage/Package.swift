@@ -51,6 +51,7 @@ let package = Package(
                     package: "SDWebImageSwiftUI"
                 ),
             ],
+            resources: [.process("Resources/Assets.xcassets")],
             plugins: [
                 .plugin(
                     name: "SwiftLintBuildToolPlugin",
@@ -81,6 +82,7 @@ let package = Package(
             name: "Root",
             dependencies: [
                 "AnalyticsManager",
+                "Banner",
                 "Onboarding",
                 "ReviewHandler",
                 "SurebetCalculator",
