@@ -7,7 +7,7 @@ import SwiftUI
 
 struct RootView: View {
     @AppStorage("onboardingIsShown") private var onboardingIsShown = false
-    @AppStorage("1.4.0") private var requestReviewWasShown = false
+    @AppStorage("1.7.0") private var requestReviewWasShown = false
     @AppStorage("numberOfOpenings") private var numberOfOpenings = 0
 
     @State private var isAnimation = false
@@ -35,6 +35,9 @@ struct RootView: View {
         .onAppear(perform: showOnboardingView)
         .onAppear(perform: showRequestReview)
         .onAppear(perform: showFullscreenBanner)
+        .task {
+            try? await Banner.fetchBanner()
+        }
         .alert(requestReviewTitle, isPresented: $alertIsPresented) {
             Button("No") {
                 alertIsPresented = false
@@ -69,7 +72,7 @@ private extension RootView {
     }
 
     func showFullscreenBanner() {
-        if fullscreenBannerIsAvailable {
+        if fullscreenBannerIsAvailable, Banner.isBannerFullyCached {
             fullscreenBannerIsPresented = true
         }
     }
