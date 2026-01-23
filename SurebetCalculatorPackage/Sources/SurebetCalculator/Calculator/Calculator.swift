@@ -2,10 +2,14 @@ import Foundation
 
 /// A structure for managing betting calculations.
 struct Calculator: Sendable {
+    // MARK: - Properties
+
     let total: TotalRow
     let rows: [Row]
     let selectedRow: RowType?
     let displayedRowIndexes: Range<Int>
+
+    // MARK: - Public Methods
 
     /// Performs calculations based on the selected method and updates totals and rows.
     /// - Returns: A tuple of updated total and rows.
@@ -22,6 +26,8 @@ struct Calculator: Sendable {
         }
     }
 }
+
+// MARK: - Private Methods
 
 private extension Calculator {
     /// The reciprocal of the sum of the reciprocals of the displayed rows' coefficients.

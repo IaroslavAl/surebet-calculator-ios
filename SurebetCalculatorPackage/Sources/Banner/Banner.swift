@@ -1,6 +1,8 @@
 import SwiftUI
 
 public enum Banner {
+    // MARK: - Public Methods
+
     public static var bannerView: some View {
         BannerView()
     }

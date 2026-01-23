@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct TextView: View {
+    // MARK: - Properties
+
     let text: String
     let isPercent: Bool
+
+    // MARK: - Body
 
     var body: some View {
         Text(text)
@@ -14,6 +18,8 @@ struct TextView: View {
             .foregroundColor(color)
     }
 }
+
+// MARK: - Private Computed Properties
 
 private extension TextView {
     var textPadding: CGFloat { AppConstants.Layout.Padding.small }

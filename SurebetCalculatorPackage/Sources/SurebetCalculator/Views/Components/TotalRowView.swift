@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct TotalRowView: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+
+    // MARK: - Body
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
@@ -13,6 +17,8 @@ struct TotalRowView: View {
         }
     }
 }
+
+// MARK: - Private Computed Properties
 
 private extension TotalRowView {
     var betSizeLabel: String { String(localized: "Total bet size") }

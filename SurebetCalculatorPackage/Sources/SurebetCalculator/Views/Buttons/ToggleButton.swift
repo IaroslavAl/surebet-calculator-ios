@@ -1,15 +1,21 @@
 import SwiftUI
 
 struct ToggleButton: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
 
     let row: RowType
+
+    // MARK: - Body
 
     var body: some View {
         Button(action: actionWithImpactFeedback, label: label)
             .animation(.easeInOut(duration: animationDuration), value: isON)
     }
 }
+
+// MARK: - Private Methods
 
 private extension ToggleButton {
     var isON: Bool {

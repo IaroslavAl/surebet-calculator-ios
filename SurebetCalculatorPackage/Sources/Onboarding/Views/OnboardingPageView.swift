@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct OnboardingPageView: View {
+    // MARK: - Properties
+
     let page: OnboardingPage
+
+    // MARK: - Body
 
     var body: some View {
         VStack(spacing: .zero) {

@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct OnboardingView: View {
+    // MARK: - Properties
+
     @StateObject private var viewModel = OnboardingViewModel()
     @Binding var onboardingIsShown: Bool
+
+    // MARK: - Body
 
     var body: some View {
         VStack(spacing: .zero) {

@@ -1,11 +1,15 @@
 import SwiftUI
 
 struct TextFieldView: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
     @FocusState private var isFocused: FocusableField?
 
     let placeholder: String
     let focusableField: FocusableField
+
+    // MARK: - Body
 
     var body: some View {
         TextField(placeholder, text: bindingText)
@@ -30,6 +34,8 @@ struct TextFieldView: View {
             }
     }
 }
+
+// MARK: - Private Computed Properties
 
 private extension TextFieldView {
     var bindingText: Binding<String> {

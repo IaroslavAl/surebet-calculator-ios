@@ -2,11 +2,15 @@ import Banner
 import SwiftUI
 
 struct SurebetCalculatorView: View {
+    // MARK: - Properties
+
     @StateObject
     private var viewModel = SurebetCalculatorViewModel()
 
     @FocusState
     private var isFocused
+
+    // MARK: - Body
 
     var body: some View {
         scrollableContent
@@ -23,6 +27,8 @@ struct SurebetCalculatorView: View {
             }
     }
 }
+
+// MARK: - Private Methods
 
 private extension SurebetCalculatorView {
     var scrollableContent: some View {
@@ -118,6 +124,8 @@ private extension SurebetCalculatorView {
             }
     }
 }
+
+// MARK: - Private Computed Properties
 
 private extension SurebetCalculatorView {
     var navigationTitle: String { String(localized: "Surebet calculator") }

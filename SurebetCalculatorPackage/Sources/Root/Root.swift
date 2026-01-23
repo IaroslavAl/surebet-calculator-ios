@@ -2,6 +2,8 @@ import AppMetricaCore
 import SwiftUI
 
 public enum Root {
+    // MARK: - Public Methods
+
     public static func view() -> some View {
         RootView()
     }

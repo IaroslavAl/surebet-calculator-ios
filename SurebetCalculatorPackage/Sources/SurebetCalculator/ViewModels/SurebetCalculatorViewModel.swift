@@ -2,6 +2,8 @@ import Foundation
 
 @MainActor
 final class SurebetCalculatorViewModel: ObservableObject {
+    // MARK: - Properties
+
     @Published private(set) var total: TotalRow
     @Published private(set) var rows: [Row]
     @Published private(set) var selectedNumberOfRows: NumberOfRows
@@ -9,6 +11,8 @@ final class SurebetCalculatorViewModel: ObservableObject {
     @Published private(set) var focus: FocusableField?
 
     private let calculationService: CalculationService
+
+    // MARK: - Initialization
 
     init(
         total: TotalRow = TotalRow(),
@@ -25,6 +29,8 @@ final class SurebetCalculatorViewModel: ObservableObject {
         self.focus = focus
         self.calculationService = calculationService
     }
+
+    // MARK: - Public Methods
 
     enum ViewAction {
         case selectRow(RowType)
@@ -59,6 +65,8 @@ final class SurebetCalculatorViewModel: ObservableObject {
     }
 }
 
+// MARK: - Public Extensions
+
 extension SurebetCalculatorViewModel {
     var displayedRowIndexes: Range<Int> {
         0..<selectedNumberOfRows.rawValue
@@ -83,6 +91,8 @@ extension SurebetCalculatorViewModel {
         }
     }
 }
+
+// MARK: - Private Methods
 
 private extension SurebetCalculatorViewModel {
     func select(_ row: RowType) {

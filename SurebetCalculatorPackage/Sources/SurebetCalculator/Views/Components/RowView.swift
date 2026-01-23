@@ -1,9 +1,13 @@
 import SwiftUI
 
 struct RowView: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
 
     let id: Int
+
+    // MARK: - Body
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
@@ -16,6 +20,8 @@ struct RowView: View {
         }
     }
 }
+
+// MARK: - Private Computed Properties
 
 private extension RowView {
     var coefficientText: String { String(localized: "Coefficient") }

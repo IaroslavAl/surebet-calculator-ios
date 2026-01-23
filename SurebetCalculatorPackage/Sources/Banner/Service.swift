@@ -13,9 +13,13 @@ enum BannerError: Error, Sendable {
 }
 
 struct Service: BannerService, @unchecked Sendable {
+    // MARK: - Properties
+
     private let baseURL = URL(string: BannerConstants.apiBaseURL)!
     private let session: URLSession
     private let defaults: UserDefaults
+
+    // MARK: - Initialization
 
     init(
         session: URLSession = .shared,
@@ -24,6 +28,8 @@ struct Service: BannerService, @unchecked Sendable {
         self.session = session
         self.defaults = defaults
     }
+
+    // MARK: - Public Methods
 
     func fetchBannerAndImage() async throws {
         print("[Service] Запрос баннера и картинки начат")
@@ -184,6 +190,8 @@ struct Service: BannerService, @unchecked Sendable {
         print("[Service] Кэш баннера и картинки полный")
         return true
     }
+
+    // MARK: - Private Methods
 
     private func clearAllBannerData() {
         print("[Service] Полная очистка данных баннера и картинки из UserDefaults")

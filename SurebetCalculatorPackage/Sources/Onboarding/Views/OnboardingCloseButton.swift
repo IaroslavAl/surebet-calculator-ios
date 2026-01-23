@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct OnboardingCloseButton: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: OnboardingViewModel
+
+    // MARK: - Body
 
     var body: some View {
         Button(action: action) {
@@ -10,6 +14,8 @@ struct OnboardingCloseButton: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
+
+// MARK: - Private Methods
 
 private extension OnboardingCloseButton {
     var imageName: String { "xmark" }

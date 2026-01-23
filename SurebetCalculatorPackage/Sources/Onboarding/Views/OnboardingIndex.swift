@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct OnboardingIndex: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: OnboardingViewModel
+
+    // MARK: - Body
 
     var body: some View {
         HStack(spacing: spacing) {
@@ -16,6 +20,8 @@ struct OnboardingIndex: View {
         .fixedSize()
     }
 }
+
+// MARK: - Private Methods
 
 private extension OnboardingIndex {
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }

@@ -9,10 +9,14 @@ import SwiftUI
 import AnalyticsManager
 
 struct FullscreenBannerView: View {
+    // MARK: - Properties
+
     @Binding var isPresented: Bool
 
     private let service: BannerService
     private let analyticsService: AnalyticsService
+
+    // MARK: - Initialization
 
     @MainActor
     init(
@@ -25,6 +29,8 @@ struct FullscreenBannerView: View {
         self.analyticsService = analyticsService
     }
 
+    // MARK: - Body
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.75)
@@ -32,6 +38,8 @@ struct FullscreenBannerView: View {
         }
     }
 }
+
+// MARK: - Private Methods
 
 private extension FullscreenBannerView {
     @ViewBuilder

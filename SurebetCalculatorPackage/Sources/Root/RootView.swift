@@ -4,7 +4,11 @@ import SurebetCalculator
 import SwiftUI
 
 struct RootView: View {
+    // MARK: - Properties
+
     @StateObject private var viewModel = RootViewModel()
+
+    // MARK: - Body
 
     var body: some View {
         mainContent
@@ -17,7 +21,7 @@ struct RootView: View {
     }
 }
 
-// MARK: - Private Extensions
+// MARK: - Private Computed Properties
 
 private extension RootView {
     var mainContent: some View {

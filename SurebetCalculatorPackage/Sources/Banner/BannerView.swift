@@ -3,10 +3,14 @@ import SDWebImageSwiftUI
 import SwiftUI
 
 struct BannerView: View {
+    // MARK: - Properties
+
     let link = "https://www.rebelbetting.com/valuebetting?x=surebet_profit&a_bid=c3ecdf4b"
 
     @State
     private var isPresented: Bool = true
+
+    // MARK: - Body
 
     var body: some View {
         if isPresented {
@@ -14,6 +18,8 @@ struct BannerView: View {
         }
     }
 }
+
+// MARK: - Private Methods
 
 private extension BannerView {
     var bannerContent: some View {

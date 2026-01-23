@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct OnboardingButton: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: OnboardingViewModel
+
+    // MARK: - Body
 
     var body: some View {
         Button(action: action) {
@@ -9,6 +13,8 @@ struct OnboardingButton: View {
         }
     }
 }
+
+// MARK: - Private Methods
 
 private extension OnboardingButton {
     var text: String {
