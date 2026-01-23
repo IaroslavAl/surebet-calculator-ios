@@ -185,32 +185,32 @@ func example() {
 ### Phase 2: Services & Managers
 
 #### 2.1 AnalyticsManager / AnalyticsService
-- [ ] Создать `MockAnalyticsService`
-- [ ] Тест `log(name:parameters:)` — проверка вызова AppMetrica
-- [ ] Тест типобезопасных параметров (string, int, double, bool)
-- [ ] Тест DEBUG режима (не должен вызывать AppMetrica)
-- [ ] Тест статического метода `AnalyticsManager.log()`
-- [ ] Тест конвертации `AnalyticsParameterValue` в `Any`
+- [x] Создать `MockAnalyticsService`
+- [x] Тест `log(name:parameters:)` — проверка вызова AppMetrica
+- [x] Тест типобезопасных параметров (string, int, double, bool)
+- [x] Тест DEBUG режима (не должен вызывать AppMetrica)
+- [x] Тест статического метода `AnalyticsManager.log()`
+- [x] Тест конвертации `AnalyticsParameterValue` в `Any`
 
 #### 2.2 BannerService
-- [ ] Создать `MockBannerService`
-- [ ] Тест `fetchBannerAndImage()` — async метод
-- [ ] Тест `fetchBanner()` — возврат модели баннера
-- [ ] Тест `saveBannerToDefaults()` — сохранение в UserDefaults
-- [ ] Тест `getBannerFromDefaults()` — получение из UserDefaults
-- [ ] Тест `clearBannerFromDefaults()` — очистка UserDefaults
-- [ ] Тест `downloadImage(from:)` — async загрузка изображения
-- [ ] Тест `getStoredBannerImageData()` — получение данных изображения
-- [ ] Тест `getStoredBannerImageURL()` — получение URL изображения
-- [ ] Тест `isBannerFullyCached()` — проверка кэширования
-- [ ] Тест обработки ошибок (network errors, invalid URLs)
+- [x] Создать `MockBannerService`
+- [x] Тест `fetchBannerAndImage()` — async метод
+- [x] Тест `fetchBanner()` — возврат модели баннера
+- [x] Тест `saveBannerToDefaults()` — сохранение в UserDefaults
+- [x] Тест `getBannerFromDefaults()` — получение из UserDefaults
+- [x] Тест `clearBannerFromDefaults()` — очистка UserDefaults
+- [x] Тест `downloadImage(from:)` — async загрузка изображения
+- [x] Тест `getStoredBannerImageData()` — получение данных изображения
+- [x] Тест `getStoredBannerImageURL()` — получение URL изображения
+- [x] Тест `isBannerFullyCached()` — проверка кэширования
+- [x] Тест обработки ошибок (network errors, invalid URLs)
 
 #### 2.3 ReviewService / ReviewHandler
-- [ ] Создать `MockReviewService`
-- [ ] Тест `requestReview()` — async метод с задержкой
-- [ ] Тест MainActor isolation
-- [ ] Тест задержки в 1 секунду
-- [ ] Тест вызова системного API запроса отзыва
+- [x] Создать `MockReviewService`
+- [x] Тест `requestReview()` — async метод с задержкой
+- [x] Тест MainActor isolation
+- [x] Тест задержки в 1 секунду
+- [x] Тест вызова системного API запроса отзыва
 
 ### Phase 3: ViewModels
 
