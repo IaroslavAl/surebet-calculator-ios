@@ -13,7 +13,7 @@ enum BannerError: Error, Sendable {
 }
 
 struct Service: BannerService, @unchecked Sendable {
-    private let baseURL = URL(string: "http://api.surebet-calculator.ru")!
+    private let baseURL = URL(string: BannerConstants.apiBaseURL)!
     private let session: URLSession
     private let defaults: UserDefaults
 
@@ -62,7 +62,7 @@ struct Service: BannerService, @unchecked Sendable {
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.timeoutInterval = 10
+        request.timeoutInterval = BannerConstants.requestTimeout
 
         let (data, response) = try await session.data(for: request)
         print("[Service] Получен ответ на баннер")

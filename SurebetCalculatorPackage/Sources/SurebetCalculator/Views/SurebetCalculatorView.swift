@@ -97,7 +97,7 @@ private extension SurebetCalculatorView {
             .foregroundStyle(viewModel.selectedNumberOfRows == .ten ? .gray : .green)
             .font(buttonFont)
             .disabled(viewModel.selectedNumberOfRows == .ten)
-            .padding(8)
+            .padding(AppConstants.Layout.Padding.small)
             .contentShape(.rect)
             .onTapGesture {
                 viewModel.send(.addRow)
@@ -110,7 +110,7 @@ private extension SurebetCalculatorView {
             .foregroundStyle(viewModel.selectedNumberOfRows == .two ? .gray : .red)
             .font(buttonFont)
             .disabled(viewModel.selectedNumberOfRows == .two)
-            .padding(8)
+            .padding(AppConstants.Layout.Padding.small)
             .contentShape(.rect)
             .onTapGesture {
                 viewModel.send(.removeRow)
@@ -122,9 +122,9 @@ private extension SurebetCalculatorView {
 private extension SurebetCalculatorView {
     var navigationTitle: String { String(localized: "Surebet calculator") }
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var spacing: CGFloat { iPad ? 24 : 16 }
-    var rowsSpacing: CGFloat { iPad ? 12 : 8 }
-    var horizontalPadding: CGFloat { iPad ? 12 : 8 }
+    var spacing: CGFloat { iPad ? AppConstants.Layout.Padding.extraLarge : AppConstants.Layout.Padding.large }
+    var rowsSpacing: CGFloat { iPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
+    var horizontalPadding: CGFloat { iPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
     var font: Font { iPad ? .title : .body }
     var buttonFont: Font { iPad ? .largeTitle : .title }
 }

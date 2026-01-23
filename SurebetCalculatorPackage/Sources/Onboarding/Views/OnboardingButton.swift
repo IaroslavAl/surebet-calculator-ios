@@ -12,7 +12,7 @@ struct OnboardingButton: View {
 
 private extension OnboardingButton {
     var text: String {
-        let firstPage = 0
+        let firstPage = AppConstants.Other.firstPageIndex
         let lastPage = viewModel.pages.index(before: viewModel.pages.endIndex)
         if viewModel.currentPage == firstPage {
             return String(localized: "More details")
@@ -23,7 +23,7 @@ private extension OnboardingButton {
         return String(localized: "Next")
     }
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var cornerRadius: CGFloat { iPad ? 18 : 12 }
+    var cornerRadius: CGFloat { iPad ? AppConstants.Layout.CornerRadius.extraLarge : AppConstants.Layout.CornerRadius.medium }
 
     func action() {
         viewModel.send(.setCurrentPage(viewModel.currentPage + 1))

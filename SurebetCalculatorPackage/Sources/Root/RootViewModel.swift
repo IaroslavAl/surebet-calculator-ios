@@ -80,7 +80,7 @@ final class RootViewModel: ObservableObject {
     func showRequestReview() {
 #if !DEBUG
         Task {
-            try await Task.sleep(nanoseconds: NSEC_PER_SEC * 1)
+            try await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest)
             if !requestReviewWasShown, numberOfOpenings >= 2, onboardingIsShown {
                 alertIsPresented = true
                 requestReviewWasShown = true

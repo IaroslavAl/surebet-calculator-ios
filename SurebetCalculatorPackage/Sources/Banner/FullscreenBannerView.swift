@@ -54,9 +54,9 @@ private extension FullscreenBannerView {
     var closeButton: some View {
         Image(systemName: "xmark.circle.fill")
             .resizable()
-            .frame(width: 40, height: 40)
+            .frame(width: BannerConstants.closeButtonSize, height: BannerConstants.closeButtonSize)
             .foregroundStyle(.white.opacity(0.5))
-            .padding(16)
+            .padding(BannerConstants.closeButtonPadding)
             .contentShape(.rect)
             .onTapGesture {
                 handleCloseTap()
@@ -80,13 +80,13 @@ private extension FullscreenBannerView {
     }
 
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var cornerRadius: CGFloat { iPad ? 24 : 16 }
-    var url: String { "https://1wfdtj.com/casino/list?open=register&p=jyy2" }
+    var cornerRadius: CGFloat { iPad ? BannerConstants.fullscreenBannerCornerRadiusiPad : BannerConstants.fullscreenBannerCornerRadiusiPhone }
+    var url: String { BannerConstants.bannerFallbackURL }
 
     func openURL(_ url: URL) {
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
         Task {
-            try await Task.sleep(nanoseconds: 500_000_000)
+            try await Task.sleep(nanoseconds: BannerConstants.bannerCloseDelay)
             isPresented = false
         }
     }

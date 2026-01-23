@@ -13,7 +13,7 @@ public final class ReviewHandler: ReviewService {
     /// Запрашивает отзыв пользователя с задержкой в 1 секунду
     /// - Note: Метод должен вызываться из контекста MainActor
     public func requestReview() async {
-        try? await Task.sleep(nanoseconds: NSEC_PER_SEC * 1)
+        try? await Task.sleep(nanoseconds: ReviewConstants.reviewRequestDelay)
 
         if let scene = UIApplication.shared.connectedScenes.first(
             where: {

@@ -22,7 +22,7 @@ private extension RowView {
     var betSizeText: String { String(localized: "Bet size") }
     var incomeText: String { String(localized: "Income") }
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var spacing: CGFloat { iPad ? 12 : 8 }
+    var spacing: CGFloat { iPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
 
     var betSize: some View {
         VStack(spacing: spacing) {

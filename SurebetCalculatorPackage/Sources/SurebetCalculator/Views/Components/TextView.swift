@@ -16,10 +16,10 @@ struct TextView: View {
 }
 
 private extension TextView {
-    var textPadding: CGFloat { 8 }
+    var textPadding: CGFloat { AppConstants.Layout.Padding.small }
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var frameHeight: CGFloat { iPad ? 60 : 40 }
-    var cornerRadius: CGFloat { iPad ? 15 : 10 }
+    var frameHeight: CGFloat { iPad ? AppConstants.Layout.Heights.regular : AppConstants.Layout.Heights.compact }
+    var cornerRadius: CGFloat { iPad ? AppConstants.Layout.CornerRadius.large : AppConstants.Layout.CornerRadius.small }
     var color: Color { text.isNumberNotNegative() ? .green : .red }
 }
 

@@ -19,14 +19,14 @@ struct OnboardingIndex: View {
 
 private extension OnboardingIndex {
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var spacing: CGFloat { iPad ? 12 : 8 }
-    var padding: CGFloat { iPad ? 36 : 24 }
+    var spacing: CGFloat { iPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
+    var padding: CGFloat { iPad ? AppConstants.Layout.Padding.extraExtraLarge : AppConstants.Layout.Padding.extraLarge }
 
     func size(_ index: Int) -> CGFloat {
         if index == viewModel.currentPage {
-            iPad ? 18 : 12
+            iPad ? AppConstants.Layout.CornerRadius.extraLarge : AppConstants.Layout.CornerRadius.medium
         } else {
-            iPad ? 12 : 8
+            iPad ? AppConstants.Layout.CornerRadius.medium : AppConstants.Layout.Padding.small
         }
     }
 
