@@ -8,18 +8,22 @@ final class SurebetCalculatorViewModel: ObservableObject {
     @Published private(set) var selectedRow: RowType?
     @Published private(set) var focus: FocusableField?
 
+    private let calculationService: CalculationService
+
     init(
         total: TotalRow = TotalRow(),
         rows: [Row] = Row.createRows(),
         selectedNumberOfRows: NumberOfRows = .two,
         selectedRow: RowType? = .total,
-        focus: FocusableField? = nil
+        focus: FocusableField? = nil,
+        calculationService: CalculationService = DefaultCalculationService()
     ) {
         self.total = total
         self.rows = rows
         self.selectedNumberOfRows = selectedNumberOfRows
         self.selectedRow = selectedRow
         self.focus = focus
+        self.calculationService = calculationService
     }
 
     enum ViewAction {
@@ -199,13 +203,12 @@ private extension SurebetCalculatorViewModel {
     }
 
     func calculate() {
-        let calculator = Calculator(
+        let (updatedTotal, updatedRows) = calculationService.calculate(
             total: total,
             rows: rows,
             selectedRow: selectedRow,
             displayedRowIndexes: displayedRowIndexes
         )
-        let (updatedTotal, updatedRows) = calculator.calculate()
         total = updatedTotal ?? total
         rows = updatedRows ?? rows
     }

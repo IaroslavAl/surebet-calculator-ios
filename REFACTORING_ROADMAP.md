@@ -86,12 +86,14 @@
 **Файлы:**
 - `SurebetCalculatorPackage/Sources/SurebetCalculator/ViewModels/SurebetCalculatorViewModel.swift`
 - `SurebetCalculatorPackage/Sources/SurebetCalculator/Calculator/Calculator.swift`
+- `SurebetCalculatorPackage/Sources/SurebetCalculator/Calculator/CalculationService.swift` (создан)
+- `SurebetCalculatorPackage/Sources/SurebetCalculator/Calculator/DefaultCalculationService.swift` (создан)
 
 **Задачи:**
-- [ ] Вынести бизнес-логику из ViewModel в отдельный сервис/use case
-- [ ] Создать протокол `CalculationService` для инверсии зависимостей
-- [ ] Реализовать Dependency Injection через init в ViewModel
-- [ ] Убедиться, что ViewModel только управляет состоянием, а не выполняет вычисления
+- [x] Вынести бизнес-логику из ViewModel в отдельный сервис/use case
+- [x] Создать протокол `CalculationService` для инверсии зависимостей
+- [x] Реализовать Dependency Injection через init в ViewModel
+- [x] Убедиться, что ViewModel только управляет состоянием, а не выполняет вычисления
 
 ---
 
@@ -333,7 +335,7 @@
 | 1.2 | Миграция на Swift 6 Concurrency | High | Средне | ✅ |
 | 1.3 | Добавление @MainActor к ViewModel | High | Легко | ✅ |
 | 1.4 | Устранение небезопасных типов | High | Средне | ✅ |
-| 1.5 | Исправление нарушений архитектуры | High | Сложно | ⬜ |
+| 1.5 | Исправление нарушений архитектуры | High | Сложно | ✅ |
 | 1.6 | Проверка Sendable конформности | Medium | Средне | ⬜ |
 | 2.1 | Вынос логики из View | High | Средне | ⬜ |
 | 2.2 | Внедрение Dependency Injection | High | Средне | ⬜ |
