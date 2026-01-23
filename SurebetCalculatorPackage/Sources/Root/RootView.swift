@@ -45,7 +45,9 @@ struct RootView: View {
             }
             Button("Yes") {
                 alertIsPresented = false
-                ReviewHandler.requestReview()
+                Task {
+                    await ReviewHandler.requestReview()
+                }
                 AnalyticsManager.log(name: "RequestReview", parameters: ["enjoying_calculator": true])
             }
         }

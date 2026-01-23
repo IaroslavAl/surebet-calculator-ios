@@ -42,10 +42,10 @@
 - `SurebetCalculatorPackage/Sources/Banner/FullscreenBannerView.swift`
 
 **Задачи:**
-- [ ] Заменить `DispatchQueue.main.asyncAfter` на `async/await` в `ReviewHandler.swift`
-- [ ] Добавить `@MainActor` к `ReviewHandler.requestReview()`
-- [ ] Проверить все `Task` блоки на корректное использование `@MainActor`
-- [ ] Убедиться, что все async функции правильно обрабатывают ошибки
+- [x] Заменить `DispatchQueue.main.asyncAfter` на `async/await` в `ReviewHandler.swift`
+- [x] Добавить `@MainActor` к `ReviewHandler.requestReview()`
+- [x] Проверить все `Task` блоки на корректное использование `@MainActor`
+- [x] Убедиться, что все async функции правильно обрабатывают ошибки
 
 ---
 
@@ -329,7 +329,7 @@
 | Фаза | Задача | Приоритет | Сложность | Статус |
 |------|--------|-----------|-----------|--------|
 | 1.1 | Обновление Swift до 6.0 | High | Легко | ✅ |
-| 1.2 | Миграция на Swift 6 Concurrency | High | Средне | ⬜ |
+| 1.2 | Миграция на Swift 6 Concurrency | High | Средне | ✅ |
 | 1.3 | Добавление @MainActor к ViewModel | High | Легко | ⬜ |
 | 1.4 | Устранение небезопасных типов | High | Средне | ⬜ |
 | 1.5 | Исправление нарушений архитектуры | High | Сложно | ⬜ |
