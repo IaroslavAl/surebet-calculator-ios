@@ -20,14 +20,7 @@ private extension TextView {
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
     var frameHeight: CGFloat { iPad ? 60 : 40 }
     var cornerRadius: CGFloat { iPad ? 15 : 10 }
-    var color: Color { isNumberNotNegative(text) ? .green : .red }
-
-    func isNumberNotNegative(_ text: String) -> Bool {
-        if let text = text.formatToDouble() {
-            return text >= 0
-        }
-        return true
-    }
+    var color: Color { text.isNumberNotNegative() ? .green : .red }
 }
 
 #Preview {

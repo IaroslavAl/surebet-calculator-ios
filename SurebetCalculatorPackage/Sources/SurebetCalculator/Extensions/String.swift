@@ -16,4 +16,12 @@ public extension String {
         || self.isEmpty
         || self.formatToDouble() ?? 0 > 0
     }
+
+    /// Проверяет, является ли строка неотрицательным числом
+    func isNumberNotNegative() -> Bool {
+        if let value = self.formatToDouble() {
+            return value >= 0
+        }
+        return true
+    }
 }

@@ -119,12 +119,13 @@
 **Файлы:**
 - `SurebetCalculatorPackage/Sources/SurebetCalculator/Views/SurebetCalculatorView.swift`
 - `SurebetCalculatorPackage/Sources/Root/RootView.swift`
+- `SurebetCalculatorPackage/Sources/Root/RootViewModel.swift` (создан)
 - `SurebetCalculatorPackage/Sources/SurebetCalculator/Views/Components/*.swift`
 
 **Задачи:**
-- [ ] Проверить все View на наличие бизнес-логики
-- [ ] Вынести вычисления в ViewModel или сервисы
-- [ ] Убедиться, что View только отображают данные и отправляют действия
+- [x] Проверить все View на наличие бизнес-логики
+- [x] Вынести вычисления в ViewModel или сервисы
+- [x] Убедиться, что View только отображают данные и отправляют действия
 
 ---
 
@@ -337,7 +338,7 @@
 | 1.4 | Устранение небезопасных типов | High | Средне | ✅ |
 | 1.5 | Исправление нарушений архитектуры | High | Сложно | ✅ |
 | 1.6 | Проверка Sendable конформности | Medium | Средне | ✅ |
-| 2.1 | Вынос логики из View | High | Средне | ⬜ |
+| 2.1 | Вынос логики из View | High | Средне | ✅ |
 | 2.2 | Внедрение Dependency Injection | High | Средне | ⬜ |
 | 2.3 | Разделение View на компоненты | Medium | Легко | ⬜ |
 | 2.4 | Создание протоколов для расширяемости | Medium | Средне | ⬜ |

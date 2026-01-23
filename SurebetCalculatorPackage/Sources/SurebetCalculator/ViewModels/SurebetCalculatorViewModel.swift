@@ -63,6 +63,25 @@ extension SurebetCalculatorViewModel {
     var displayedRowIndexes: Range<Int> {
         0..<selectedNumberOfRows.rawValue
     }
+
+    /// Проверяет, должно ли поле быть заблокировано
+    func isFieldDisabled(_ field: FocusableField) -> Bool {
+        switch (selectedRow, field) {
+        case (_, .rowCoefficient):
+            return false
+        case (.none, .rowBetSize):
+            return false
+        case (.total, .totalBetSize):
+            return false
+        case let (.row(selectedId), .rowBetSize(currentId)):
+            if selectedId == currentId {
+                return false
+            }
+            return true
+        default:
+            return true
+        }
+    }
 }
 
 private extension SurebetCalculatorViewModel {

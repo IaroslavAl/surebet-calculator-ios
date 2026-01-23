@@ -40,21 +40,7 @@ private extension TextFieldView {
     }
 
     var isDisabled: Bool {
-        switch (viewModel.selectedRow, focusableField) {
-        case (_, .rowCoefficient):
-            return false
-        case (.none, .rowBetSize):
-            return false
-        case (.total, .totalBetSize):
-            return false
-        case let (.row(selectedId), .rowBetSize(currentId)):
-            if selectedId == currentId {
-                return false
-            }
-            return true
-        default:
-            return true
-        }
+        viewModel.isFieldDisabled(focusableField)
     }
 
     var text: String {
