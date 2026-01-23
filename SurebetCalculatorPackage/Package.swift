@@ -132,5 +132,35 @@ let package = Package(
                 )
             ]
         ),
+        .testTarget(
+            name: "AnalyticsManagerTests",
+            dependencies: ["AnalyticsManager"],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
+        .testTarget(
+            name: "BannerTests",
+            dependencies: ["Banner"],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
+        .testTarget(
+            name: "ReviewHandlerTests",
+            dependencies: ["ReviewHandler"],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
     ]
 )
