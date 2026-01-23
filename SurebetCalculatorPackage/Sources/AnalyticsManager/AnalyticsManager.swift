@@ -29,6 +29,13 @@ public enum AnalyticsParameterValue: Sendable {
 
 /// Менеджер аналитики с типобезопасными параметрами
 public struct AnalyticsManager: AnalyticsService, Sendable {
+    // MARK: - Initialization
+
+    /// Публичный инициализатор
+    public init() {}
+
+    // MARK: - Public Methods
+
     /// Логирование события с типобезопасными параметрами
     /// - Parameters:
     ///   - name: Название события

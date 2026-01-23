@@ -3,6 +3,13 @@ import SwiftUI
 
 @MainActor
 public final class ReviewHandler: ReviewService {
+    // MARK: - Initialization
+
+    /// Публичный инициализатор
+    public init() {}
+
+    // MARK: - Public Methods
+
     /// Запрашивает отзыв пользователя с задержкой в 1 секунду
     /// - Note: Метод должен вызываться из контекста MainActor
     public func requestReview() async {
