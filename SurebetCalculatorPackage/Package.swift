@@ -162,5 +162,20 @@ let package = Package(
                 )
             ]
         ),
+        .testTarget(
+            name: "RootTests",
+            dependencies: [
+                "Root",
+                "AnalyticsManager",
+                "Banner",
+                "ReviewHandler"
+            ],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
     ]
 )
