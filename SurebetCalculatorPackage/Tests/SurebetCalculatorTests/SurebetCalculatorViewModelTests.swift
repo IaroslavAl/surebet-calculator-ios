@@ -562,4 +562,187 @@ struct SurebetCalculatorViewModelTests {
         #expect(viewModel.total.profitPercentage == expectedTotal.profitPercentage)
         #expect(viewModel.rows[0].betSize == expectedRows[0].betSize)
     }
+
+    // MARK: - addRow Tests
+
+    @Test
+    func addRowWhenNumberOfRowsIsLessThanTen() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .two
+        )
+
+        // When
+        viewModel.send(.addRow)
+
+        // Then
+        #expect(viewModel.selectedNumberOfRows == .three)
+    }
+
+    @Test
+    func addRowWhenNumberOfRowsIsTen() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .ten
+        )
+
+        // When
+        viewModel.send(.addRow)
+
+        // Then
+        // Не должно добавляться, если уже 10 строк
+        #expect(viewModel.selectedNumberOfRows == .ten)
+    }
+
+    @Test
+    func addRowWhenNumberOfRowsIsNine() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .nine
+        )
+
+        // When
+        viewModel.send(.addRow)
+
+        // Then
+        #expect(viewModel.selectedNumberOfRows == .ten)
+    }
+
+    @Test
+    func addRowMultipleTimes() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .two
+        )
+
+        // When
+        viewModel.send(.addRow)
+        viewModel.send(.addRow)
+        viewModel.send(.addRow)
+
+        // Then
+        #expect(viewModel.selectedNumberOfRows == .five)
+    }
+
+    // MARK: - removeRow Tests
+
+    @Test
+    func removeRowWhenNumberOfRowsIsGreaterThanTwo() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .three
+        )
+
+        // When
+        viewModel.send(.removeRow)
+
+        // Then
+        #expect(viewModel.selectedNumberOfRows == .two)
+    }
+
+    @Test
+    func removeRowWhenNumberOfRowsIsTwo() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .two
+        )
+
+        // When
+        viewModel.send(.removeRow)
+
+        // Then
+        // Не должно удаляться, если уже 2 строки
+        #expect(viewModel.selectedNumberOfRows == .two)
+    }
+
+    @Test
+    func removeRowWhenSelectedRowIsInUndisplayedRange() {
+        // Given
+        let id = 2
+        let viewModel = SurebetCalculatorViewModel(
+            rows: [
+                .init(id: 0),
+                .init(id: 1),
+                .init(id: 2, isON: true, betSize: "777"),
+                .init(id: 3)
+            ],
+            selectedNumberOfRows: .three,
+            selectedRow: .row(id)
+        )
+
+        // When
+        viewModel.send(.removeRow)
+
+        // Then
+        // Строка должна быть снята с выбора, так как она теперь вне отображаемого диапазона
+        // Примечание: deselectCurrentRow() только снимает isON, но не меняет selectedRow
+        #expect(!viewModel.rows[id].isON)
+        #expect(viewModel.selectedNumberOfRows == .two)
+    }
+
+    @Test
+    func removeRowWhenUndisplayedRowContainsData() {
+        // Given
+        let id = 2
+        let viewModel = SurebetCalculatorViewModel(
+            rows: [
+                .init(id: 0),
+                .init(id: 1),
+                .init(id: 2, betSize: "777", coefficient: "2,22"),
+                .init(id: 3)
+            ],
+            selectedNumberOfRows: .three
+        )
+
+        // When
+        viewModel.send(.removeRow)
+
+        // Then
+        // Данные в неотображаемой строке должны быть очищены
+        #expect(viewModel.rows[id].betSize == "")
+        #expect(viewModel.rows[id].coefficient == "")
+        #expect(viewModel.rows[id].income == "0")
+        #expect(viewModel.selectedNumberOfRows == .two)
+    }
+
+    @Test
+    func removeRowCallsCalculate() {
+        // Given
+        let mockService = MockCalculationService()
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .three,
+            calculationService: mockService
+        )
+
+        // When
+        viewModel.send(.removeRow)
+
+        // Then
+        // После удаления строки должен вызываться calculate
+        #expect(mockService.calculateCallCount == 1)
+    }
+
+    @Test
+    func removeRowWhenSelectedRowIsNotInUndisplayedRange() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel(
+            rows: [
+                .init(id: 0, isON: true),
+                .init(id: 1),
+                .init(id: 2),
+                .init(id: 3)
+            ],
+            selectedNumberOfRows: .three,
+            selectedRow: .row(0)
+        )
+
+        // When
+        viewModel.send(.removeRow)
+
+        // Then
+        // Выбранная строка остается выбранной, так как она в отображаемом диапазоне
+        #expect(viewModel.rows[0].isON)
+        #expect(viewModel.selectedRow == .row(0))
+        #expect(viewModel.selectedNumberOfRows == .two)
+    }
 }

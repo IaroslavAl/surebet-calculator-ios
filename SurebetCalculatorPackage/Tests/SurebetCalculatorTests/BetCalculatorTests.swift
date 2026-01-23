@@ -173,4 +173,303 @@ struct CalculatorTests {
         #expect(result.rows?[3].income == "-220,78")
         #expect(result.rows?[3].betSize == "155,84")
     }
+
+    // MARK: - Edge Cases
+
+    @Test
+    func calculateWhenZeroCoefficient() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "1000", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "0", income: ""),
+                Row(id: 1, betSize: "", coefficient: "3", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Нулевой коэффициент должен привести к .none методу
+        #expect(result.total == nil)
+        #expect(result.rows == nil)
+    }
+
+    @Test
+    func calculateWhenNegativeCoefficient() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "1000", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "-2", income: ""),
+                Row(id: 1, betSize: "", coefficient: "3", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Отрицательный коэффициент должен привести к .none методу
+        #expect(result.total == nil)
+        #expect(result.rows == nil)
+    }
+
+    @Test
+    func calculateWhenZeroBetSize() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "0", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "2", income: ""),
+                Row(id: 1, betSize: "", coefficient: "3", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Нулевая ставка может быть валидной, но проверим поведение
+        #expect(result.total != nil)
+    }
+
+    @Test
+    func calculateWhenNegativeBetSize() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "-1000", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "2", income: ""),
+                Row(id: 1, betSize: "", coefficient: "3", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Отрицательная ставка может быть валидной, но проверим поведение
+        #expect(result.total != nil)
+    }
+
+    @Test
+    func calculateWhenVerySmallCoefficient() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "1000", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "0,01", income: ""),
+                Row(id: 1, betSize: "", coefficient: "0,02", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Очень маленькие коэффициенты должны обрабатываться корректно
+        #expect(result.total != nil)
+        #expect(result.rows != nil)
+    }
+
+    @Test
+    func calculateWhenVeryLargeCoefficient() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "1000", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "1000", income: ""),
+                Row(id: 1, betSize: "", coefficient: "2000", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Очень большие коэффициенты должны обрабатываться корректно
+        #expect(result.total != nil)
+        #expect(result.rows != nil)
+    }
+
+    @Test
+    func calculateWhenVeryLargeBetSize() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "999999999", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "2", income: ""),
+                Row(id: 1, betSize: "", coefficient: "3", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Очень большие ставки должны обрабатываться корректно
+        #expect(result.total != nil)
+        #expect(result.rows != nil)
+    }
+
+    @Test
+    func calculateWhenVerySmallBetSize() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "0,01", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "2", income: ""),
+                Row(id: 1, betSize: "", coefficient: "3", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Очень маленькие ставки должны обрабатываться корректно
+        #expect(result.total != nil)
+        #expect(result.rows != nil)
+    }
+
+    @Test
+    func calculateWhenFiveRows() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "1000", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "2", income: ""),
+                Row(id: 1, betSize: "", coefficient: "3", income: ""),
+                Row(id: 2, betSize: "", coefficient: "4", income: ""),
+                Row(id: 3, betSize: "", coefficient: "5", income: ""),
+                Row(id: 4, betSize: "", coefficient: "6", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<5
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        #expect(result.total != nil)
+        #expect(result.rows != nil)
+        #expect(result.rows?.count == 5)
+    }
+
+    @Test
+    func calculateWhenTenRows() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "1000", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "2", income: ""),
+                Row(id: 1, betSize: "", coefficient: "3", income: ""),
+                Row(id: 2, betSize: "", coefficient: "4", income: ""),
+                Row(id: 3, betSize: "", coefficient: "5", income: ""),
+                Row(id: 4, betSize: "", coefficient: "6", income: ""),
+                Row(id: 5, betSize: "", coefficient: "7", income: ""),
+                Row(id: 6, betSize: "", coefficient: "8", income: ""),
+                Row(id: 7, betSize: "", coefficient: "9", income: ""),
+                Row(id: 8, betSize: "", coefficient: "10", income: ""),
+                Row(id: 9, betSize: "", coefficient: "11", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<10
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        #expect(result.total != nil)
+        #expect(result.rows != nil)
+        #expect(result.rows?.count == 10)
+    }
+
+    @Test
+    func calculateWhenDivisionByZeroPrevention() {
+        // Given
+        // Создаем ситуацию, где surebetValue может быть очень маленьким
+        // но не нулевым, чтобы проверить защиту от деления на ноль
+        let calculator = Calculator(
+            total: TotalRow(betSize: "1000", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "1,0001", income: ""),
+                Row(id: 1, betSize: "", coefficient: "1,0001", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Должно обработаться без краша
+        #expect(result.total != nil)
+        #expect(result.rows != nil)
+    }
+
+    @Test
+    func calculateWhenAllCoefficientsAreZero() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "1000", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "0", income: ""),
+                Row(id: 1, betSize: "", coefficient: "0", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Все нулевые коэффициенты должны привести к .none методу
+        #expect(result.total == nil)
+        #expect(result.rows == nil)
+    }
+
+    @Test
+    func calculateWhenAllCoefficientsAreNegative() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "1000", profitPercentage: ""),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "-2", income: ""),
+                Row(id: 1, betSize: "", coefficient: "-3", income: "")
+            ],
+            selectedRow: .total,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Все отрицательные коэффициенты должны привести к .none методу
+        #expect(result.total == nil)
+        #expect(result.rows == nil)
+    }
 }
