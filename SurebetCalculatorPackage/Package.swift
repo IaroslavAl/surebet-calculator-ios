@@ -168,7 +168,8 @@ let package = Package(
                 "Root",
                 "AnalyticsManager",
                 "Banner",
-                "ReviewHandler"
+                "ReviewHandler",
+                "SurebetCalculator"
             ],
             plugins: [
                 .plugin(

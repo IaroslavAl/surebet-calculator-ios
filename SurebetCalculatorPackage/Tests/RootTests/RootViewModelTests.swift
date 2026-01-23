@@ -4,6 +4,7 @@ import Testing
 @testable import AnalyticsManager
 @testable import ReviewHandler
 @testable import Banner
+@testable import SurebetCalculator
 
 @MainActor
 struct RootViewModelTests {
