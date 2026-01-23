@@ -9,7 +9,7 @@ public enum AnalyticsParameterValue: Sendable {
     case int(Int)
     case double(Double)
     case bool(Bool)
-    
+
     /// Конвертация в Any для AppMetrica
     var anyValue: Any {
         switch self {
@@ -28,17 +28,26 @@ public enum AnalyticsParameterValue: Sendable {
 // MARK: - Analytics Manager
 
 /// Менеджер аналитики с типобезопасными параметрами
-public struct AnalyticsManager: Sendable {
+public struct AnalyticsManager: AnalyticsService, Sendable {
     /// Логирование события с типобезопасными параметрами
     /// - Parameters:
     ///   - name: Название события
     ///   - parameters: Словарь параметров с типобезопасными значениями
-    public static func log(name: String, parameters: [String: AnalyticsParameterValue]? = nil) {
+    public func log(name: String, parameters: [String: AnalyticsParameterValue]?) {
     #if !DEBUG
         let appMetricaParameters = parameters?.reduce(into: [AnyHashable: Any]()) { result, pair in
             result[pair.key] = pair.value.anyValue
         }
         AppMetrica.reportEvent(name: name, parameters: appMetricaParameters)
     #endif
+    }
+
+    /// Статический метод для обратной совместимости
+    /// - Parameters:
+    ///   - name: Название события
+    ///   - parameters: Словарь параметров с типобезопасными значениями
+    public static func log(name: String, parameters: [String: AnalyticsParameterValue]? = nil) {
+        let manager = AnalyticsManager()
+        manager.log(name: name, parameters: parameters)
     }
 }

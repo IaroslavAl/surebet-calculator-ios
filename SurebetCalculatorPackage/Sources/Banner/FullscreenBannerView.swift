@@ -12,11 +12,17 @@ struct FullscreenBannerView: View {
     @Binding var isPresented: Bool
 
     private let service: BannerService
+    private let analyticsService: AnalyticsService
 
     @MainActor
-    init(isPresented: Binding<Bool>, service: BannerService = Service()) {
+    init(
+        isPresented: Binding<Bool>,
+        service: BannerService = Service(),
+        analyticsService: AnalyticsService = AnalyticsManager()
+    ) {
         self._isPresented = isPresented
         self.service = service
+        self.analyticsService = analyticsService
     }
 
     var body: some View {
@@ -59,14 +65,14 @@ private extension FullscreenBannerView {
 
     func handleCloseTap() {
         if let banner = service.getBannerFromDefaults() {
-            AnalyticsManager.log(name: "ClosedBanner(\(banner.id)")
+            analyticsService.log(name: "ClosedBanner(\(banner.id)", parameters: nil)
         }
         isPresented = false
     }
 
     func handleBannerTap() {
         if let banner = service.getBannerFromDefaults() {
-            AnalyticsManager.log(name: "OpenedBanner(\(banner.id)")
+            analyticsService.log(name: "OpenedBanner(\(banner.id)", parameters: nil)
             openURL(banner.actionURL)
         } else {
             isPresented = false

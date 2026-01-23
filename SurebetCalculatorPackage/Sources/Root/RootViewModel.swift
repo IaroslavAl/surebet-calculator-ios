@@ -17,9 +17,18 @@ final class RootViewModel: ObservableObject {
     @AppStorage("1.7.0") private var requestReviewWasShown = false
     @AppStorage("numberOfOpenings") private var numberOfOpenings = 0
 
+    private let analyticsService: AnalyticsService
+    private let reviewService: ReviewService
+
     // MARK: - Initialization
 
-    init() {}
+    init(
+        analyticsService: AnalyticsService = AnalyticsManager(),
+        reviewService: ReviewService = ReviewHandler()
+    ) {
+        self.analyticsService = analyticsService
+        self.reviewService = reviewService
+    }
 
     // MARK: - Public Methods
 
@@ -83,14 +92,14 @@ final class RootViewModel: ObservableObject {
     /// Обработка ответа "Нет" на запрос отзыва
     func handleReviewNo() {
         alertIsPresented = false
-        AnalyticsManager.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(false)])
+        analyticsService.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(false)])
     }
 
     /// Обработка ответа "Да" на запрос отзыва
     func handleReviewYes() async {
         alertIsPresented = false
-        await ReviewHandler.requestReview()
-        AnalyticsManager.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(true)])
+        await reviewService.requestReview()
+        analyticsService.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(true)])
     }
 
     /// Обновляет состояние onboarding после его показа
