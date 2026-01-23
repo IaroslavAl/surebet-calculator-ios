@@ -70,12 +70,13 @@
 - `SurebetCalculatorPackage/Sources/AnalyticsManager/AnalyticsManager.swift`
 
 **Задачи:**
-- [ ] Создать типобезопасный протокол для параметров аналитики
-- [ ] Заменить `[AnyHashable: Any]?` на строго типизированный словарь
-- [ ] Обновить все вызовы `AnalyticsManager.log()` в проекте
-- [ ] Файлы с вызовами:
+- [x] Создать типобезопасный протокол для параметров аналитики
+- [x] Заменить `[AnyHashable: Any]?` на строго типизированный словарь
+- [x] Обновить все вызовы `AnalyticsManager.log()` в проекте
+- [x] Файлы с вызовами:
   - `SurebetCalculatorPackage/Sources/Root/RootView.swift`
   - `SurebetCalculatorPackage/Sources/Banner/BannerView.swift`
+  - `SurebetCalculatorPackage/Sources/Banner/FullscreenBannerView.swift`
 
 ---
 
@@ -331,7 +332,7 @@
 | 1.1 | Обновление Swift до 6.0 | High | Легко | ✅ |
 | 1.2 | Миграция на Swift 6 Concurrency | High | Средне | ✅ |
 | 1.3 | Добавление @MainActor к ViewModel | High | Легко | ✅ |
-| 1.4 | Устранение небезопасных типов | High | Средне | ⬜ |
+| 1.4 | Устранение небезопасных типов | High | Средне | ✅ |
 | 1.5 | Исправление нарушений архитектуры | High | Сложно | ⬜ |
 | 1.6 | Проверка Sendable конформности | Medium | Средне | ⬜ |
 | 2.1 | Вынос логики из View | High | Средне | ⬜ |

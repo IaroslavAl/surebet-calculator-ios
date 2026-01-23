@@ -41,14 +41,14 @@ struct RootView: View {
         .alert(requestReviewTitle, isPresented: $alertIsPresented) {
             Button("No") {
                 alertIsPresented = false
-                AnalyticsManager.log(name: "RequestReview", parameters: ["enjoying_calculator": false])
+                AnalyticsManager.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(false)])
             }
             Button("Yes") {
                 alertIsPresented = false
                 Task {
                     await ReviewHandler.requestReview()
                 }
-                AnalyticsManager.log(name: "RequestReview", parameters: ["enjoying_calculator": true])
+                AnalyticsManager.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(true)])
             }
         }
         .overlay {
