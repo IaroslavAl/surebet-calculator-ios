@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum BannerError: Error {
+enum BannerError: Error, Sendable {
     case bannerNotFound
     case invalidImageURL
 }

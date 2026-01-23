@@ -1,7 +1,7 @@
 import Foundation
 
 /// Реализация CalculationService, использующая Calculator для выполнения вычислений.
-struct DefaultCalculationService: CalculationService {
+struct DefaultCalculationService: CalculationService, Sendable {
     /// Выполняет вычисления через Calculator.
     func calculate(
         total: TotalRow,

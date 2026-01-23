@@ -1,6 +1,6 @@
 import Foundation
 
-struct Row: Equatable {
+struct Row: Equatable, Sendable {
     let id: Int
     var isON = false
     var betSize = ""

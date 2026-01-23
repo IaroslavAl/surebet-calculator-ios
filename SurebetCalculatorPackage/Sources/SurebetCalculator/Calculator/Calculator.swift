@@ -1,7 +1,7 @@
 import Foundation
 
 /// A structure for managing betting calculations.
-struct Calculator {
+struct Calculator: Sendable {
     let total: TotalRow
     let rows: [Row]
     let selectedRow: RowType?

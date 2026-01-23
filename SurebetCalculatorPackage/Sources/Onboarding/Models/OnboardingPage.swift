@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct OnboardingPage: Identifiable {
+struct OnboardingPage: Identifiable, Sendable {
     let image: String
     let description: String
 

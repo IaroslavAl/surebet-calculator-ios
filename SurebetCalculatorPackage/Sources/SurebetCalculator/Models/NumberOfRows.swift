@@ -1,6 +1,6 @@
 import Foundation
 
-enum NumberOfRows: Int, CaseIterable {
+enum NumberOfRows: Int, CaseIterable, Sendable {
     case two = 2
     case three
     case four

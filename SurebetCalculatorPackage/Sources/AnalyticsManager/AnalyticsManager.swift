@@ -28,7 +28,7 @@ public enum AnalyticsParameterValue: Sendable {
 // MARK: - Analytics Manager
 
 /// Менеджер аналитики с типобезопасными параметрами
-public struct AnalyticsManager {
+public struct AnalyticsManager: Sendable {
     /// Логирование события с типобезопасными параметрами
     /// - Parameters:
     ///   - name: Название события
