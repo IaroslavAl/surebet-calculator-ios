@@ -123,3 +123,9 @@ private struct AnimationModifier: ViewModifier {
             .animation(.easeInOut, value: viewModel.fullscreenBannerIsPresented)
     }
 }
+
+// MARK: - Preview
+
+#Preview {
+    RootView()
+}

@@ -101,3 +101,9 @@ private extension FullscreenBannerView {
         }
     }
 }
+
+// MARK: - Preview
+
+#Preview {
+    FullscreenBannerView(isPresented: .constant(true))
+}
