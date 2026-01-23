@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct OnboardingIndex: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: OnboardingViewModel
+
+    // MARK: - Body
 
     var body: some View {
         HStack(spacing: spacing) {
@@ -17,16 +21,17 @@ struct OnboardingIndex: View {
     }
 }
 
+// MARK: - Private Methods
+
 private extension OnboardingIndex {
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var spacing: CGFloat { iPad ? 12 : 8 }
-    var padding: CGFloat { iPad ? 36 : 24 }
+    var spacing: CGFloat { isIPad ? OnboardingConstants.paddingMedium : OnboardingConstants.paddingSmall }
+    var padding: CGFloat { isIPad ? OnboardingConstants.paddingExtraExtraLarge : OnboardingConstants.paddingExtraLarge }
 
     func size(_ index: Int) -> CGFloat {
         if index == viewModel.currentPage {
-            iPad ? 18 : 12
+            isIPad ? OnboardingConstants.cornerRadiusExtraLarge : OnboardingConstants.cornerRadiusMedium
         } else {
-            iPad ? 12 : 8
+            isIPad ? OnboardingConstants.cornerRadiusMedium : OnboardingConstants.paddingSmall
         }
     }
 

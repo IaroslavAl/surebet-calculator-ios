@@ -6,6 +6,7 @@ extension Double {
         formatter.numberStyle = .none
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
+        formatter.locale = Locale(identifier: "ru_RU")
         // swiftlint:disable:next legacy_objc_type
         let formattedValue = formatter.string(from: self as NSNumber) ?? "0.00"
         return isPercent ? formattedValue + "%" : formattedValue

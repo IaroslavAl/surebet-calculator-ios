@@ -1,14 +1,27 @@
 import Foundation
 
-/// A structure for managing betting calculations.
-struct Calculator {
+/// Структура для управления вычислениями в калькуляторе сурбетов.
+/// Использует различные методы вычислений в зависимости от того, какое поле было изменено пользователем.
+struct Calculator: Sendable {
+    // MARK: - Properties
+
+    /// Итоговая строка с общим размером ставки и процентом прибыли.
     let total: TotalRow
+    /// Массив строк с данными о ставках (коэффициенты, размеры ставок, доходы).
     let rows: [Row]
+    /// Выбранная строка для вычислений (nil, если выбрана итоговая строка или ничего не выбрано).
     let selectedRow: RowType?
+    /// Диапазон индексов строк, которые отображаются и участвуют в вычислениях.
     let displayedRowIndexes: Range<Int>
 
-    /// Performs calculations based on the selected method and updates totals and rows.
-    /// - Returns: A tuple of updated total and rows.
+    // MARK: - Public Methods
+
+    /// Выполняет вычисления на основе выбранного метода и обновляет итоговые данные и строки.
+    /// Метод вычислений определяется автоматически на основе того, какое поле было изменено:
+    /// - Если изменена итоговая ставка - пересчитываются все строки пропорционально.
+    /// - Если изменена ставка в конкретной строке - пересчитываются итоговая ставка и остальные строки.
+    /// - Если изменены ставки в нескольких строках - пересчитывается итоговая ставка.
+    /// - Returns: Кортеж с обновленными итоговыми данными и строками.
     func calculate() -> (total: TotalRow?, rows: [Row]?) {
         switch calculationMethod {
         case .total:
@@ -23,29 +36,41 @@ struct Calculator {
     }
 }
 
+// MARK: - Private Methods
+
 private extension Calculator {
-    /// The reciprocal of the sum of the reciprocals of the displayed rows' coefficients.
+    /// Вычисляет значение сурбета как обратную величину суммы обратных величин коэффициентов.
+    /// Используется для определения, является ли комбинация ставок выигрышной (значение < 1.0).
+    /// Формула: 1 / (1/k1 + 1/k2 + ... + 1/kn), где k1, k2, ..., kn - коэффициенты отображаемых строк.
     var surebetValue: Double {
         rows[displayedRowIndexes]
             .compactMap { $0.coefficient.formatToDouble() }
             .reduce(0) { $0 + (1 / $1) }
     }
 
-    /// Verifies that all displayed rows have valid and non-empty bet sizes.
+    /// Проверяет, что все отображаемые строки имеют валидные и непустые размеры ставок.
+    /// Используется для определения возможности вычисления итоговой ставки из суммы ставок по строкам.
     var hasValidBetSizes: Bool {
         rows[displayedRowIndexes]
             .map(\.betSize)
             .allSatisfy { $0.isValidDouble() && !$0.isEmpty }
     }
 
-    /// Checks if all displayed coefficients can be converted to doubles and are positive.
+    /// Проверяет, что все отображаемые коэффициенты могут быть преобразованы в числа и являются положительными.
+    /// Необходимо для корректного вычисления сурбета,
+    /// так как отрицательные или нулевые коэффициенты делают вычисления невозможными.
     var hasValidCoefficients: Bool {
         rows[displayedRowIndexes]
             .map(\.coefficient)
             .allSatisfy { $0.formatToDouble() ?? 0 > 0 }
     }
 
-    /// Determines the calculation method based on the current input validity.
+    /// Определяет метод вычислений на основе валидности текущего ввода.
+    /// Выбор метода зависит от того, какое поле было изменено пользователем:
+    /// - Если изменена итоговая ставка - используется метод .total.
+    /// - Если изменена ставка в конкретной строке - используется метод .row(id).
+    /// - Если изменены ставки в нескольких строках - используется метод .rows.
+    /// - Если данные невалидны - возвращается nil, вычисления не выполняются.
     var calculationMethod: CalculationMethod? {
         guard hasValidCoefficients else {
             return .none
@@ -62,8 +87,10 @@ private extension Calculator {
         }
     }
 
-    /// Calculates total for all rows considering current bet sizes.
-    /// - Returns: Updated total and rows.
+    /// Вычисляет итоговые данные для всех строк на основе текущих размеров ставок.
+    /// Используется, когда пользователь изменил итоговую ставку - все строки пересчитываются пропорционально,
+    /// чтобы сохранить соотношение между коэффициентами и обеспечить корректный сурбет.
+    /// - Returns: Обновленные итоговые данные и строки.
     func calculateTotal() -> (TotalRow?, [Row]?) {
         var total = self.total
         let rows = calculateRowsBetSizesAndIncomes(total: total, rows: self.rows)
@@ -72,8 +99,10 @@ private extension Calculator {
         return (total, rows)
     }
 
-    /// Updates bet sizes and incomes for each row and recalculates total accordingly.
-    /// - Returns: Updated total and rows.
+    /// Обновляет размеры ставок и доходы для каждой строки и пересчитывает итоговые данные.
+    /// Используется, когда пользователь изменил размеры ставок в нескольких строках -
+    /// итоговая ставка вычисляется как сумма всех ставок, а доходы пересчитываются для каждой строки.
+    /// - Returns: Обновленные итоговые данные и строки.
     func calculateRows() -> (TotalRow?, [Row]?) {
         var total = self.total
         var rows = self.rows
@@ -96,9 +125,12 @@ private extension Calculator {
         return (total, rows)
     }
 
-    /// Calculates for a specific row and updates total and other rows accordingly.
-    /// - Parameter id: Index of the row.
-    /// - Returns: Updated total and rows.
+    /// Вычисляет данные для конкретной строки и обновляет итоговые данные и остальные строки.
+    /// Используется, когда пользователь изменил размер ставки в одной строке -
+    /// итоговая ставка пересчитывается так, чтобы сохранить пропорции сурбета,
+    /// а остальные строки обновляются пропорционально.
+    /// - Parameter id: Индекс строки, для которой выполняются вычисления.
+    /// - Returns: Обновленные итоговые данные и строки.
     func calculateSpecificRow(_ id: Int) -> (TotalRow?, [Row]?) {
         var total = self.total
         var rows = self.rows
@@ -113,11 +145,13 @@ private extension Calculator {
         return (total, rows)
     }
 
-    /// Adjusts bet sizes and incomes based on total bet size and each row's coefficient.
+    /// Корректирует размеры ставок и доходы на основе итогового размера ставки и коэффициента каждой строки.
+    /// Используется для пропорционального распределения итоговой ставки между строками
+    /// в соответствии с их коэффициентами, чтобы сохранить корректность сурбета.
     /// - Parameters:
-    ///   - total: Current total info.
-    ///   - rows: Rows to update.
-    /// - Returns: Updated rows.
+    ///   - total: Текущие итоговые данные.
+    ///   - rows: Строки для обновления.
+    /// - Returns: Обновленные строки с новыми размерами ставок и доходами.
     func calculateRowsBetSizesAndIncomes(total: TotalRow, rows: [Row]) -> [Row] {
         var updatedRows = rows
         displayedRowIndexes.forEach { index in
@@ -136,20 +170,23 @@ private extension Calculator {
         return updatedRows
     }
 
-    /// Calculates and formats profit percentage from the total bet size.
-    /// - Parameter totalBetSize: Total size of bets.
-    /// - Returns: Formatted profit percentage.
+    /// Вычисляет и форматирует процент прибыли на основе итогового размера ставки.
+    /// Процент прибыли показывает, насколько выгодна комбинация ставок (положительное значение означает прибыль).
+    /// - Parameter totalBetSize: Итоговый размер всех ставок.
+    /// - Returns: Отформатированный процент прибыли в виде строки.
     func calculateProfitPercentage(totalBetSize: Double) -> String {
         let profitPercentage = (100 / surebetValue) - 100
         return profitPercentage.formatToString(isPercent: true)
     }
 
-    /// Calculates and formats income for a given bet.
+    /// Вычисляет и форматирует доход для конкретной ставки.
+    /// Доход рассчитывается как разница между выигрышем (коэффициент × размер ставки) и общим размером всех ставок.
+    /// Показывает, сколько можно заработать, если выиграет именно эта ставка.
     /// - Parameters:
-    ///   - coefficient: Coefficient for the bet.
-    ///   - betSize: Size of the bet.
-    ///   - totalBetSize: Combined size of all bets.
-    /// - Returns: Formatted income.
+    ///   - coefficient: Коэффициент для ставки.
+    ///   - betSize: Размер ставки.
+    ///   - totalBetSize: Общий размер всех ставок.
+    /// - Returns: Отформатированный доход в виде строки.
     func calculateIncome(
         coefficient: Double,
         betSize: Double,

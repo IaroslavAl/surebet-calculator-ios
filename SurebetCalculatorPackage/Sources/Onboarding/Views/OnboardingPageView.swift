@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct OnboardingPageView: View {
+    // MARK: - Properties
+
     let page: OnboardingPage
+
+    // MARK: - Body
 
     var body: some View {
         VStack(spacing: .zero) {
@@ -9,13 +13,13 @@ struct OnboardingPageView: View {
                 .resizable()
                 .scaledToFit()
                 .padding(.vertical)
-                .accessibilityLabel("Image")
+                .accessibilityLabel(String(localized: "Image"))
             Spacer()
             Text(page.description)
                 .font(.title)
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
-                .minimumScaleFactor(0.5)
+                .minimumScaleFactor(OnboardingConstants.minimumTextScaleFactor)
             Spacer()
         }
     }

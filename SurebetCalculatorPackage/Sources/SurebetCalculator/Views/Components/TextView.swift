@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct TextView: View {
+    // MARK: - Properties
+
     let text: String
     let isPercent: Bool
+
+    // MARK: - Body
 
     var body: some View {
         Text(text)
@@ -15,19 +19,17 @@ struct TextView: View {
     }
 }
 
-private extension TextView {
-    var textPadding: CGFloat { 8 }
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var frameHeight: CGFloat { iPad ? 60 : 40 }
-    var cornerRadius: CGFloat { iPad ? 15 : 10 }
-    var color: Color { isNumberNotNegative(text) ? .green : .red }
+// MARK: - Private Computed Properties
 
-    func isNumberNotNegative(_ text: String) -> Bool {
-        if let text = text.formatToDouble() {
-            return text >= 0
-        }
-        return true
+private extension TextView {
+    var textPadding: CGFloat { AppConstants.Padding.small }
+    var frameHeight: CGFloat {
+        isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact
     }
+    var cornerRadius: CGFloat {
+        isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
+    }
+    var color: Color { text.isNumberNotNegative() ? .green : .red }
 }
 
 #Preview {

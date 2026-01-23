@@ -9,55 +9,100 @@ import SwiftUI
 import AnalyticsManager
 
 struct FullscreenBannerView: View {
+    // MARK: - Properties
+
     @Binding var isPresented: Bool
 
-    private let serivce = Service()
+    private let service: BannerService
+    private let analyticsService: AnalyticsService
+
+    // MARK: - Initialization
+
+    @MainActor
+    init(
+        isPresented: Binding<Bool>,
+        service: BannerService = Service(),
+        analyticsService: AnalyticsService = AnalyticsManager()
+    ) {
+        self._isPresented = isPresented
+        self.service = service
+        self.analyticsService = analyticsService
+    }
+
+    // MARK: - Body
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.75)
-            if let imageData = serivce.getStoredBannerImageData(), let uiImage = UIImage(data: imageData) {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFit()
-                    .cornerRadius(cornerRadius)
-                    .overlay(alignment: .topTrailing) {
-                        Image(systemName: "xmark.circle.fill")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .foregroundStyle(.white.opacity(0.5))
-                            .padding(16)
-                            .contentShape(.rect)
-                            .onTapGesture {
-                                if let banner = serivce.getBannerFromDefaults() {
-                                    AnalyticsManager.log(name: "ClosedBanner(\(banner.id)")
-                                }
-                                isPresented = false
-                            }
-                    }
-                    .onTapGesture {
-                        if let banner = serivce.getBannerFromDefaults() {
-                            AnalyticsManager.log(name: "OpenedBanner(\(banner.id)")
-                            openURL(banner.actionURL)
-                        } else {
-                            isPresented = false
-                        }
-                    }
-            }
+            bannerImage
         }
     }
 }
 
+// MARK: - Private Methods
+
 private extension FullscreenBannerView {
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var cornerRadius: CGFloat { iPad ? 24 : 16 }
-    var url: String { "https://1wfdtj.com/casino/list?open=register&p=jyy2" }
+    @ViewBuilder
+    var bannerImage: some View {
+        if let imageData = service.getStoredBannerImageData(),
+           let uiImage = UIImage(data: imageData) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFit()
+                .cornerRadius(cornerRadius)
+                .overlay(alignment: .topTrailing) {
+                    closeButton
+                }
+                .onTapGesture {
+                    handleBannerTap()
+                }
+        }
+    }
+
+    var closeButton: some View {
+        Image(systemName: "xmark.circle.fill")
+            .resizable()
+            .frame(width: BannerConstants.closeButtonSize, height: BannerConstants.closeButtonSize)
+            .foregroundStyle(.white.opacity(0.5))
+            .padding(BannerConstants.closeButtonPadding)
+            .contentShape(.rect)
+            .onTapGesture {
+                handleCloseTap()
+            }
+    }
+
+    func handleCloseTap() {
+        if let banner = service.getBannerFromDefaults() {
+            analyticsService.log(name: "ClosedBanner(\(banner.id)", parameters: nil)
+        }
+        isPresented = false
+    }
+
+    func handleBannerTap() {
+        if let banner = service.getBannerFromDefaults() {
+            analyticsService.log(name: "OpenedBanner(\(banner.id)", parameters: nil)
+            openURL(banner.actionURL)
+        } else {
+            isPresented = false
+        }
+    }
+
+    var cornerRadius: CGFloat {
+        isIPad ? BannerConstants.fullscreenBannerCornerRadiusiPad : BannerConstants.fullscreenBannerCornerRadiusiPhone
+    }
+    var url: String { BannerConstants.bannerFallbackURL }
 
     func openURL(_ url: URL) {
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
         Task {
-            try await Task.sleep(nanoseconds: 500_000_000)
+            try await Task.sleep(nanoseconds: BannerConstants.bannerCloseDelay)
             isPresented = false
         }
     }
+}
+
+// MARK: - Preview
+
+#Preview {
+    FullscreenBannerView(isPresented: .constant(true))
 }

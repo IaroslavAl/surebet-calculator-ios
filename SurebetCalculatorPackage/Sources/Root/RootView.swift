@@ -1,95 +1,132 @@
-import AnalyticsManager
 import Banner
 import Onboarding
-import ReviewHandler
 import SurebetCalculator
 import SwiftUI
 
+@MainActor
 struct RootView: View {
-    @AppStorage("onboardingIsShown") private var onboardingIsShown = false
-    @AppStorage("1.7.0") private var requestReviewWasShown = false
-    @AppStorage("numberOfOpenings") private var numberOfOpenings = 0
+    // MARK: - Properties
 
-    @State private var isAnimation = false
-    @State private var alertIsPresented = false
-    @State private var fullscreenBannerIsPresented = false
+    @StateObject private var viewModel = RootViewModel()
+
+    // MARK: - Body
 
     var body: some View {
-        Group {
-            if onboardingIsShown {
-                NavigationView {
-                    SurebetCalculator.view()
-                }
-                .navigationViewStyle(.stack)
-            } else {
-                if isAnimation {
-                    Onboarding.view(onboardingIsShown: $onboardingIsShown)
-                        .transition(.move(edge: .bottom))
-                }
-            }
-        }
-        .preferredColorScheme(.dark)
-        .onAppear {
-            numberOfOpenings += 1
-        }
-        .onAppear(perform: showOnboardingView)
-        .onAppear(perform: showRequestReview)
-        .onAppear(perform: showFullscreenBanner)
-        .task {
-            try? await Banner.fetchBanner()
-        }
-        .alert(requestReviewTitle, isPresented: $alertIsPresented) {
-            Button("No") {
-                alertIsPresented = false
-                AnalyticsManager.log(name: "RequestReview", parameters: ["enjoying_calculator": false])
-            }
-            Button("Yes") {
-                alertIsPresented = false
-                ReviewHandler.requestReview()
-                AnalyticsManager.log(name: "RequestReview", parameters: ["enjoying_calculator": true])
-            }
-        }
-        .overlay {
-            if fullscreenBannerIsPresented {
-                Banner.fullscreenBannerView(isPresented: $fullscreenBannerIsPresented)
-                    .transition(.move(edge: .bottom))
-            }
-        }
-        .animation(.default, value: onboardingIsShown)
-        .animation(.easeInOut, value: fullscreenBannerIsPresented)
+        mainContent
+            .preferredColorScheme(.dark)
+            .modifier(LifecycleModifier(viewModel: viewModel))
+            .modifier(BannerTaskModifier())
+            .modifier(ReviewAlertModifier(viewModel: viewModel))
+            .modifier(FullscreenBannerOverlayModifier(viewModel: viewModel))
+            .modifier(AnimationModifier(viewModel: viewModel))
     }
 }
 
+// MARK: - Private Computed Properties
+
 private extension RootView {
-    var requestReviewTitle: String {
-        "Do you like the app?"
-    }
-
-    func showOnboardingView() {
-        withAnimation {
-            isAnimation = true
-        }
-    }
-
-    func showFullscreenBanner() {
-        if fullscreenBannerIsAvailable, Banner.isBannerFullyCached {
-            fullscreenBannerIsPresented = true
-        }
-    }
-
-    var fullscreenBannerIsAvailable: Bool {
-        onboardingIsShown && requestReviewWasShown && numberOfOpenings.isMultiple(of: 3)
-    }
-
-    func showRequestReview() {
-#if !DEBUG
-        Task {
-            try await Task.sleep(nanoseconds: NSEC_PER_SEC * 1)
-            if !requestReviewWasShown, numberOfOpenings >= 2, onboardingIsShown {
-                alertIsPresented = true
-                requestReviewWasShown = true
+    var mainContent: some View {
+        Group {
+            if viewModel.isOnboardingShown {
+                calculatorView
+            } else {
+                onboardingView
             }
         }
-#endif
     }
+
+    var calculatorView: some View {
+        NavigationView {
+            SurebetCalculator.view()
+        }
+        .navigationViewStyle(.stack)
+    }
+
+    @ViewBuilder
+    var onboardingView: some View {
+        if viewModel.shouldShowOnboardingWithAnimation {
+            Onboarding.view(onboardingIsShown: onboardingBinding)
+                .transition(.move(edge: .bottom))
+        }
+    }
+
+    var onboardingBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.isOnboardingShown },
+            set: { viewModel.updateOnboardingShown($0) }
+        )
+    }
+}
+
+// MARK: - View Modifiers
+
+private struct LifecycleModifier: ViewModifier {
+    let viewModel: RootViewModel
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                viewModel.onAppear()
+            }
+            .onAppear(perform: viewModel.showOnboardingView)
+            .onAppear(perform: viewModel.showRequestReview)
+            .onAppear(perform: viewModel.showFullscreenBanner)
+    }
+}
+
+private struct BannerTaskModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .task {
+                try? await Banner.fetchBanner()
+            }
+    }
+}
+
+private struct ReviewAlertModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+
+    func body(content: Content) -> some View {
+        content
+            .alert(viewModel.requestReviewTitle, isPresented: $viewModel.alertIsPresented) {
+                Button(String(localized: "No")) {
+                    viewModel.handleReviewNo()
+                }
+                Button(String(localized: "Yes")) {
+                    Task {
+                        await viewModel.handleReviewYes()
+                    }
+                }
+            }
+    }
+}
+
+private struct FullscreenBannerOverlayModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                if viewModel.fullscreenBannerIsPresented {
+                    Banner.fullscreenBannerView(isPresented: $viewModel.fullscreenBannerIsPresented)
+                        .transition(.move(edge: .bottom))
+                }
+            }
+    }
+}
+
+private struct AnimationModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+
+    func body(content: Content) -> some View {
+        content
+            .animation(.default, value: viewModel.isOnboardingShown)
+            .animation(.easeInOut, value: viewModel.fullscreenBannerIsPresented)
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    RootView()
 }

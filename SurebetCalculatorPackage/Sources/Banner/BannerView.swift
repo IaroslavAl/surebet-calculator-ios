@@ -3,40 +3,61 @@ import SDWebImageSwiftUI
 import SwiftUI
 
 struct BannerView: View {
-    let link = "https://www.rebelbetting.com/valuebetting?x=surebet_profit&a_bid=c3ecdf4b"
+    // MARK: - Properties
+
+    private let link = "https://www.rebelbetting.com/valuebetting?x=surebet_profit&a_bid=c3ecdf4b"
 
     @State
     private var isPresented: Bool = true
 
+    // MARK: - Body
+
     var body: some View {
         if isPresented {
-            WebImage(url: .init(string: url))
-                .resizable()
-                .scaledToFit()
-                .cornerRadius(cornerRadius)
-                .onTapGesture {
-                    openURL(link)
-                    AnalyticsManager.log(name: "ClickingOnAnAdvertisement")
-                }
-                .overlay(alignment: .topTrailing) {
-                    Image(systemName: "xmark.circle.fill")
-                        .resizable()
-                        .frame(width: 20, height: 20)
-                        .foregroundStyle(.black.opacity(0.25))
-                        .padding(8)
-                        .contentShape(.rect)
-                        .onTapGesture {
-                            isPresented = false
-                            AnalyticsManager.log(name: "CloseBanner")
-                        }
-                }
+            bannerContent
         }
     }
 }
 
+// MARK: - Private Methods
+
 private extension BannerView {
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var cornerRadius: CGFloat { iPad ? 15 : 10 }
+    var bannerContent: some View {
+        WebImage(url: .init(string: url))
+            .resizable()
+            .scaledToFit()
+            .cornerRadius(cornerRadius)
+            .onTapGesture {
+                handleBannerTap()
+            }
+            .overlay(alignment: .topTrailing) {
+                closeButton
+            }
+    }
+
+    var closeButton: some View {
+        Image(systemName: "xmark.circle.fill")
+            .resizable()
+            .frame(width: 20, height: 20)
+            .foregroundStyle(.black.opacity(0.25))
+            .padding(8)
+            .contentShape(.rect)
+            .onTapGesture {
+                handleCloseTap()
+            }
+    }
+
+    func handleBannerTap() {
+        openURL(link)
+        AnalyticsManager.log(name: "ClickingOnAnAdvertisement")
+    }
+
+    func handleCloseTap() {
+        isPresented = false
+        AnalyticsManager.log(name: "CloseBanner")
+    }
+
+    var cornerRadius: CGFloat { isIPad ? 15 : 10 }
 
     func openURL(_ url: String) {
         if let url = URL(string: url) {
@@ -45,7 +66,7 @@ private extension BannerView {
     }
 
     var url: String {
-        if iPad {
+        if isIPad {
             "https://affiliates.rebelbetting.com/accounts/default1/banners/1ab8d504.jpg"
         } else {
             "https://affiliates.rebelbetting.com/accounts/default1/banners/c3ecdf4b.gif"

@@ -1,25 +1,36 @@
 import Foundation
 
+@MainActor
 final class SurebetCalculatorViewModel: ObservableObject {
+    // MARK: - Properties
+
     @Published private(set) var total: TotalRow
     @Published private(set) var rows: [Row]
     @Published private(set) var selectedNumberOfRows: NumberOfRows
     @Published private(set) var selectedRow: RowType?
     @Published private(set) var focus: FocusableField?
 
+    private let calculationService: CalculationService
+
+    // MARK: - Initialization
+
     init(
         total: TotalRow = TotalRow(),
         rows: [Row] = Row.createRows(),
         selectedNumberOfRows: NumberOfRows = .two,
         selectedRow: RowType? = .total,
-        focus: FocusableField? = nil
+        focus: FocusableField? = nil,
+        calculationService: CalculationService = DefaultCalculationService()
     ) {
         self.total = total
         self.rows = rows
         self.selectedNumberOfRows = selectedNumberOfRows
         self.selectedRow = selectedRow
         self.focus = focus
+        self.calculationService = calculationService
     }
+
+    // MARK: - Public Methods
 
     enum ViewAction {
         case selectRow(RowType)
@@ -54,11 +65,34 @@ final class SurebetCalculatorViewModel: ObservableObject {
     }
 }
 
+// MARK: - Public Extensions
+
 extension SurebetCalculatorViewModel {
     var displayedRowIndexes: Range<Int> {
         0..<selectedNumberOfRows.rawValue
     }
+
+    /// Проверяет, должно ли поле быть заблокировано
+    func isFieldDisabled(_ field: FocusableField) -> Bool {
+        switch (selectedRow, field) {
+        case (_, .rowCoefficient):
+            return false
+        case (.none, .rowBetSize):
+            return false
+        case (.total, .totalBetSize):
+            return false
+        case let (.row(selectedId), .rowBetSize(currentId)):
+            if selectedId == currentId {
+                return false
+            }
+            return true
+        default:
+            return true
+        }
+    }
 }
+
+// MARK: - Private Methods
 
 private extension SurebetCalculatorViewModel {
     func select(_ row: RowType) {
@@ -198,13 +232,12 @@ private extension SurebetCalculatorViewModel {
     }
 
     func calculate() {
-        let calculator = Calculator(
+        let (updatedTotal, updatedRows) = calculationService.calculate(
             total: total,
             rows: rows,
             selectedRow: selectedRow,
             displayedRowIndexes: displayedRowIndexes
         )
-        let (updatedTotal, updatedRows) = calculator.calculate()
         total = updatedTotal ?? total
         rows = updatedRows ?? rows
     }

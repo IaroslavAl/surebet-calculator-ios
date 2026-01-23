@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct TotalRowView: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+
+    // MARK: - Body
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
@@ -14,12 +18,13 @@ struct TotalRowView: View {
     }
 }
 
+// MARK: - Private Computed Properties
+
 private extension TotalRowView {
-    var betSizeLabel: String { "Total bet size" }
-    var profitPercentageLabel: String { "Profit percentage" }
-    var placeholder: String { "Total bet size" }
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var spacing: CGFloat { iPad ? 12 : 8 }
+    var betSizeLabel: String { String(localized: "Total bet size") }
+    var profitPercentageLabel: String { String(localized: "Profit percentage") }
+    var placeholder: String { String(localized: "Total bet size") }
+    var spacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
 
     var totalBetSizeColumn: some View {
         VStack(spacing: spacing) {

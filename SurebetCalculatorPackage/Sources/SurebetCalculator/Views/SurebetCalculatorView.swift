@@ -2,61 +2,81 @@ import Banner
 import SwiftUI
 
 struct SurebetCalculatorView: View {
+    // MARK: - Properties
+
     @StateObject
     private var viewModel = SurebetCalculatorViewModel()
 
     @FocusState
     private var isFocused
 
+    // MARK: - Body
+
     var body: some View {
-        VStack(spacing: spacing) {
-            ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: spacing) {
-                        TotalRowView()
-                            .padding(.trailing, horizontalPadding)
-                        rowsView
-                        HStack(spacing: .zero) {
-                            removeButton
-                            addButton
-                        }
-                        .id("EndOfView")
-                    }
-                    .padding(rowsSpacing)
-                    .background(
-                        Color.clear
-                            .contentShape(.rect)
-                            .onTapGesture {
-                                viewModel.send(.hideKeyboard)
-                            }
-                    )
-                }
-                .onChange(of: viewModel.selectedNumberOfRows) { _ in
-                    withAnimation {
-                        proxy.scrollTo("EndOfView", anchor: .bottom)
-                    }
-                }
+        scrollableContent
+            .navigationTitle(navigationTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(content: toolbar)
+            .frame(maxHeight: .infinity, alignment: .top)
+            .font(font)
+            .environmentObject(viewModel)
+            .animation(.default, value: viewModel.selectedNumberOfRows)
+            .focused($isFocused)
+            .onTapGesture {
+                isFocused = false
             }
-//            if !isFocused {
-//                Banner.view
-//                    .padding(.horizontal, horizontalPadding)
-//            }
-        }
-        .navigationTitle(navigationTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(content: toolbar)
-        .frame(maxHeight: .infinity, alignment: .top)
-        .font(font)
-        .environmentObject(viewModel)
-        .animation(.default, value: viewModel.selectedNumberOfRows)
-        .focused($isFocused)
-        .onTapGesture {
-            isFocused = false
-        }
     }
 }
 
+// MARK: - Private Methods
+
 private extension SurebetCalculatorView {
+    var scrollableContent: some View {
+        VStack(spacing: spacing) {
+            ScrollViewReader { proxy in
+                scrollView(proxy: proxy)
+                    .onChange(of: viewModel.selectedNumberOfRows) { _ in
+                        scrollToEnd(proxy: proxy)
+                    }
+            }
+        }
+    }
+
+    func scrollView(proxy: ScrollViewProxy) -> some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: spacing) {
+                TotalRowView()
+                    .padding(.trailing, horizontalPadding)
+                rowsView
+                actionButtons
+                    .id("EndOfView")
+            }
+            .padding(rowsSpacing)
+            .background(backgroundTapGesture)
+        }
+    }
+
+    var backgroundTapGesture: some View {
+        Color.clear
+            .contentShape(.rect)
+            .onTapGesture {
+                viewModel.send(.hideKeyboard)
+            }
+    }
+
+    var actionButtons: some View {
+        HStack(spacing: .zero) {
+            removeButton
+            addButton
+        }
+    }
+
+    func scrollToEnd(proxy: ScrollViewProxy) {
+        withAnimation {
+            proxy.scrollTo("EndOfView", anchor: .bottom)
+        }
+    }
+
     var rowsView: some View {
         VStack(spacing: rowsSpacing) {
             ForEach(viewModel.displayedRowIndexes, id: \.self) { id in
@@ -83,7 +103,7 @@ private extension SurebetCalculatorView {
             .foregroundStyle(viewModel.selectedNumberOfRows == .ten ? .gray : .green)
             .font(buttonFont)
             .disabled(viewModel.selectedNumberOfRows == .ten)
-            .padding(8)
+            .padding(AppConstants.Padding.small)
             .contentShape(.rect)
             .onTapGesture {
                 viewModel.send(.addRow)
@@ -96,7 +116,7 @@ private extension SurebetCalculatorView {
             .foregroundStyle(viewModel.selectedNumberOfRows == .two ? .gray : .red)
             .font(buttonFont)
             .disabled(viewModel.selectedNumberOfRows == .two)
-            .padding(8)
+            .padding(AppConstants.Padding.small)
             .contentShape(.rect)
             .onTapGesture {
                 viewModel.send(.removeRow)
@@ -105,14 +125,15 @@ private extension SurebetCalculatorView {
     }
 }
 
+// MARK: - Private Computed Properties
+
 private extension SurebetCalculatorView {
-    var navigationTitle: String { "Surebet calculator" }
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var spacing: CGFloat { iPad ? 24 : 16 }
-    var rowsSpacing: CGFloat { iPad ? 12 : 8 }
-    var horizontalPadding: CGFloat { iPad ? 12 : 8 }
-    var font: Font { iPad ? .title : .body }
-    var buttonFont: Font { iPad ? .largeTitle : .title }
+    var navigationTitle: String { String(localized: "Surebet calculator") }
+    var spacing: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
+    var rowsSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var font: Font { isIPad ? .title : .body }
+    var buttonFont: Font { isIPad ? .largeTitle : .title }
 }
 
 #Preview {

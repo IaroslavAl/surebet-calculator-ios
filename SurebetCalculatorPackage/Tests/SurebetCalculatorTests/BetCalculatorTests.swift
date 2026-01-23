@@ -1,8 +1,9 @@
 @testable import SurebetCalculator
-import XCTest
+import Testing
 
-final class CalculatorTests: XCTestCase {
-    func testTotalCalculation() {
+struct CalculatorTests {
+    @Test
+    func totalCalculation() {
         // Given
         let calculator = Calculator(
             total: TotalRow(betSize: "1000", profitPercentage: ""),
@@ -18,15 +19,16 @@ final class CalculatorTests: XCTestCase {
         let result = calculator.calculate()
 
         // Then
-        XCTAssertEqual(result.total?.betSize, "1000")
-        XCTAssertEqual(result.total?.profitPercentage, "20%")
-        XCTAssertEqual(result.rows?[0].income, "200")
-        XCTAssertEqual(result.rows?[0].betSize, "600")
-        XCTAssertEqual(result.rows?[1].income, "200")
-        XCTAssertEqual(result.rows?[1].betSize, "400")
+        #expect(result.total?.betSize == "1000")
+        #expect(result.total?.profitPercentage == "20%")
+        #expect(result.rows?[0].income == "200")
+        #expect(result.rows?[0].betSize == "600")
+        #expect(result.rows?[1].income == "200")
+        #expect(result.rows?[1].betSize == "400")
     }
 
-    func testRowCalculation() {
+    @Test
+    func rowCalculation() {
         // Given
         let calculator = Calculator(
             total: TotalRow(betSize: "", profitPercentage: ""),
@@ -42,14 +44,15 @@ final class CalculatorTests: XCTestCase {
         let result = calculator.calculate()
 
         // Then
-        XCTAssertEqual(result.total?.betSize, "833,33")
-        XCTAssertEqual(result.total?.profitPercentage, "20%")
-        XCTAssertEqual(result.rows?[0].income, "166,67")
-        XCTAssertEqual(result.rows?[1].income, "166,67")
-        XCTAssertEqual(result.rows?[1].betSize, "333,33")
+        #expect(result.total?.betSize == "833,33")
+        #expect(result.total?.profitPercentage == "20%")
+        #expect(result.rows?[0].income == "166,67")
+        #expect(result.rows?[1].income == "166,67")
+        #expect(result.rows?[1].betSize == "333,33")
     }
 
-    func testNoneCalculation() {
+    @Test
+    func noneCalculation() {
         // Given
         let calculator = Calculator(
             total: TotalRow(betSize: "", profitPercentage: ""),
@@ -65,11 +68,12 @@ final class CalculatorTests: XCTestCase {
         let result = calculator.calculate()
 
         // Then
-        XCTAssertNil(result.total)
-        XCTAssertNil(result.rows)
+        #expect(result.total == nil)
+        #expect(result.rows == nil)
     }
 
-    func testInvalidCoefficient() {
+    @Test
+    func invalidCoefficient() {
         // Given
         let calculator = Calculator(
             total: TotalRow(betSize: "", profitPercentage: ""),
@@ -85,11 +89,12 @@ final class CalculatorTests: XCTestCase {
         let result = calculator.calculate()
 
         // Then
-        XCTAssertNil(result.total)
-        XCTAssertNil(result.rows)
+        #expect(result.total == nil)
+        #expect(result.rows == nil)
     }
 
-    func testProfitPercentageCalculationWithMultipleRows() {
+    @Test
+    func profitPercentageCalculationWithMultipleRows() {
         // Given
         let calculator = Calculator(
             total: TotalRow(betSize: "1000", profitPercentage: ""),
@@ -105,12 +110,13 @@ final class CalculatorTests: XCTestCase {
         let result = calculator.calculate()
 
         // Then
-        XCTAssertEqual(result.total?.profitPercentage, "33,33%")
-        XCTAssertEqual(result.rows?[0].income, "-400")
-        XCTAssertEqual(result.rows?[1].income, "1800")
+        #expect(result.total?.profitPercentage == "33,33%")
+        #expect(result.rows?[0].income == "-400")
+        #expect(result.rows?[1].income == "1800")
     }
 
-    func testTotalCalculationWithThreeRows() {
+    @Test
+    func totalCalculationWithThreeRows() {
         // Given
         let calculator = Calculator(
             total: TotalRow(betSize: "1000", profitPercentage: ""),
@@ -127,17 +133,18 @@ final class CalculatorTests: XCTestCase {
         let result = calculator.calculate()
 
         // Then
-        XCTAssertEqual(result.total?.betSize, "1000")
-        XCTAssertEqual(result.total?.profitPercentage, "-7,69%")
-        XCTAssertEqual(result.rows?[0].income, "-76,92")
-        XCTAssertEqual(result.rows?[0].betSize, "461,54")
-        XCTAssertEqual(result.rows?[1].income, "-76,92")
-        XCTAssertEqual(result.rows?[1].betSize, "307,69")
-        XCTAssertEqual(result.rows?[2].income, "-76,92")
-        XCTAssertEqual(result.rows?[2].betSize, "230,77")
+        #expect(result.total?.betSize == "1000")
+        #expect(result.total?.profitPercentage == "-7,69%")
+        #expect(result.rows?[0].income == "-76,92")
+        #expect(result.rows?[0].betSize == "461,54")
+        #expect(result.rows?[1].income == "-76,92")
+        #expect(result.rows?[1].betSize == "307,69")
+        #expect(result.rows?[2].income == "-76,92")
+        #expect(result.rows?[2].betSize == "230,77")
     }
 
-    func testTotalCalculationWithFourRows() {
+    @Test
+    func totalCalculationWithFourRows() {
         // Given
         let calculator = Calculator(
             total: TotalRow(betSize: "1000", profitPercentage: ""),
@@ -155,15 +162,15 @@ final class CalculatorTests: XCTestCase {
         let result = calculator.calculate()
 
         // Then
-        XCTAssertEqual(result.total?.betSize, "1000")
-        XCTAssertEqual(result.total?.profitPercentage, "-22,08%")
-        XCTAssertEqual(result.rows?[0].income, "-220,78")
-        XCTAssertEqual(result.rows?[0].betSize, "389,61")
-        XCTAssertEqual(result.rows?[1].income, "-220,78")
-        XCTAssertEqual(result.rows?[1].betSize, "259,74")
-        XCTAssertEqual(result.rows?[2].income, "-220,78")
-        XCTAssertEqual(result.rows?[2].betSize, "194,81")
-        XCTAssertEqual(result.rows?[3].income, "-220,78")
-        XCTAssertEqual(result.rows?[3].betSize, "155,84")
+        #expect(result.total?.betSize == "1000")
+        #expect(result.total?.profitPercentage == "-22,08%")
+        #expect(result.rows?[0].income == "-220,78")
+        #expect(result.rows?[0].betSize == "389,61")
+        #expect(result.rows?[1].income == "-220,78")
+        #expect(result.rows?[1].betSize == "259,74")
+        #expect(result.rows?[2].income == "-220,78")
+        #expect(result.rows?[2].betSize == "194,81")
+        #expect(result.rows?[3].income == "-220,78")
+        #expect(result.rows?[3].betSize == "155,84")
     }
 }

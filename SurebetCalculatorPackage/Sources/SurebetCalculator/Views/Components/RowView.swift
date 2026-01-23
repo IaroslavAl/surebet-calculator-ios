@@ -1,9 +1,13 @@
 import SwiftUI
 
 struct RowView: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
 
     let id: Int
+
+    // MARK: - Body
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
@@ -17,12 +21,13 @@ struct RowView: View {
     }
 }
 
+// MARK: - Private Computed Properties
+
 private extension RowView {
-    var coefficientText: String { "Coefficient" }
-    var betSizeText: String { "Bet size" }
-    var incomeText: String { "Income" }
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var spacing: CGFloat { iPad ? 12 : 8 }
+    var coefficientText: String { String(localized: "Coefficient") }
+    var betSizeText: String { String(localized: "Bet size") }
+    var incomeText: String { String(localized: "Income") }
+    var spacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
 
     var betSize: some View {
         VStack(spacing: spacing) {

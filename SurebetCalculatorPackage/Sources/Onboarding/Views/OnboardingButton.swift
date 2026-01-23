@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct OnboardingButton: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: OnboardingViewModel
+
+    // MARK: - Body
 
     var body: some View {
         Button(action: action) {
@@ -10,20 +14,23 @@ struct OnboardingButton: View {
     }
 }
 
+// MARK: - Private Methods
+
 private extension OnboardingButton {
     var text: String {
-        let firstPage = 0
+        let firstPage = OnboardingConstants.firstPageIndex
         let lastPage = viewModel.pages.index(before: viewModel.pages.endIndex)
         if viewModel.currentPage == firstPage {
-            return "More details"
+            return String(localized: "More details")
         }
         if viewModel.currentPage == lastPage {
-            return "Close"
+            return String(localized: "Close")
         }
-        return "Next"
+        return String(localized: "Next")
     }
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var cornerRadius: CGFloat { iPad ? 18 : 12 }
+    var cornerRadius: CGFloat {
+        isIPad ? OnboardingConstants.cornerRadiusExtraLarge : OnboardingConstants.cornerRadiusMedium
+    }
 
     func action() {
         viewModel.send(.setCurrentPage(viewModel.currentPage + 1))

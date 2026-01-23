@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct OnboardingTabView: View {
+    // MARK: - Properties
+
     @EnvironmentObject private var viewModel: OnboardingViewModel
+
+    // MARK: - Body
 
     var body: some View {
         TabView(selection: selection) {
@@ -15,6 +19,8 @@ struct OnboardingTabView: View {
         .transition(.move(edge: .trailing))
     }
 }
+
+// MARK: - Private Computed Properties
 
 private extension OnboardingTabView {
     var selection: Binding<Int> {

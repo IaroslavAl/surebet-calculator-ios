@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct OnboardingPage: Identifiable {
+struct OnboardingPage: Identifiable, Sendable {
     let image: String
     let description: String
 
@@ -16,17 +16,16 @@ struct OnboardingPage: Identifiable {
 }
 
 private extension OnboardingPage {
-    static var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    static var image1: String { iPad ? "iPad1" : "iPhone1" }
-    static var image2: String { iPad ? "iPad2" : "iPhone2" }
-    static var image3: String { iPad ? "iPad3" : "iPhone3" }
+    static var image1: String { Device.isIPadUnsafe ? "iPad1" : "iPhone1" }
+    static var image2: String { Device.isIPadUnsafe ? "iPad2" : "iPhone2" }
+    static var image3: String { Device.isIPadUnsafe ? "iPad3" : "iPhone3" }
     static var description1: String {
-        "Calculate by inputting the total bet amount and coefficients for all outcomes."
+        String(localized: "Calculate by inputting the total bet amount and coefficients for all outcomes.")
     }
     static var description2: String {
-        "Input the bet size for a single outcome and coefficients for all outcomes to calculate."
+        String(localized: "Input the bet size for a single outcome and coefficients for all outcomes to calculate.")
     }
     static var description3: String {
-        "Enter the bet amount and coefficients for all outcomes after deactivating all switches."
+        String(localized: "Enter the bet amount and coefficients for all outcomes after deactivating all switches.")
     }
 }
