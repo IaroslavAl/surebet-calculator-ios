@@ -57,9 +57,9 @@
 - `SurebetCalculatorPackage/Sources/Onboarding/ViewModels/OnboardingViewModel.swift`
 
 **Задачи:**
-- [ ] Добавить `@MainActor` к `SurebetCalculatorViewModel`
-- [ ] Добавить `@MainActor` к `OnboardingViewModel`
-- [ ] Проверить все места использования ViewModel на корректность работы с MainActor
+- [x] Добавить `@MainActor` к `SurebetCalculatorViewModel`
+- [x] Добавить `@MainActor` к `OnboardingViewModel`
+- [x] Проверить все места использования ViewModel на корректность работы с MainActor
 
 ---
 
@@ -330,7 +330,7 @@
 |------|--------|-----------|-----------|--------|
 | 1.1 | Обновление Swift до 6.0 | High | Легко | ✅ |
 | 1.2 | Миграция на Swift 6 Concurrency | High | Средне | ✅ |
-| 1.3 | Добавление @MainActor к ViewModel | High | Легко | ⬜ |
+| 1.3 | Добавление @MainActor к ViewModel | High | Легко | ✅ |
 | 1.4 | Устранение небезопасных типов | High | Средне | ⬜ |
 | 1.5 | Исправление нарушений архитектуры | High | Сложно | ⬜ |
 | 1.6 | Проверка Sendable конформности | Medium | Средне | ⬜ |

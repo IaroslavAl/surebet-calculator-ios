@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 final class SurebetCalculatorViewModel: ObservableObject {
     @Published private(set) var total: TotalRow
     @Published private(set) var rows: [Row]

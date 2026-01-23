@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 final class OnboardingViewModel: ObservableObject {
     @Published private(set) var currentPage: Int
     @Published private(set) var onboardingIsShown: Bool
