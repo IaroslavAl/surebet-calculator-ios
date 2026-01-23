@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 enum BannerError: Error, Sendable {
     case bannerNotFound
@@ -32,31 +33,31 @@ struct Service: BannerService, @unchecked Sendable {
     // MARK: - Public Methods
 
     func fetchBannerAndImage() async throws {
-        print("[Service] Запрос баннера и картинки начат")
+        BannerLogger.service.debug("Запрос баннера и картинки начат")
 
         do {
             let banner = try await fetchBanner()
 
             guard !banner.imageURL.absoluteString.isEmpty else {
-                print("[Service] Баннер содержит пустой imageURL — очищаем кэш")
+                BannerLogger.service.error("Баннер содержит пустой imageURL — очищаем кэш")
                 clearAllBannerData()
                 throw BannerError.invalidImageURL
             }
 
             let storedImageURL = getStoredBannerImageURL()
-            print("[Service] Текущий URL сохранённой картинки: \(storedImageURL?.absoluteString ?? "nil")")
-            print("[Service] URL картинки из баннера: \(banner.imageURL.absoluteString)")
+            BannerLogger.service.debug("Текущий URL сохранённой картинки: \(storedImageURL?.absoluteString ?? "nil", privacy: .public)")
+            BannerLogger.service.debug("URL картинки из баннера: \(banner.imageURL.absoluteString, privacy: .public)")
 
             if storedImageURL != banner.imageURL || getStoredBannerImageData() == nil {
-                print("[Service] URL изменился, отсутствует или нет данных — скачиваем новую картинку…")
+                BannerLogger.service.debug("URL изменился, отсутствует или нет данных — скачиваем новую картинку…")
                 try await downloadImage(from: banner.imageURL)
             } else {
-                print("[Service] URL совпадает и данные есть — скачивание картинки не требуется")
+                BannerLogger.service.debug("URL совпадает и данные есть — скачивание картинки не требуется")
             }
 
-            print("[Service] Запрос баннера и картинки завершён")
+            BannerLogger.service.info("Запрос баннера и картинки завершён")
         } catch {
-            print("[Service] Ошибка загрузки: \(error). Очищаем кэш баннера и картинки")
+            BannerLogger.service.error("Ошибка загрузки: \(error.localizedDescription, privacy: .public). Очищаем кэш баннера и картинки")
             clearAllBannerData()
             throw error
         }
@@ -64,27 +65,27 @@ struct Service: BannerService, @unchecked Sendable {
 
     func fetchBanner() async throws -> BannerModel {
         let url = baseURL.appendingPathComponent("banner")
-        print("[Service] Отправляем GET \(url.absoluteString)")
+        BannerLogger.service.debug("Отправляем GET \(url.absoluteString, privacy: .public)")
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.timeoutInterval = BannerConstants.requestTimeout
 
         let (data, response) = try await session.data(for: request)
-        print("[Service] Получен ответ на баннер")
+        BannerLogger.service.debug("Получен ответ на баннер")
 
         guard let httpResponse = response as? HTTPURLResponse else {
-            print("[Service] Ошибка: ответ не HTTPURLResponse")
+            BannerLogger.service.error("Ошибка: ответ не HTTPURLResponse")
             throw URLError(.badServerResponse)
         }
 
         guard (200..<300).contains(httpResponse.statusCode) else {
-            print("[Service] Ошибка: код \(httpResponse.statusCode)")
+            BannerLogger.service.error("Ошибка: код \(httpResponse.statusCode)")
             throw URLError(.badServerResponse)
         }
 
         guard !data.isEmpty else {
-            print("[Service] Ответ пустой — баннер отсутствует. Очищаем кэш")
+            BannerLogger.service.warning("Ответ пустой — баннер отсутствует. Очищаем кэш")
             clearAllBannerData()
             throw BannerError.bannerNotFound
         }
@@ -92,109 +93,109 @@ struct Service: BannerService, @unchecked Sendable {
         let decoder = JSONDecoder()
         let banner = try decoder.decode(BannerModel.self, from: data)
 
-        print("[Service] Баннер успешно декодирован: \(banner)")
+        BannerLogger.service.info("Баннер успешно декодирован")
         saveBannerToDefaults(banner)
 
         return banner
     }
 
     func saveBannerToDefaults(_ banner: BannerModel) {
-        print("[Service] Сохранение баннера в UserDefaults…")
+        BannerLogger.service.debug("Сохранение баннера в UserDefaults…")
         let encoder = JSONEncoder()
         if let data = try? encoder.encode(banner) {
             defaults.set(data, forKey: UserDefaultsKeys.banner)
-            print("[Service] Баннер сохранён")
+            BannerLogger.service.debug("Баннер сохранён")
         } else {
-            print("[Service] Не удалось закодировать баннер")
+            BannerLogger.service.error("Не удалось закодировать баннер")
         }
     }
 
     func getBannerFromDefaults() -> BannerModel? {
-        print("[Service] Чтение баннера из UserDefaults")
+        BannerLogger.service.debug("Чтение баннера из UserDefaults")
         guard let data = defaults.data(forKey: UserDefaultsKeys.banner) else {
-            print("[Service] Баннер не найден в UserDefaults")
+            BannerLogger.service.debug("Баннер не найден в UserDefaults")
             return nil
         }
 
         let decoder = JSONDecoder()
         let banner = try? decoder.decode(BannerModel.self, from: data)
-        print("[Service] Прочитанный баннер: \(String(describing: banner))")
+        BannerLogger.service.debug("Прочитанный баннер: \(banner != nil ? "найден" : "не найден", privacy: .public)")
         return banner
     }
 
     func clearBannerFromDefaults() {
-        print("[Service] Удаление баннера из UserDefaults")
+        BannerLogger.service.debug("Удаление баннера из UserDefaults")
         defaults.removeObject(forKey: UserDefaultsKeys.banner)
     }
 
     func downloadImage(from url: URL) async throws {
-        print("[Service] Скачивание картинки: \(url.absoluteString)")
+        BannerLogger.service.debug("Скачивание картинки: \(url.absoluteString, privacy: .public)")
         let (data, response) = try await session.data(from: url)
 
         guard let httpResponse = response as? HTTPURLResponse else {
-            print("[Service] Ошибка: ответ не HTTPURLResponse")
+            BannerLogger.service.error("Ошибка: ответ не HTTPURLResponse")
             throw URLError(.badServerResponse)
         }
 
         guard (200..<300).contains(httpResponse.statusCode) else {
-            print("[Service] Ошибка скачивания: код \(httpResponse.statusCode)")
+            BannerLogger.service.error("Ошибка скачивания: код \(httpResponse.statusCode)")
             throw URLError(.badServerResponse)
         }
 
         guard !data.isEmpty else {
-            print("[Service] Получены пустые данные изображения — очищаем кэш")
+            BannerLogger.service.warning("Получены пустые данные изображения — очищаем кэш")
             clearAllBannerData()
             throw URLError(.cannotDecodeContentData)
         }
 
         saveBannerImageData(data, imageURL: url)
-        print("[Service] Картинка успешно скачана и сохранена")
+        BannerLogger.service.info("Картинка успешно скачана и сохранена")
     }
 
     func saveBannerImageData(_ data: Data, imageURL: URL) {
-        print("[Service] Сохранение картинки и URL в UserDefaults")
+        BannerLogger.service.debug("Сохранение картинки и URL в UserDefaults")
         defaults.set(data, forKey: UserDefaultsKeys.bannerImageData)
         defaults.set(imageURL.absoluteString, forKey: UserDefaultsKeys.bannerImageURLString)
     }
 
     func getStoredBannerImageData() -> Data? {
-        print("[Service] Получение картинки из UserDefaults")
+        BannerLogger.service.debug("Получение картинки из UserDefaults")
         let data = defaults.data(forKey: UserDefaultsKeys.bannerImageData)
-        print("[Service] Картинка найдена: \(data != nil)")
+        BannerLogger.service.debug("Картинка найдена: \(data != nil, privacy: .public)")
         return data
     }
 
     func getStoredBannerImageURL() -> URL? {
-        print("[Service] Получение URL картинки из UserDefaults")
+        BannerLogger.service.debug("Получение URL картинки из UserDefaults")
         guard let urlString = defaults.string(forKey: UserDefaultsKeys.bannerImageURLString) else {
-            print("[Service] URL картинки не найден")
+            BannerLogger.service.debug("URL картинки не найден")
             return nil
         }
         let url = URL(string: urlString)
-        print("[Service] URL картинки: \(url?.absoluteString ?? "nil")")
+        BannerLogger.service.debug("URL картинки: \(url?.absoluteString ?? "nil", privacy: .public)")
         return url
     }
 
     func isBannerFullyCached() -> Bool {
-        print("[Service] Проверка полного кэша баннера и картинки")
+        BannerLogger.service.debug("Проверка полного кэша баннера и картинки")
         guard getBannerFromDefaults() != nil else {
-            print("[Service] Баннер отсутствует в кэше")
+            BannerLogger.service.debug("Баннер отсутствует в кэше")
             return false
         }
 
         guard getStoredBannerImageData() != nil else {
-            print("[Service] Картинка отсутствует в кэше")
+            BannerLogger.service.debug("Картинка отсутствует в кэше")
             return false
         }
 
-        print("[Service] Кэш баннера и картинки полный")
+        BannerLogger.service.debug("Кэш баннера и картинки полный")
         return true
     }
 
     // MARK: - Private Methods
 
     private func clearAllBannerData() {
-        print("[Service] Полная очистка данных баннера и картинки из UserDefaults")
+        BannerLogger.service.debug("Полная очистка данных баннера и картинки из UserDefaults")
         defaults.removeObject(forKey: UserDefaultsKeys.banner)
         defaults.removeObject(forKey: UserDefaultsKeys.bannerImageData)
         defaults.removeObject(forKey: UserDefaultsKeys.bannerImageURLString)

@@ -26,12 +26,10 @@ public enum Banner {
     }
 
     public static var isBannerFullyCached: Bool {
-        print("<< \(Service().isBannerFullyCached())")
-        return Service().isBannerFullyCached()
+        Service().isBannerFullyCached()
     }
 
     public static func isBannerFullyCached(service: BannerService) -> Bool {
-        print("<< \(service.isBannerFullyCached())")
-        return service.isBannerFullyCached()
+        service.isBannerFullyCached()
     }
 }

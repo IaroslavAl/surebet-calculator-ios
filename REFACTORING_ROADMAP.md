@@ -376,14 +376,15 @@
 **Приоритет:** Medium  
 **Сложность:** Легко  
 **Файлы:**
-- `SurebetCalculatorPackage/Sources/Banner/Service.swift` (35 принтов)
-- `SurebetCalculatorPackage/Sources/Banner/Banner.swift` (2 принта)
+- `SurebetCalculatorPackage/Sources/Banner/Service.swift` (35 принтов → заменены на Logger)
+- `SurebetCalculatorPackage/Sources/Banner/Banner.swift` (2 принта → удалены)
+- `SurebetCalculatorPackage/Sources/Banner/BannerLogger.swift` (создан)
 
 **Задачи:**
-- [ ] Найти все вызовы `print()` в проекте (найдено 39 вхождений)
-- [ ] Заменить на систему логирования (Logger из OSLog) или удалить, если не нужны
-- [ ] Убедиться, что отладочная информация не попадает в production
-- [ ] Проверить, что после удаления принтов не потеряна важная информация для отладки
+- [x] Найти все вызовы `print()` в проекте (найдено 37 вхождений в коде)
+- [x] Заменить на систему логирования (Logger из OSLog) или удалить, если не нужны
+- [x] Убедиться, что отладочная информация не попадает в production
+- [x] Проверить, что после удаления принтов не потеряна важная информация для отладки
 
 **Рекомендация:** Использовать `Logger` из `import OSLog` для production-ready логирования с уровнями (debug, info, error).
 
@@ -436,7 +437,7 @@
 | 3.6 | Удаление закомментированного кода | Low | Легко | ✅ |
 | 3.7 | Исправление Info.plist | Low | Легко | ✅ |
 | 3.8 | Добавление Preview макросов | Low | Легко | ✅ |
-| 3.9 | Удаление всех print() вызовов | Medium | Легко | ⏳ |
+| 3.9 | Удаление всех print() вызовов | Medium | Легко | ✅ |
 | 3.10 | Исправление всех ворнингов | High | Средне | ⏳ |
 
 ---
