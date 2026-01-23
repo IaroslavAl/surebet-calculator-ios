@@ -745,4 +745,166 @@ struct SurebetCalculatorViewModelTests {
         #expect(viewModel.selectedRow == .row(0))
         #expect(viewModel.selectedNumberOfRows == .two)
     }
+
+    // MARK: - Concurrency Tests
+
+    @Test
+    func mainActorIsolation() async {
+        // Given
+        let viewModel = SurebetCalculatorViewModel()
+
+        // When & Then
+        // Проверяем, что методы ViewModel выполняются на MainActor
+        await MainActor.run {
+            viewModel.send(.selectRow(.row(0)))
+            #expect(viewModel.selectedRow == .row(0))
+        }
+
+        // Проверяем доступ к @Published свойствам из MainActor контекста
+        await MainActor.run {
+            _ = viewModel.total
+            _ = viewModel.rows
+            _ = viewModel.selectedNumberOfRows
+            _ = viewModel.selectedRow
+            _ = viewModel.focus
+        }
+    }
+
+    @Test
+    func concurrentSendCalls() async {
+        // Given
+        let viewModel = SurebetCalculatorViewModel()
+        let iterations = 100
+
+        // When
+        // Выполняем множество параллельных вызовов send()
+        await withTaskGroup(of: Void.self) { group in
+            for index in 0..<iterations {
+                group.addTask {
+                    await MainActor.run {
+                        viewModel.send(.setTextFieldText(.rowCoefficient(index % 4), "\(index)"))
+                    }
+                }
+            }
+        }
+
+        // Then
+        // Проверяем, что состояние корректно (не должно быть крашей)
+        // Все строки должны иметь валидные значения коэффициентов
+        await MainActor.run {
+            for index in 0..<4 {
+                let coefficient = viewModel.rows[index].coefficient
+                // Коэффициент должен быть либо пустым, либо валидным числом
+                #expect(coefficient.isEmpty || Double(coefficient.replacingOccurrences(of: ",", with: ".")) != nil)
+            }
+        }
+    }
+
+    @Test
+    func concurrentAddAndRemoveRow() async {
+        // Given
+        let viewModel = SurebetCalculatorViewModel(selectedNumberOfRows: .five)
+        let iterations = 50
+
+        // When
+        // Параллельно добавляем и удаляем строки
+        await withTaskGroup(of: Void.self) { group in
+            for index in 0..<iterations {
+                if index % 2 == 0 {
+                    group.addTask {
+                        await MainActor.run {
+                            viewModel.send(.addRow)
+                        }
+                    }
+                } else {
+                    group.addTask {
+                        await MainActor.run {
+                            viewModel.send(.removeRow)
+                        }
+                    }
+                }
+            }
+        }
+
+        // Then
+        // Проверяем, что количество строк в допустимых пределах
+        await MainActor.run {
+            #expect(viewModel.selectedNumberOfRows.rawValue >= 2)
+            #expect(viewModel.selectedNumberOfRows.rawValue <= 10)
+        }
+    }
+
+    @Test
+    func concurrentSelectRow() async {
+        // Given
+        let viewModel = SurebetCalculatorViewModel()
+        let rowTypes: [RowType] = [.total, .row(0), .row(1), .row(2), .row(3)]
+
+        // When
+        // Параллельно выбираем разные строки
+        await withTaskGroup(of: Void.self) { group in
+            for rowType in rowTypes {
+                for _ in 0..<20 {
+                    group.addTask {
+                        await MainActor.run {
+                            viewModel.send(.selectRow(rowType))
+                        }
+                    }
+                }
+            }
+        }
+
+        // Then
+        // Проверяем, что состояние корректно (selectedRow должен быть одним из валидных значений)
+        await MainActor.run {
+            if let selected = viewModel.selectedRow {
+                #expect(rowTypes.contains(selected) || selected == .none)
+            }
+        }
+    }
+
+    @Test
+    func publishedPropertiesUpdateOnMainActor() async {
+        // Given
+        let viewModel = SurebetCalculatorViewModel()
+
+        // When
+        await MainActor.run {
+            viewModel.send(.setTextFieldText(.totalBetSize, "1000"))
+            viewModel.send(.selectRow(.row(0)))
+        }
+
+        // Then
+        // Проверяем, что @Published свойства обновились корректно
+        await MainActor.run {
+            #expect(viewModel.total.betSize == "1000")
+            #expect(viewModel.selectedRow == .row(0))
+            #expect(viewModel.rows[0].isON)
+        }
+    }
+
+    @Test
+    func rapidSequentialActions() async {
+        // Given
+        let viewModel = SurebetCalculatorViewModel()
+
+        // When
+        // Быстрые последовательные вызовы без задержек
+        await MainActor.run {
+            for index in 0..<10 {
+                viewModel.send(.setTextFieldText(.rowCoefficient(index % 4), "\(index + 1)"))
+                viewModel.send(.setTextFieldText(.rowBetSize(index % 4), "\(index * 100)"))
+            }
+            viewModel.send(.selectRow(.total))
+            viewModel.send(.setTextFieldText(.totalBetSize, "5000"))
+        }
+
+        // Then
+        // Проверяем, что финальное состояние корректно
+        await MainActor.run {
+            #expect(viewModel.total.betSize == "5000")
+            #expect(viewModel.selectedRow == .total)
+            #expect(viewModel.total.isON)
+        }
+    }
 }
