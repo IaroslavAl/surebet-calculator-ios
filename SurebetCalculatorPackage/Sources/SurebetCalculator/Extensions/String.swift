@@ -4,7 +4,7 @@ public extension String {
     func formatToDouble() -> Double? {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.locale = Locale.current
+        formatter.locale = Locale(identifier: "ru_RU")
         if let formattedValue = formatter.number(from: self) {
             return formattedValue.doubleValue
         }

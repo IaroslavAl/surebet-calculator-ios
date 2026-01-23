@@ -1,8 +1,10 @@
 @testable import Onboarding
-import XCTest
+import Testing
 
-final class OnboardingViewModelTests: XCTestCase {
-    func testSetCurrentPage() {
+@MainActor
+struct OnboardingViewModelTests {
+    @Test
+    func setCurrentPage() {
         // Given
         let viewModel = OnboardingViewModel()
 
@@ -10,10 +12,11 @@ final class OnboardingViewModelTests: XCTestCase {
         viewModel.send(.setCurrentPage(1))
 
         // Then
-        XCTAssertEqual(viewModel.currentPage, 1)
+        #expect(viewModel.currentPage == 1)
     }
 
-    func testSetCurrentPageWhenCurrentPageIsOutOfRange() {
+    @Test
+    func setCurrentPageWhenCurrentPageIsOutOfRange() {
         // Given
         let viewModel = OnboardingViewModel()
 
@@ -21,11 +24,12 @@ final class OnboardingViewModelTests: XCTestCase {
         viewModel.send(.setCurrentPage(100))
 
         // Then
-        XCTAssertEqual(viewModel.currentPage, 0)
-        XCTAssert(viewModel.onboardingIsShown)
+        #expect(viewModel.currentPage == 0)
+        #expect(viewModel.onboardingIsShown)
     }
 
-    func testDismiss() {
+    @Test
+    func dismiss() {
         // Given
         let viewModel = OnboardingViewModel()
 
@@ -33,6 +37,6 @@ final class OnboardingViewModelTests: XCTestCase {
         viewModel.send(.dismiss)
 
         // Then
-        XCTAssert(viewModel.onboardingIsShown)
+        #expect(viewModel.onboardingIsShown)
     }
 }

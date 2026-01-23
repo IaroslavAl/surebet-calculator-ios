@@ -29,7 +29,10 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:surebet-calculator.xctestplan"
+            reference = "container:surebet-calculator.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:SurebetCalculatorPackage/Tests/surebet-calculator.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>
