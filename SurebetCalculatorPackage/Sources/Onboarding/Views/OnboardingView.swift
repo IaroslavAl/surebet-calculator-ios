@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 struct OnboardingView: View {
     // MARK: - Properties
 

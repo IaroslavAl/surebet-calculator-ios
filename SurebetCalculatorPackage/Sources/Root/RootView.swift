@@ -3,6 +3,7 @@ import Onboarding
 import SurebetCalculator
 import SwiftUI
 
+@MainActor
 struct RootView: View {
     // MARK: - Properties
 
