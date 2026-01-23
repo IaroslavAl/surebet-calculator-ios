@@ -215,36 +215,36 @@ func example() {
 ### Phase 3: ViewModels
 
 #### 3.1 RootViewModel
-- [ ] Создать моки: `MockAnalyticsService`, `MockReviewService`
-- [ ] Тест `shouldShowOnboarding` — проверка флага `onboardingIsShown`
-- [ ] Тест `shouldShowOnboardingWithAnimation` — проверка анимации
-- [ ] Тест `isOnboardingShown` — получение состояния
-- [ ] Тест `onAppear()` — увеличение `numberOfOpenings`
-- [ ] Тест `showOnboardingView()` — установка `isAnimation = true`
-- [ ] Тест `showFullscreenBanner()` — показ баннера при выполнении условий
-- [ ] Тест `fullscreenBannerIsAvailable` — проверка условий (onboarding shown, review shown, openings % 3 == 0)
-- [ ] Тест `showRequestReview()` — показ запроса отзыва
-  - [ ] Когда `requestReviewWasShown == false`
-  - [ ] Когда `numberOfOpenings >= 2`
-  - [ ] Когда `onboardingIsShown == true`
-  - [ ] Проверка задержки
-  - [ ] DEBUG режим (не должен показывать)
-- [ ] Тест `handleReviewNo()` — обработка отказа
-  - [ ] Закрытие alert
-  - [ ] Логирование аналитики с `enjoying_calculator: false`
-- [ ] Тест `handleReviewYes()` — обработка согласия
-  - [ ] Закрытие alert
-  - [ ] Вызов `reviewService.requestReview()`
-  - [ ] Логирование аналитики с `enjoying_calculator: true`
-- [ ] Тест `updateOnboardingShown()` — обновление состояния onboarding
-- [ ] Тест `requestReviewTitle` — локализованный заголовок
+- [x] Создать моки: `MockAnalyticsService`, `MockReviewService`
+- [x] Тест `shouldShowOnboarding` — проверка флага `onboardingIsShown`
+- [x] Тест `shouldShowOnboardingWithAnimation` — проверка анимации
+- [x] Тест `isOnboardingShown` — получение состояния
+- [x] Тест `onAppear()` — увеличение `numberOfOpenings`
+- [x] Тест `showOnboardingView()` — установка `isAnimation = true`
+- [x] Тест `showFullscreenBanner()` — показ баннера при выполнении условий
+- [x] Тест `fullscreenBannerIsAvailable` — проверка условий (onboarding shown, review shown, openings % 3 == 0)
+- [x] Тест `showRequestReview()` — показ запроса отзыва
+  - [x] Когда `requestReviewWasShown == false`
+  - [x] Когда `numberOfOpenings >= 2`
+  - [x] Когда `onboardingIsShown == true`
+  - [x] Проверка задержки
+  - [x] DEBUG режим (не должен показывать)
+- [x] Тест `handleReviewNo()` — обработка отказа
+  - [x] Закрытие alert
+  - [x] Логирование аналитики с `enjoying_calculator: false`
+- [x] Тест `handleReviewYes()` — обработка согласия
+  - [x] Закрытие alert
+  - [x] Вызов `reviewService.requestReview()`
+  - [x] Логирование аналитики с `enjoying_calculator: true`
+- [x] Тест `updateOnboardingShown()` — обновление состояния onboarding
+- [x] Тест `requestReviewTitle` — локализованный заголовок
 
 #### 3.2 OnboardingViewModel (дополнительные тесты)
-- [ ] Edge cases для `setCurrentPage()`
-  - [ ] Отрицательные значения
-  - [ ] Значения больше максимального
-  - [ ] Граничные значения (0, max)
-- [ ] Тест `dismiss()` — проверка установки `onboardingIsShown = true`
+- [x] Edge cases для `setCurrentPage()`
+  - [x] Отрицательные значения
+  - [x] Значения больше максимального
+  - [x] Граничные значения (0, max)
+- [x] Тест `dismiss()` — проверка установки `onboardingIsShown = true`
 
 ### Phase 4: Integration Tests
 
