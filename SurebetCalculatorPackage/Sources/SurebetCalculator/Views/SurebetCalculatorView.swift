@@ -129,12 +129,11 @@ private extension SurebetCalculatorView {
 
 private extension SurebetCalculatorView {
     var navigationTitle: String { String(localized: "Surebet calculator") }
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var spacing: CGFloat { iPad ? AppConstants.Layout.Padding.extraLarge : AppConstants.Layout.Padding.large }
-    var rowsSpacing: CGFloat { iPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
-    var horizontalPadding: CGFloat { iPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
-    var font: Font { iPad ? .title : .body }
-    var buttonFont: Font { iPad ? .largeTitle : .title }
+    var spacing: CGFloat { isIPad ? AppConstants.Layout.Padding.extraLarge : AppConstants.Layout.Padding.large }
+    var rowsSpacing: CGFloat { isIPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
+    var horizontalPadding: CGFloat { isIPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
+    var font: Font { isIPad ? .title : .body }
+    var buttonFont: Font { isIPad ? .largeTitle : .title }
 }
 
 #Preview {

@@ -28,9 +28,8 @@ private extension OnboardingButton {
         }
         return String(localized: "Next")
     }
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
     var cornerRadius: CGFloat {
-        iPad ? OnboardingConstants.cornerRadiusExtraLarge : OnboardingConstants.cornerRadiusMedium
+        isIPad ? OnboardingConstants.cornerRadiusExtraLarge : OnboardingConstants.cornerRadiusMedium
     }
 
     func action() {

@@ -24,15 +24,14 @@ struct OnboardingIndex: View {
 // MARK: - Private Methods
 
 private extension OnboardingIndex {
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var spacing: CGFloat { iPad ? OnboardingConstants.paddingMedium : OnboardingConstants.paddingSmall }
-    var padding: CGFloat { iPad ? OnboardingConstants.paddingExtraExtraLarge : OnboardingConstants.paddingExtraLarge }
+    var spacing: CGFloat { isIPad ? OnboardingConstants.paddingMedium : OnboardingConstants.paddingSmall }
+    var padding: CGFloat { isIPad ? OnboardingConstants.paddingExtraExtraLarge : OnboardingConstants.paddingExtraLarge }
 
     func size(_ index: Int) -> CGFloat {
         if index == viewModel.currentPage {
-            iPad ? OnboardingConstants.cornerRadiusExtraLarge : OnboardingConstants.cornerRadiusMedium
+            isIPad ? OnboardingConstants.cornerRadiusExtraLarge : OnboardingConstants.cornerRadiusMedium
         } else {
-            iPad ? OnboardingConstants.cornerRadiusMedium : OnboardingConstants.paddingSmall
+            isIPad ? OnboardingConstants.cornerRadiusMedium : OnboardingConstants.paddingSmall
         }
     }
 

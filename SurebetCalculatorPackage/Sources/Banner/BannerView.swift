@@ -57,8 +57,7 @@ private extension BannerView {
         AnalyticsManager.log(name: "CloseBanner")
     }
 
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var cornerRadius: CGFloat { iPad ? 15 : 10 }
+    var cornerRadius: CGFloat { isIPad ? 15 : 10 }
 
     func openURL(_ url: String) {
         if let url = URL(string: url) {
@@ -67,7 +66,7 @@ private extension BannerView {
     }
 
     var url: String {
-        if iPad {
+        if isIPad {
             "https://affiliates.rebelbetting.com/accounts/default1/banners/1ab8d504.jpg"
         } else {
             "https://affiliates.rebelbetting.com/accounts/default1/banners/c3ecdf4b.gif"

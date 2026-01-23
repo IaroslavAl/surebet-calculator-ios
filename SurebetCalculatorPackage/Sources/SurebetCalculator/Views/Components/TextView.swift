@@ -23,9 +23,8 @@ struct TextView: View {
 
 private extension TextView {
     var textPadding: CGFloat { AppConstants.Layout.Padding.small }
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var frameHeight: CGFloat { iPad ? AppConstants.Layout.Heights.regular : AppConstants.Layout.Heights.compact }
-    var cornerRadius: CGFloat { iPad ? AppConstants.Layout.CornerRadius.large : AppConstants.Layout.CornerRadius.small }
+    var frameHeight: CGFloat { isIPad ? AppConstants.Layout.Heights.regular : AppConstants.Layout.Heights.compact }
+    var cornerRadius: CGFloat { isIPad ? AppConstants.Layout.CornerRadius.large : AppConstants.Layout.CornerRadius.small }
     var color: Color { text.isNumberNotNegative() ? .green : .red }
 }
 

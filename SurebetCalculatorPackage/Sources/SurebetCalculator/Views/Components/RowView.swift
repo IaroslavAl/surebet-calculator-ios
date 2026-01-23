@@ -27,8 +27,7 @@ private extension RowView {
     var coefficientText: String { String(localized: "Coefficient") }
     var betSizeText: String { String(localized: "Bet size") }
     var incomeText: String { String(localized: "Income") }
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
-    var spacing: CGFloat { iPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
+    var spacing: CGFloat { isIPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
 
     var betSize: some View {
         VStack(spacing: spacing) {

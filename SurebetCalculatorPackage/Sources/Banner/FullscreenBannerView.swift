@@ -87,9 +87,8 @@ private extension FullscreenBannerView {
         }
     }
 
-    var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
     var cornerRadius: CGFloat {
-        iPad ? BannerConstants.fullscreenBannerCornerRadiusiPad : BannerConstants.fullscreenBannerCornerRadiusiPhone
+        isIPad ? BannerConstants.fullscreenBannerCornerRadiusiPad : BannerConstants.fullscreenBannerCornerRadiusiPhone
     }
     var url: String { BannerConstants.bannerFallbackURL }
 
