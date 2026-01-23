@@ -120,4 +120,93 @@ struct IntegrationTests {
         // Проверяем, что RootViewModel готов показать калькулятор
         #expect(rootViewModel.isOnboardingShown == true)
     }
+
+    // MARK: - Services Integration
+
+    /// Тест сквозной аналитики: RootViewModel -> AnalyticsService
+    @Test
+    func analyticsIntegrationWhenReviewNo() {
+        // Given
+        clearTestUserDefaults()
+        let mockAnalytics = MockAnalyticsService()
+        let rootViewModel = RootViewModel(analyticsService: mockAnalytics)
+
+        // When
+        rootViewModel.handleReviewNo()
+
+        // Then
+        #expect(mockAnalytics.logCallCount == 1)
+        #expect(mockAnalytics.lastEventName == "RequestReview")
+        if let params = mockAnalytics.lastParameters,
+           case .bool(let value) = params["enjoying_calculator"] {
+            #expect(value == false)
+        } else {
+            Issue.record("enjoying_calculator should be bool(false)")
+        }
+    }
+
+    /// Тест сквозной аналитики: RootViewModel -> AnalyticsService при согласии на отзыв
+    @Test
+    func analyticsIntegrationWhenReviewYes() async {
+        // Given
+        clearTestUserDefaults()
+        let mockAnalytics = MockAnalyticsService()
+        let rootViewModel = RootViewModel(analyticsService: mockAnalytics)
+
+        // When
+        await rootViewModel.handleReviewYes()
+
+        // Then
+        #expect(mockAnalytics.logCallCount == 1)
+        #expect(mockAnalytics.lastEventName == "RequestReview")
+        if let params = mockAnalytics.lastParameters,
+           case .bool(let value) = params["enjoying_calculator"] {
+            #expect(value == true)
+        } else {
+            Issue.record("enjoying_calculator should be bool(true)")
+        }
+    }
+
+    /// Тест бизнес-правила: 3 запуска приложения -> ReviewService.requestReview()
+    @Test
+    func reviewServiceTriggerAfterThreeOpenings() async {
+        // Given
+        clearTestUserDefaults()
+        let mockReview = MockReviewService()
+        let rootViewModel = RootViewModel(reviewService: mockReview)
+
+        // Устанавливаем начальные условия
+        rootViewModel.updateOnboardingShown(true)
+        UserDefaults.standard.set(true, forKey: "1.7.0") // requestReviewWasShown = true
+
+        // When
+        // Симулируем 3 запуска приложения
+        rootViewModel.onAppear() // 1
+        rootViewModel.onAppear() // 2
+        rootViewModel.onAppear() // 3
+
+        // Then
+        // Проверяем, что fullscreenBannerIsAvailable == true (numberOfOpenings % 3 == 0)
+        #expect(rootViewModel.fullscreenBannerIsAvailable == true)
+
+        // Проверяем, что при вызове handleReviewYes ReviewService вызывается
+        await rootViewModel.handleReviewYes()
+        #expect(mockReview.requestReviewCallCount == 1)
+    }
+
+    /// Тест бизнес-правила: ReviewService вызывается при handleReviewYes
+    @Test
+    func reviewServiceCalledWhenHandleReviewYes() async {
+        // Given
+        clearTestUserDefaults()
+        let mockReview = MockReviewService()
+        let rootViewModel = RootViewModel(reviewService: mockReview)
+
+        // When
+        await rootViewModel.handleReviewYes()
+
+        // Then
+        #expect(mockReview.requestReviewCallCount == 1)
+        #expect(mockReview.lastRequestReviewTime != nil)
+    }
 }
