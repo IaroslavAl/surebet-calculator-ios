@@ -15,12 +15,12 @@ private extension OnboardingButton {
         let firstPage = 0
         let lastPage = viewModel.pages.index(before: viewModel.pages.endIndex)
         if viewModel.currentPage == firstPage {
-            return "More details"
+            return String(localized: "More details")
         }
         if viewModel.currentPage == lastPage {
-            return "Close"
+            return String(localized: "Close")
         }
-        return "Next"
+        return String(localized: "Next")
     }
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
     var cornerRadius: CGFloat { iPad ? 18 : 12 }

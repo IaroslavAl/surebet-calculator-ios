@@ -7,7 +7,7 @@ struct KeyboardClearButton: View {
         Button {
             viewModel.send(.clearFocusableField)
         } label: {
-            Text("Clear")
+            Text(String(localized: "Clear"))
                 .foregroundColor(.red)
         }
     }

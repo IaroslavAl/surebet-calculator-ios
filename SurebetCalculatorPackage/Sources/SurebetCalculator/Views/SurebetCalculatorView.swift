@@ -120,7 +120,7 @@ private extension SurebetCalculatorView {
 }
 
 private extension SurebetCalculatorView {
-    var navigationTitle: String { "Surebet calculator" }
+    var navigationTitle: String { String(localized: "Surebet calculator") }
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
     var spacing: CGFloat { iPad ? 24 : 16 }
     var rowsSpacing: CGFloat { iPad ? 12 : 8 }

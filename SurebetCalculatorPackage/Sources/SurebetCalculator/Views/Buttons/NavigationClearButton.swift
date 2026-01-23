@@ -8,7 +8,7 @@ struct NavigationClearButton: View {
             viewModel.send(.clearAll)
         } label: {
             Image(systemName: "trash")
-                .accessibilityLabel("Clear all")
+                .accessibilityLabel(String(localized: "Clear all"))
         }
     }
 }

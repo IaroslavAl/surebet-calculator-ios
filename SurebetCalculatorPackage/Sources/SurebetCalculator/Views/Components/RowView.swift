@@ -18,9 +18,9 @@ struct RowView: View {
 }
 
 private extension RowView {
-    var coefficientText: String { "Coefficient" }
-    var betSizeText: String { "Bet size" }
-    var incomeText: String { "Income" }
+    var coefficientText: String { String(localized: "Coefficient") }
+    var betSizeText: String { String(localized: "Bet size") }
+    var incomeText: String { String(localized: "Income") }
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
     var spacing: CGFloat { iPad ? 12 : 8 }
 

@@ -61,7 +61,7 @@ let package = Package(
         ),
         .target(
             name: "Onboarding",
-            resources: [.process("Resources/Assets.xcassets")],
+            resources: [.process("Resources")],
             plugins: [
                 .plugin(
                     name: "SwiftLintBuildToolPlugin",
@@ -91,6 +91,7 @@ let package = Package(
                     package: "appmetrica-sdk-ios"
                 )
             ],
+            resources: [.process("Resources")],
             plugins: [
                 .plugin(
                     name: "SwiftLintBuildToolPlugin",
@@ -103,6 +104,7 @@ let package = Package(
             dependencies: [
                 "Banner",
             ],
+            resources: [.process("Resources")],
             plugins: [
                 .plugin(
                     name: "SwiftLintBuildToolPlugin",

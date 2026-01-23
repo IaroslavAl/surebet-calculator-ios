@@ -9,7 +9,7 @@ struct OnboardingPageView: View {
                 .resizable()
                 .scaledToFit()
                 .padding(.vertical)
-                .accessibilityLabel("Image")
+                .accessibilityLabel(String(localized: "Image"))
             Spacer()
             Text(page.description)
                 .font(.title)

@@ -57,7 +57,7 @@ private extension TextFieldView {
 
 #Preview {
     TextFieldView(
-        placeholder: "Total bet size",
+        placeholder: String(localized: "Total bet size"),
         focusableField: .totalBetSize
     )
     .padding()

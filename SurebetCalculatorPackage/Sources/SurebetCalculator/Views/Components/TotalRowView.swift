@@ -15,9 +15,9 @@ struct TotalRowView: View {
 }
 
 private extension TotalRowView {
-    var betSizeLabel: String { "Total bet size" }
-    var profitPercentageLabel: String { "Profit percentage" }
-    var placeholder: String { "Total bet size" }
+    var betSizeLabel: String { String(localized: "Total bet size") }
+    var profitPercentageLabel: String { String(localized: "Profit percentage") }
+    var placeholder: String { String(localized: "Total bet size") }
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
     var spacing: CGFloat { iPad ? 12 : 8 }
 

@@ -11,7 +11,7 @@ struct KeyboardDoneButton: View {
 }
 
 private extension KeyboardDoneButton {
-    var text: String { "Done" }
+    var text: String { String(localized: "Done") }
 }
 
 #Preview {
