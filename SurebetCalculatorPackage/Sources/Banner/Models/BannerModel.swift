@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct BannerModel: Codable, Sendable {
+public struct BannerModel: Codable, Sendable {
     let id: String
     let title: String
     let body: String

@@ -12,7 +12,7 @@ enum BannerError: Error, Sendable {
     case invalidImageURL
 }
 
-struct Service {
+struct Service: BannerService, @unchecked Sendable {
     private let baseURL = URL(string: "http://api.surebet-calculator.ru")!
     private let session: URLSession
     private let defaults: UserDefaults

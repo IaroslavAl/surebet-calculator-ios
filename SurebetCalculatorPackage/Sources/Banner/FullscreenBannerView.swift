@@ -11,12 +11,18 @@ import AnalyticsManager
 struct FullscreenBannerView: View {
     @Binding var isPresented: Bool
 
-    private let serivce = Service()
+    private let service: BannerService
+
+    @MainActor
+    init(isPresented: Binding<Bool>, service: BannerService = Service()) {
+        self._isPresented = isPresented
+        self.service = service
+    }
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.75)
-            if let imageData = serivce.getStoredBannerImageData(), let uiImage = UIImage(data: imageData) {
+            if let imageData = service.getStoredBannerImageData(), let uiImage = UIImage(data: imageData) {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFit()
@@ -29,14 +35,14 @@ struct FullscreenBannerView: View {
                             .padding(16)
                             .contentShape(.rect)
                             .onTapGesture {
-                                if let banner = serivce.getBannerFromDefaults() {
+                                if let banner = service.getBannerFromDefaults() {
                                     AnalyticsManager.log(name: "ClosedBanner(\(banner.id)")
                                 }
                                 isPresented = false
                             }
                     }
                     .onTapGesture {
-                        if let banner = serivce.getBannerFromDefaults() {
+                        if let banner = service.getBannerFromDefaults() {
                             AnalyticsManager.log(name: "OpenedBanner(\(banner.id)")
                             openURL(banner.actionURL)
                         } else {

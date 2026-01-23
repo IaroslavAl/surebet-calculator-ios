@@ -138,10 +138,10 @@
 - `SurebetCalculatorPackage/Sources/SurebetCalculator/ViewModels/SurebetCalculatorViewModel.swift`
 
 **Задачи:**
-- [ ] Создать протоколы для всех сервисов (BannerService, CalculationService)
-- [ ] Реализовать DI через init во всех зависимостях
-- [ [ ] Убрать прямые вызовы `Service()` в `Banner.swift`
-- [ ] Обновить тесты для использования моков
+- [x] Создать протоколы для всех сервисов (BannerService, CalculationService)
+- [x] Реализовать DI через init во всех зависимостях
+- [x] Убрать прямые вызовы `Service()` в `Banner.swift`
+- [x] Обновить тесты для использования моков
 
 ---
 
@@ -339,7 +339,7 @@
 | 1.5 | Исправление нарушений архитектуры | High | Сложно | ✅ |
 | 1.6 | Проверка Sendable конформности | Medium | Средне | ✅ |
 | 2.1 | Вынос логики из View | High | Средне | ✅ |
-| 2.2 | Внедрение Dependency Injection | High | Средне | ⬜ |
+| 2.2 | Внедрение Dependency Injection | High | Средне | ✅ |
 | 2.3 | Разделение View на компоненты | Medium | Легко | ⬜ |
 | 2.4 | Создание протоколов для расширяемости | Medium | Средне | ⬜ |
 | 3.1 | Создание системы локализации | High | Средне | ⬜ |

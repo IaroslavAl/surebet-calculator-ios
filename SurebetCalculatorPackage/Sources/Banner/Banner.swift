@@ -5,16 +5,31 @@ public enum Banner {
         BannerView()
     }
 
+    @MainActor
     public static func fullscreenBannerView(isPresented: Binding<Bool>) -> some View {
-        FullscreenBannerView(isPresented: isPresented)
+        FullscreenBannerView(isPresented: isPresented, service: Service())
+    }
+
+    @MainActor
+    public static func fullscreenBannerView(isPresented: Binding<Bool>, service: BannerService) -> some View {
+        FullscreenBannerView(isPresented: isPresented, service: service)
     }
 
     public static func fetchBanner() async throws {
         try await Service().fetchBannerAndImage()
     }
 
+    public static func fetchBanner(service: BannerService) async throws {
+        try await service.fetchBannerAndImage()
+    }
+
     public static var isBannerFullyCached: Bool {
         print("<< \(Service().isBannerFullyCached())")
         return Service().isBannerFullyCached()
+    }
+
+    public static func isBannerFullyCached(service: BannerService) -> Bool {
+        print("<< \(service.isBannerFullyCached())")
+        return service.isBannerFullyCached()
     }
 }
