@@ -1,13 +1,16 @@
 import SwiftUI
 
-/// Глобальная переменная для определения типа устройства
-var isIPad: Bool {
-    UIDevice.current.userInterfaceIdiom == .pad
+/// Утилита для определения типа устройства
+enum Device {
+    /// Определяет, является ли текущее устройство iPad
+    static var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
 }
 
 extension View {
     /// Определяет, является ли текущее устройство iPad
     var isIPad: Bool {
-        UIDevice.current.userInterfaceIdiom == .pad
+        Device.isIPad
     }
 }
