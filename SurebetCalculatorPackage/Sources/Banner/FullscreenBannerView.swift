@@ -22,39 +22,57 @@ struct FullscreenBannerView: View {
     var body: some View {
         ZStack {
             Color.black.opacity(0.75)
-            if let imageData = service.getStoredBannerImageData(), let uiImage = UIImage(data: imageData) {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFit()
-                    .cornerRadius(cornerRadius)
-                    .overlay(alignment: .topTrailing) {
-                        Image(systemName: "xmark.circle.fill")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .foregroundStyle(.white.opacity(0.5))
-                            .padding(16)
-                            .contentShape(.rect)
-                            .onTapGesture {
-                                if let banner = service.getBannerFromDefaults() {
-                                    AnalyticsManager.log(name: "ClosedBanner(\(banner.id)")
-                                }
-                                isPresented = false
-                            }
-                    }
-                    .onTapGesture {
-                        if let banner = service.getBannerFromDefaults() {
-                            AnalyticsManager.log(name: "OpenedBanner(\(banner.id)")
-                            openURL(banner.actionURL)
-                        } else {
-                            isPresented = false
-                        }
-                    }
-            }
+            bannerImage
         }
     }
 }
 
 private extension FullscreenBannerView {
+    @ViewBuilder
+    var bannerImage: some View {
+        if let imageData = service.getStoredBannerImageData(),
+           let uiImage = UIImage(data: imageData) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFit()
+                .cornerRadius(cornerRadius)
+                .overlay(alignment: .topTrailing) {
+                    closeButton
+                }
+                .onTapGesture {
+                    handleBannerTap()
+                }
+        }
+    }
+
+    var closeButton: some View {
+        Image(systemName: "xmark.circle.fill")
+            .resizable()
+            .frame(width: 40, height: 40)
+            .foregroundStyle(.white.opacity(0.5))
+            .padding(16)
+            .contentShape(.rect)
+            .onTapGesture {
+                handleCloseTap()
+            }
+    }
+
+    func handleCloseTap() {
+        if let banner = service.getBannerFromDefaults() {
+            AnalyticsManager.log(name: "ClosedBanner(\(banner.id)")
+        }
+        isPresented = false
+    }
+
+    func handleBannerTap() {
+        if let banner = service.getBannerFromDefaults() {
+            AnalyticsManager.log(name: "OpenedBanner(\(banner.id)")
+            openURL(banner.actionURL)
+        } else {
+            isPresented = false
+        }
+    }
+
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
     var cornerRadius: CGFloat { iPad ? 24 : 16 }
     var url: String { "https://1wfdtj.com/casino/list?open=register&p=jyy2" }

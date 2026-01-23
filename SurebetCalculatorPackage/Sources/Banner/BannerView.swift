@@ -10,31 +10,47 @@ struct BannerView: View {
 
     var body: some View {
         if isPresented {
-            WebImage(url: .init(string: url))
-                .resizable()
-                .scaledToFit()
-                .cornerRadius(cornerRadius)
-                .onTapGesture {
-                    openURL(link)
-                    AnalyticsManager.log(name: "ClickingOnAnAdvertisement")
-                }
-                .overlay(alignment: .topTrailing) {
-                    Image(systemName: "xmark.circle.fill")
-                        .resizable()
-                        .frame(width: 20, height: 20)
-                        .foregroundStyle(.black.opacity(0.25))
-                        .padding(8)
-                        .contentShape(.rect)
-                        .onTapGesture {
-                            isPresented = false
-                            AnalyticsManager.log(name: "CloseBanner")
-                        }
-                }
+            bannerContent
         }
     }
 }
 
 private extension BannerView {
+    var bannerContent: some View {
+        WebImage(url: .init(string: url))
+            .resizable()
+            .scaledToFit()
+            .cornerRadius(cornerRadius)
+            .onTapGesture {
+                handleBannerTap()
+            }
+            .overlay(alignment: .topTrailing) {
+                closeButton
+            }
+    }
+
+    var closeButton: some View {
+        Image(systemName: "xmark.circle.fill")
+            .resizable()
+            .frame(width: 20, height: 20)
+            .foregroundStyle(.black.opacity(0.25))
+            .padding(8)
+            .contentShape(.rect)
+            .onTapGesture {
+                handleCloseTap()
+            }
+    }
+
+    func handleBannerTap() {
+        openURL(link)
+        AnalyticsManager.log(name: "ClickingOnAnAdvertisement")
+    }
+
+    func handleCloseTap() {
+        isPresented = false
+        AnalyticsManager.log(name: "CloseBanner")
+    }
+
     var iPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
     var cornerRadius: CGFloat { iPad ? 15 : 10 }
 

@@ -9,54 +9,68 @@ struct SurebetCalculatorView: View {
     private var isFocused
 
     var body: some View {
-        VStack(spacing: spacing) {
-            ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: spacing) {
-                        TotalRowView()
-                            .padding(.trailing, horizontalPadding)
-                        rowsView
-                        HStack(spacing: .zero) {
-                            removeButton
-                            addButton
-                        }
-                        .id("EndOfView")
-                    }
-                    .padding(rowsSpacing)
-                    .background(
-                        Color.clear
-                            .contentShape(.rect)
-                            .onTapGesture {
-                                viewModel.send(.hideKeyboard)
-                            }
-                    )
-                }
-                .onChange(of: viewModel.selectedNumberOfRows) { _ in
-                    withAnimation {
-                        proxy.scrollTo("EndOfView", anchor: .bottom)
-                    }
-                }
+        scrollableContent
+            .navigationTitle(navigationTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(content: toolbar)
+            .frame(maxHeight: .infinity, alignment: .top)
+            .font(font)
+            .environmentObject(viewModel)
+            .animation(.default, value: viewModel.selectedNumberOfRows)
+            .focused($isFocused)
+            .onTapGesture {
+                isFocused = false
             }
-//            if !isFocused {
-//                Banner.view
-//                    .padding(.horizontal, horizontalPadding)
-//            }
-        }
-        .navigationTitle(navigationTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(content: toolbar)
-        .frame(maxHeight: .infinity, alignment: .top)
-        .font(font)
-        .environmentObject(viewModel)
-        .animation(.default, value: viewModel.selectedNumberOfRows)
-        .focused($isFocused)
-        .onTapGesture {
-            isFocused = false
-        }
     }
 }
 
 private extension SurebetCalculatorView {
+    var scrollableContent: some View {
+        VStack(spacing: spacing) {
+            ScrollViewReader { proxy in
+                scrollView(proxy: proxy)
+                    .onChange(of: viewModel.selectedNumberOfRows) { _ in
+                        scrollToEnd(proxy: proxy)
+                    }
+            }
+        }
+    }
+
+    func scrollView(proxy: ScrollViewProxy) -> some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: spacing) {
+                TotalRowView()
+                    .padding(.trailing, horizontalPadding)
+                rowsView
+                actionButtons
+                    .id("EndOfView")
+            }
+            .padding(rowsSpacing)
+            .background(backgroundTapGesture)
+        }
+    }
+
+    var backgroundTapGesture: some View {
+        Color.clear
+            .contentShape(.rect)
+            .onTapGesture {
+                viewModel.send(.hideKeyboard)
+            }
+    }
+
+    var actionButtons: some View {
+        HStack(spacing: .zero) {
+            removeButton
+            addButton
+        }
+    }
+
+    func scrollToEnd(proxy: ScrollViewProxy) {
+        withAnimation {
+            proxy.scrollTo("EndOfView", anchor: .bottom)
+        }
+    }
+
     var rowsView: some View {
         VStack(spacing: rowsSpacing) {
             ForEach(viewModel.displayedRowIndexes, id: \.self) { id in
