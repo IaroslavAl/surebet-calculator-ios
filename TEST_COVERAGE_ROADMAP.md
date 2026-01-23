@@ -249,14 +249,13 @@ func example() {
 ### Phase 4: Integration Tests
 
 #### 4.1 Root -> Calculator Flow
-- [ ] Тест полного flow: RootViewModel -> SurebetCalculatorViewModel -> CalculationService
-- [ ] Тест передачи данных между модулями
-- [ ] Тест обновления UI при изменении состояния
+- [x] Тест полного flow: RootViewModel -> SurebetCalculatorViewModel -> CalculationService
+- [x] Тест передачи данных между модулями
+- [x] Тест обновления UI при изменении состояния
 
 #### 4.2 Services Integration
-- [ ] Тест AnalyticsManager + RootViewModel
-- [ ] Тест BannerService + RootViewModel
-- [ ] Тест ReviewService + RootViewModel
+- [x] Тест AnalyticsManager + RootViewModel
+- [x] Тест ReviewService + RootViewModel
 
 ### Phase 5: UI Tests (если требуется)
 
