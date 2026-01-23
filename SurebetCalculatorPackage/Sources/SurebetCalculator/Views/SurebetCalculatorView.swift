@@ -103,7 +103,7 @@ private extension SurebetCalculatorView {
             .foregroundStyle(viewModel.selectedNumberOfRows == .ten ? .gray : .green)
             .font(buttonFont)
             .disabled(viewModel.selectedNumberOfRows == .ten)
-            .padding(AppConstants.Layout.Padding.small)
+            .padding(AppConstants.Padding.small)
             .contentShape(.rect)
             .onTapGesture {
                 viewModel.send(.addRow)
@@ -116,7 +116,7 @@ private extension SurebetCalculatorView {
             .foregroundStyle(viewModel.selectedNumberOfRows == .two ? .gray : .red)
             .font(buttonFont)
             .disabled(viewModel.selectedNumberOfRows == .two)
-            .padding(AppConstants.Layout.Padding.small)
+            .padding(AppConstants.Padding.small)
             .contentShape(.rect)
             .onTapGesture {
                 viewModel.send(.removeRow)
@@ -129,9 +129,9 @@ private extension SurebetCalculatorView {
 
 private extension SurebetCalculatorView {
     var navigationTitle: String { String(localized: "Surebet calculator") }
-    var spacing: CGFloat { isIPad ? AppConstants.Layout.Padding.extraLarge : AppConstants.Layout.Padding.large }
-    var rowsSpacing: CGFloat { isIPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
-    var horizontalPadding: CGFloat { isIPad ? AppConstants.Layout.Padding.medium : AppConstants.Layout.Padding.small }
+    var spacing: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
+    var rowsSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
     var font: Font { isIPad ? .title : .body }
     var buttonFont: Font { isIPad ? .largeTitle : .title }
 }

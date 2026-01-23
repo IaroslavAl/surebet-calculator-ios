@@ -16,7 +16,7 @@ enum BannerError: Error, Sendable {
 struct Service: BannerService, @unchecked Sendable {
     // MARK: - Properties
 
-    private let baseURL = URL(string: BannerConstants.apiBaseURL)!
+    private let baseURL: URL
     private let session: URLSession
     private let defaults: UserDefaults
 
@@ -26,6 +26,10 @@ struct Service: BannerService, @unchecked Sendable {
         session: URLSession = .shared,
         defaults: UserDefaults = .standard
     ) {
+        guard let url = URL(string: BannerConstants.apiBaseURL) else {
+            fatalError("Invalid base URL: \(BannerConstants.apiBaseURL)")
+        }
+        self.baseURL = url
         self.session = session
         self.defaults = defaults
     }
@@ -45,8 +49,12 @@ struct Service: BannerService, @unchecked Sendable {
             }
 
             let storedImageURL = getStoredBannerImageURL()
-            BannerLogger.service.debug("Текущий URL сохранённой картинки: \(storedImageURL?.absoluteString ?? "nil", privacy: .public)")
-            BannerLogger.service.debug("URL картинки из баннера: \(banner.imageURL.absoluteString, privacy: .public)")
+            BannerLogger.service.debug(
+                "Текущий URL сохранённой картинки: \(storedImageURL?.absoluteString ?? "nil", privacy: .public)"
+            )
+            BannerLogger.service.debug(
+                "URL картинки из баннера: \(banner.imageURL.absoluteString, privacy: .public)"
+            )
 
             if storedImageURL != banner.imageURL || getStoredBannerImageData() == nil {
                 BannerLogger.service.debug("URL изменился, отсутствует или нет данных — скачиваем новую картинку…")
@@ -57,7 +65,9 @@ struct Service: BannerService, @unchecked Sendable {
 
             BannerLogger.service.info("Запрос баннера и картинки завершён")
         } catch {
-            BannerLogger.service.error("Ошибка загрузки: \(error.localizedDescription, privacy: .public). Очищаем кэш баннера и картинки")
+            BannerLogger.service.error(
+                "Ошибка загрузки: \(error.localizedDescription, privacy: .public). Очищаем кэш баннера и картинки"
+            )
             clearAllBannerData()
             throw error
         }

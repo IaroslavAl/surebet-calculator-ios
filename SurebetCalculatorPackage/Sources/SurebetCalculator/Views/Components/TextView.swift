@@ -22,12 +22,12 @@ struct TextView: View {
 // MARK: - Private Computed Properties
 
 private extension TextView {
-    var textPadding: CGFloat { AppConstants.Layout.Padding.small }
+    var textPadding: CGFloat { AppConstants.Padding.small }
     var frameHeight: CGFloat {
-        isIPad ? AppConstants.Layout.Heights.regular : AppConstants.Layout.Heights.compact
+        isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact
     }
     var cornerRadius: CGFloat {
-        isIPad ? AppConstants.Layout.CornerRadius.large : AppConstants.Layout.CornerRadius.small
+        isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
     }
     var color: Color { text.isNumberNotNegative() ? .green : .red }
 }
