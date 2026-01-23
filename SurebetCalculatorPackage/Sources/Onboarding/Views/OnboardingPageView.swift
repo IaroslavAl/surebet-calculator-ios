@@ -15,7 +15,7 @@ struct OnboardingPageView: View {
                 .font(.title)
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
-                .minimumScaleFactor(AppConstants.Other.minimumTextScaleFactor)
+                .minimumScaleFactor(OnboardingConstants.minimumTextScaleFactor)
             Spacer()
         }
     }
