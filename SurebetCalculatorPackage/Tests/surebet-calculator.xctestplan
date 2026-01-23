@@ -35,6 +35,13 @@
         "identifier" : "OnboardingTests",
         "name" : "OnboardingTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:SurebetCalculatorPackage",
+        "identifier" : "RootTests",
+        "name" : "RootTests"
+      }
     }
   ],
   "version" : 1
