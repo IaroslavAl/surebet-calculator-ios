@@ -16,9 +16,9 @@ struct OnboardingPage: Identifiable, Sendable {
 }
 
 private extension OnboardingPage {
-    static var image1: String { Device.isIPad ? "iPad1" : "iPhone1" }
-    static var image2: String { Device.isIPad ? "iPad2" : "iPhone2" }
-    static var image3: String { Device.isIPad ? "iPad3" : "iPhone3" }
+    static var image1: String { Device.isIPadUnsafe ? "iPad1" : "iPhone1" }
+    static var image2: String { Device.isIPadUnsafe ? "iPad2" : "iPhone2" }
+    static var image3: String { Device.isIPadUnsafe ? "iPad3" : "iPhone3" }
     static var description1: String {
         String(localized: "Calculate by inputting the total bet amount and coefficients for all outcomes.")
     }

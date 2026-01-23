@@ -41,5 +41,7 @@
   6. **Правило:** Перед завершением задачи с тестами всегда проверяй компиляцию тестового таргета через Xcode или xcodebuild, не только основного проекта. Для тестов используй схему `SurebetCalculatorTests` в Xcode или проверяй через Product → Test
   7. **КРИТИЧНО:** После обновления тестов на Swift Testing или любых изменений в тестах ОБЯЗАТЕЛЬНО проверяй не только компиляцию, но и ВЫПОЛНЕНИЕ тестов. Используй команду `xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9'` для запуска всех тестов. Все тесты должны проходить успешно (TEST SUCCEEDED)
   7. **Ошибка:** UIDevice.current требует MainActor в Swift 6, но используется в nonisolated контексте (View+Device.swift, CalculatorTextFieldStyle и т.д.)
-  8. **Решение:** Использовать `nonisolated(unsafe)` для Device.isIPad, так как UIDevice.current безопасен для чтения из любого контекста
-  9. **Урок:** При использовании UIDevice.current в Swift 6 нужно либо пометить как @MainActor, либо использовать nonisolated(unsafe) если доступ безопасен
+  8. **Решение:** Создать два свойства в Device:
+     - `@MainActor static var isIPad: Bool` - для использования из MainActor контекста
+     - `nonisolated(unsafe) static var isIPadUnsafe: Bool` - для использования из nonisolated контекста, используя `MainActor.assumeIsolated` для обхода проверки
+  9. **Урок:** При использовании UIDevice.current в Swift 6 из nonisolated контекста нужно использовать `MainActor.assumeIsolated` внутри `nonisolated(unsafe)` свойства, так как UIDevice.current безопасен для чтения из любого контекста
