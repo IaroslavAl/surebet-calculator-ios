@@ -4738,3 +4738,464 @@ analyticsService.log(name: "NewEventName", parameters: ["param_key": .string("va
 ```
 
 ---
+
+## 5. Testing (Тестирование)
+
+### 5.1. Структура тестов
+
+#### Зачем AI-агенту
+
+Понимание структуры тестов позволяет агенту:
+- Писать тесты в правильном месте (папке)
+- Использовать существующие паттерны создания моков
+- Следовать принятому стилю тестирования (Given-When-Then)
+
+---
+
+#### Структура папки Tests
+
+```
+Tests/
+├── ModuleNameTests/           # Тесты для модуля ModuleName
+│   ├── ModuleNameTests.swift  # Основные тесты
+│   ├── FeatureTests.swift     # Тесты отдельных фич
+│   └── Mocks/                 # Моки для данного модуля
+│       └── MockService.swift
+├── surebet-calculator.xctestplan  # Конфигурация тестового плана
+```
+
+**Текущие тестовые модули:**
+
+| Модуль | Файлы | Моки |
+|--------|-------|------|
+| `AnalyticsManagerTests` | `AnalyticsManagerTests.swift` | `MockAnalyticsService` |
+| `BannerTests` | `BannerServiceTests.swift`, `BannerServiceFetchBannerAndImageTests.swift` | `MockURLProtocol` |
+| `OnboardingTests` | `OnboardingViewModelTests.swift` | — |
+| `ReviewHandlerTests` | `ReviewHandlerTests.swift` | `MockReviewService` |
+| `RootTests` | `RootViewModelTests.swift`, `IntegrationTests.swift` | `MockAnalyticsService`, `MockReviewService` |
+| `SurebetCalculatorTests` | `SurebetCalculatorViewModelTests.swift`, `DefaultCalculationServiceTests.swift`, `DoubleExtensionTests.swift`, `StringExtensionTests.swift`, `BetCalculatorTests.swift` | `MockCalculationService` |
+
+---
+
+#### Паттерн создания моков
+
+**Принципы:**
+- Hand-written Mocks (без библиотек типа Mockolo/Sourcery)
+- Мок реализует тот же протокол, что и реальный сервис
+- Мок хранит историю вызовов для проверки в тестах
+- `@unchecked Sendable` для поддержки Swift 6 Concurrency
+
+---
+
+**Шаблон мока для сервиса:**
+
+```swift
+import Foundation
+@testable import ModuleName
+
+/// Мок для ServiceProtocol для использования в тестах
+/// Хранит историю вызовов для проверки в тестах
+final class MockService: ServiceProtocol, @unchecked Sendable {
+    // MARK: - Properties
+    
+    /// Количество вызовов метода
+    var methodCallCount = 0
+    
+    /// Последние переданные параметры
+    var lastParameter: String?
+    
+    /// Все вызовы метода (для проверки истории)
+    var methodCalls: [(param: String, time: Date)] = []
+    
+    /// Результат, который вернёт мок (настраивается в тесте)
+    var methodResult: ReturnType?
+    
+    // MARK: - ServiceProtocol
+    
+    func method(param: String) -> ReturnType? {
+        methodCallCount += 1
+        lastParameter = param
+        methodCalls.append((param: param, time: Date()))
+        return methodResult
+    }
+}
+```
+
+---
+
+**Пример: MockAnalyticsService**
+
+```swift
+@testable import AnalyticsManager
+
+final class MockAnalyticsService: AnalyticsService, @unchecked Sendable {
+    // MARK: - Properties
+    
+    var logCallCount = 0
+    var lastEventName: String?
+    var lastParameters: [String: AnalyticsParameterValue]?
+    var logCalls: [(name: String, parameters: [String: AnalyticsParameterValue]?)] = []
+    
+    // MARK: - AnalyticsService
+    
+    func log(name: String, parameters: [String: AnalyticsParameterValue]?) {
+        logCallCount += 1
+        lastEventName = name
+        lastParameters = parameters
+        logCalls.append((name: name, parameters: parameters))
+    }
+}
+```
+
+---
+
+**Пример: MockCalculationService (с configurable result)**
+
+```swift
+@testable import SurebetCalculator
+
+/// Структура для хранения входных данных вызова
+struct CalculateInput: @unchecked Sendable {
+    let total: TotalRow
+    let rows: [Row]
+    let selectedRow: RowType?
+    let displayedRowIndexes: Range<Int>
+}
+
+final class MockCalculationService: CalculationService, @unchecked Sendable {
+    var calculateCallCount = 0
+    var calculateResult: (total: TotalRow?, rows: [Row]?)?  // Настраивается в тесте
+    var calculateInputs: [CalculateInput] = []
+    
+    func calculate(
+        total: TotalRow,
+        rows: [Row],
+        selectedRow: RowType?,
+        displayedRowIndexes: Range<Int>
+    ) -> (total: TotalRow?, rows: [Row]?) {
+        calculateCallCount += 1
+        calculateInputs.append(CalculateInput(
+            total: total,
+            rows: rows,
+            selectedRow: selectedRow,
+            displayedRowIndexes: displayedRowIndexes
+        ))
+        return calculateResult ?? (nil, nil)
+    }
+}
+```
+
+---
+
+**Пример: MockURLProtocol (для сетевых запросов)**
+
+```swift
+import Foundation
+
+/// Моковый URLProtocol для перехвата сетевых запросов в тестах
+final class MockURLProtocol: URLProtocol {
+    typealias RequestHandler = (URLRequest) throws -> (HTTPURLResponse, Data)
+    
+    private nonisolated(unsafe) static var handlers: [String: RequestHandler] = [:]
+    private static let lock = NSLock()
+    
+    /// Регистрирует обработчик для URL
+    static func register(url: URL, handler: @escaping RequestHandler) {
+        lock.lock()
+        defer { lock.unlock() }
+        handlers[url.absoluteString] = handler
+    }
+    
+    /// Удаляет обработчик для URL
+    static func unregister(url: URL) {
+        lock.lock()
+        defer { lock.unlock() }
+        handlers.removeValue(forKey: url.absoluteString)
+    }
+    
+    override static func canInit(with request: URLRequest) -> Bool { true }
+    override static func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    
+    override func startLoading() {
+        guard let requestURL = request.url,
+              let handler = MockURLProtocol.handler(for: requestURL) else {
+            client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
+            return
+        }
+        do {
+            let (response, data) = try handler(request)
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+    
+    override func stopLoading() {}
+}
+```
+
+**Использование MockURLProtocol в тесте:**
+
+```swift
+@Test
+func fetchBannerWhenRequestSucceeds() async throws {
+    // Given
+    let uniqueBaseURL = URL(string: "https://test-\(UUID().uuidString).com")!
+    defer { MockURLProtocol.unregister(url: uniqueBaseURL) }
+    
+    let bannerURL = uniqueBaseURL.appendingPathComponent("banner")
+    MockURLProtocol.register(url: bannerURL) { request in
+        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        return (response, bannerData)
+    }
+    defer { MockURLProtocol.unregister(url: bannerURL) }
+    
+    let config = URLSessionConfiguration.ephemeral
+    config.protocolClasses = [MockURLProtocol.self]
+    let session = URLSession(configuration: config)
+    let service = Service(baseURL: uniqueBaseURL, session: session, defaults: testDefaults)
+    
+    // When
+    let banner = try await service.fetchBanner()
+    
+    // Then
+    #expect(banner.id == testBanner.id)
+}
+```
+
+---
+
+#### Примеры тестов
+
+**ViewModel тест с Given-When-Then:**
+
+```swift
+import Testing
+@testable import SurebetCalculator
+
+@MainActor
+struct SurebetCalculatorViewModelTests {
+    @Test
+    func selectRow() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel()
+        let id = 0
+        let row: RowType = .row(id)
+        
+        // When
+        viewModel.send(.selectRow(row))
+        
+        // Then
+        #expect(!viewModel.total.isON)
+        #expect(viewModel.rows[id].isON)
+        #expect(viewModel.selectedRow == row)
+    }
+    
+    @Test
+    func calculationServiceIsCalledOnSelectRow() {
+        // Given
+        let mockService = MockCalculationService()
+        let viewModel = SurebetCalculatorViewModel(calculationService: mockService)
+        
+        // When
+        viewModel.send(.selectRow(.row(0)))
+        
+        // Then
+        #expect(mockService.calculateCallCount == 1)
+        #expect(mockService.calculateInputs.first != nil)
+    }
+    
+    @Test
+    func calculationServiceResultIsApplied() {
+        // Given
+        let mockService = MockCalculationService()
+        let expectedTotal = TotalRow(betSize: "999", profitPercentage: "99%")
+        let expectedRows = [Row(id: 0, betSize: "500", coefficient: "2", income: "100")]
+        mockService.calculateResult = (expectedTotal, expectedRows)
+        let viewModel = SurebetCalculatorViewModel(calculationService: mockService)
+        
+        // When
+        viewModel.send(.selectRow(.row(0)))
+        
+        // Then
+        #expect(viewModel.total.betSize == expectedTotal.betSize)
+        #expect(viewModel.rows[0].betSize == expectedRows[0].betSize)
+    }
+}
+```
+
+---
+
+**Тест с @Suite(.serialized) для shared state:**
+
+```swift
+import Testing
+@testable import Root
+
+/// Тесты выполняются последовательно для изоляции UserDefaults
+@MainActor
+@Suite(.serialized)
+struct RootViewModelTests {
+    func clearTestUserDefaults() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: "onboardingIsShown")
+        defaults.removeObject(forKey: "1.7.0")
+        defaults.removeObject(forKey: "numberOfOpenings")
+    }
+    
+    func createViewModel(
+        analyticsService: AnalyticsService? = nil,
+        reviewService: ReviewService? = nil
+    ) -> RootViewModel {
+        let analytics = analyticsService ?? MockAnalyticsService()
+        let review = reviewService ?? MockReviewService()
+        return RootViewModel(analyticsService: analytics, reviewService: review)
+    }
+    
+    @Test
+    func shouldShowOnboardingWhenNotShown() {
+        // Given
+        clearTestUserDefaults()
+        let viewModel = createViewModel()
+        
+        // Then
+        #expect(viewModel.shouldShowOnboarding == true)
+    }
+    
+    @Test
+    func handleReviewNoClosesAlertAndLogsAnalytics() {
+        // Given
+        clearTestUserDefaults()
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = createViewModel(analyticsService: mockAnalytics)
+        viewModel.alertIsPresented = true
+        
+        // When
+        viewModel.handleReviewNo()
+        
+        // Then
+        #expect(viewModel.alertIsPresented == false)
+        #expect(mockAnalytics.logCallCount == 1)
+        #expect(mockAnalytics.lastEventName == "RequestReview")
+        if let params = mockAnalytics.lastParameters,
+           case .bool(let value) = params["enjoying_calculator"] {
+            #expect(value == false)
+        } else {
+            Issue.record("enjoying_calculator should be bool(false)")
+        }
+    }
+}
+```
+
+---
+
+**Async тест:**
+
+```swift
+@Test
+func handleReviewYesClosesAlertCallsServiceAndLogsAnalytics() async {
+    // Given
+    clearTestUserDefaults()
+    let mockAnalytics = MockAnalyticsService()
+    let mockReview = MockReviewService()
+    let viewModel = createViewModel(
+        analyticsService: mockAnalytics,
+        reviewService: mockReview
+    )
+    viewModel.alertIsPresented = true
+    
+    // When
+    await viewModel.handleReviewYes()
+    
+    // Then
+    #expect(viewModel.alertIsPresented == false)
+    #expect(mockReview.requestReviewCallCount == 1)
+    #expect(mockAnalytics.logCallCount == 1)
+}
+```
+
+---
+
+**Concurrency тест:**
+
+```swift
+@Test
+func concurrentSendCalls() async {
+    // Given
+    let viewModel = SurebetCalculatorViewModel()
+    let iterations = 100
+    
+    // When
+    await withTaskGroup(of: Void.self) { group in
+        for index in 0..<iterations {
+            group.addTask {
+                await MainActor.run {
+                    viewModel.send(.setTextFieldText(.rowCoefficient(index % 4), "\(index)"))
+                }
+            }
+        }
+    }
+    
+    // Then
+    await MainActor.run {
+        for index in 0..<4 {
+            let coefficient = viewModel.rows[index].coefficient
+            #expect(coefficient.isEmpty || Double(coefficient.replacingOccurrences(of: ",", with: ".")) != nil)
+        }
+    }
+}
+```
+
+---
+
+#### Правила для AI-агента
+
+**При создании нового теста:**
+1. Создать файл в `Tests/ModuleNameTests/` 
+2. Использовать `@testable import ModuleName`
+3. Использовать Swift Testing (`import Testing`, `@Test`, `#expect`)
+4. Структура Given-When-Then
+5. `@MainActor` для тестов ViewModel с `@MainActor`
+6. `@Suite(.serialized)` для тестов с shared state (UserDefaults)
+7. Helper-методы для создания ViewModel с моками
+
+**При создании нового мока:**
+1. Создать файл в `Tests/ModuleNameTests/Mocks/`
+2. Реализовать тот же протокол, что и реальный сервис
+3. Добавить `@unchecked Sendable` для Swift 6
+4. Хранить `callCount`, `lastParameter`, `calls` array
+5. Добавить configurable `result` property для управления возвратом
+
+**Шаблон нового тестового файла:**
+
+```swift
+import Testing
+@testable import ModuleName
+
+@MainActor
+struct FeatureTests {
+    // MARK: - Helper Methods
+    
+    private func createViewModel() -> FeatureViewModel {
+        FeatureViewModel()
+    }
+    
+    // MARK: - Tests
+    
+    @Test
+    func featureWorksCorrectly() {
+        // Given
+        let viewModel = createViewModel()
+        
+        // When
+        viewModel.performAction()
+        
+        // Then
+        #expect(viewModel.state == .expected)
+    }
+}
+```
+
+---
