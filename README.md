@@ -1,6 +1,8 @@
 # Surebet Calculator
 
-<img src="SurebetCalculator.gif" width="250">
+<p align="center">
+  <img src="SurebetCalculator.gif" alt="Surebet Calculator Demo" width="250" />
+</p>
 
 ## 📱 Описание
 
@@ -119,12 +121,58 @@ SurebetCalculatorPackage/
 
 ## 🧪 Тестирование
 
-Проект включает модульные тесты для основных компонентов:
+Проект имеет комплексное покрытие тестами для обеспечения стабильности и качества кода.
 
-- `SurebetCalculatorTests` — тесты для калькулятора и ViewModel
-- `OnboardingTests` — тесты для онбординга
+### ✅ Unit Tests (XCTest)
 
-Все тесты используют моки для изоляции компонентов и проверки бизнес-логики.
+Бизнес-логика и сервисы покрыты модульными тестами:
+
+| Модуль | Описание |
+|--------|----------|
+| `SurebetCalculatorTests` | Калькулятор, ViewModel, Extensions, CalculationService |
+| `OnboardingTests` | OnboardingViewModel и edge cases |
+| `RootTests` | RootViewModel, интеграционные тесты |
+| `AnalyticsManagerTests` | AnalyticsManager и AnalyticsService |
+| `BannerTests` | BannerService (fetch, cache, network) |
+| `ReviewHandlerTests` | ReviewService и ReviewHandler |
+
+**Покрытие:**
+- ✅ Core Logic: Calculator, Extensions (`Double.formatToString()`, `String.formatToDouble()`)
+- ✅ ViewModels: SurebetCalculatorViewModel, OnboardingViewModel, RootViewModel
+- ✅ Services: CalculationService, AnalyticsService, BannerService, ReviewService
+- ✅ Edge Cases: нулевые/отрицательные значения, overflow protection, concurrency
+
+### ✅ UI Tests (XCUITest)
+
+Основные сценарии автоматизированы:
+
+- ✅ **Happy Path:** запуск приложения, онбординг, ввод данных, расчёт сурбета
+- ✅ **Edge Cases:** невалидные данные, очистка полей, изменение количества строк
+
+### Запуск тестов
+
+**В Xcode:**
+- `Cmd + U` — запуск всех тестов
+
+**Из командной строки:**
+
+```bash
+# Все тесты
+xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator -destination 'platform=iOS Simulator,name=iPhone 16'
+
+# Только Unit тесты
+xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:SurebetCalculatorPackageTests
+
+# Только UI тесты
+xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:SurebetCalculatorUITests
+```
+
+### Принципы тестирования
+
+- **Dependency Injection:** все сервисы внедряются через инициализаторы для лёгкого мокирования
+- **Hand-written Mocks:** используются ручные моки вместо библиотек
+- **Swift 6 Concurrency:** `@MainActor` isolation для ViewModels, `Sendable` конформность для моков
+- **Given-When-Then:** структура тестов для улучшения читаемости
 
 ## 📝 Локализация
 
