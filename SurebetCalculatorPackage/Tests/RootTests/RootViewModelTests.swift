@@ -8,7 +8,9 @@ import Testing
 
 // swiftlint:disable file_length
 
+/// Тесты выполняются последовательно для изоляции UserDefaults
 @MainActor
+@Suite(.serialized)
 struct RootViewModelTests {
     // MARK: - Helper Methods
 
