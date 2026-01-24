@@ -1,6 +1,7 @@
 @testable import SurebetCalculator
 import Testing
 
+// swiftlint:disable file_length
 struct CalculatorTests {
     @Test
     func totalCalculation() {

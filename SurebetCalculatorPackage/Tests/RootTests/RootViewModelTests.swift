@@ -6,6 +6,8 @@ import Testing
 @testable import Banner
 @testable import SurebetCalculator
 
+// swiftlint:disable file_length
+
 @MainActor
 struct RootViewModelTests {
     // MARK: - Helper Methods
@@ -225,7 +227,7 @@ struct RootViewModelTests {
         )
         let service = Service()
         service.saveBannerToDefaults(testBanner)
-        let imageData = "test".data(using: .utf8)!
+        let imageData = Data("test".utf8)
         UserDefaults.standard.set(imageData, forKey: "stored_banner_image_data")
         UserDefaults.standard.set(testBanner.imageURL.absoluteString, forKey: "stored_banner_image_url_string")
 
@@ -274,7 +276,9 @@ struct RootViewModelTests {
         #if DEBUG
         // В DEBUG режиме метод showRequestReview() не выполняется
         #expect(viewModel.alertIsPresented == false)
-        #expect(UserDefaults.standard.bool(forKey: "1.7.0") == false)
+        // В DEBUG режиме requestReviewWasShown не должен быть установлен
+        let requestReviewWasShown = UserDefaults.standard.bool(forKey: "1.7.0")
+        #expect(requestReviewWasShown == false)
         #else
         // В не-DEBUG режиме метод должен выполниться
         #expect(viewModel.alertIsPresented == true)

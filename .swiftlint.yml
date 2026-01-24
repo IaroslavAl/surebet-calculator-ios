@@ -15,6 +15,7 @@ opt_in_rules:
 disabled_rules:
   - anonymous_argument_in_multiline_closure
   - anyobject_protocol
+  - blanket_disable_command
   - closure_body_length
   - conditional_returns_on_newline
   - convenience_type
@@ -76,7 +77,9 @@ number_separator:
 redundant_type_annotation:
   consider_default_literal_types_redundant: true
 single_test_class: *unit_test_configuration
-type_body_length: 400
+type_body_length:
+  warning: 250
+  error: 600
 unneeded_override:
   affect_initializers: true
 unused_import:

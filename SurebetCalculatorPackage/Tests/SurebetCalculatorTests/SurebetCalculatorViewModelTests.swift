@@ -1,9 +1,7 @@
-// swiftlint:disable file_length
-// swiftlint:disable type_body_length
-
 @testable import SurebetCalculator
 import Testing
 
+// swiftlint:disable file_length
 @MainActor
 struct SurebetCalculatorViewModelTests {
     @Test
@@ -333,7 +331,6 @@ struct SurebetCalculatorViewModelTests {
         #expect(viewModel.rows[3] == Row(id: 3))
     }
 
-    // swiftlint:disable:next function_body_length
     @Test
     func calculationMethodWhenSelectedRowIsRowAndSelectedNumberOfRowsIsThree() {
         // Given
@@ -390,7 +387,6 @@ struct SurebetCalculatorViewModelTests {
         #expect(viewModel.rows[3] == Row(id: 3))
     }
 
-    // swiftlint:disable:next function_body_length
     @Test
     func calculationMethodWhenSelectedRowIsNoneAndSelectedNumberOfRowsIsFour() {
         // Given
@@ -410,49 +406,20 @@ struct SurebetCalculatorViewModelTests {
         viewModel.send(.setTextFieldText(.rowBetSize(3), "777"))
 
         // Then
-        #expect(
-            viewModel.total == TotalRow(
-                isON: false,
-                betSize: "2442",
-                profitPercentage: "-13,51%"
-            )
-        )
-        #expect(
-            viewModel.rows[0] == Row(
-                id: 0,
-                isON: false,
-                betSize: "444",
-                coefficient: "2,22",
-                income: "-1456,32"
-            )
-        )
-        #expect(
-            viewModel.rows[1] == Row(
-                id: 1,
-                isON: false,
-                betSize: "555",
-                coefficient: "3,33",
-                income: "-593,85"
-            )
-        )
-        #expect(
-            viewModel.rows[2] == Row(
-                id: 2,
-                isON: false,
-                betSize: "666",
-                coefficient: "4,44",
-                income: "515,04"
-            )
-        )
-        #expect(
-            viewModel.rows[3] == Row(
-                id: 3,
-                isON: false,
-                betSize: "777",
-                coefficient: "5,55",
-                income: "1870,35"
-            )
-        )
+        let expectedTotal = TotalRow(isON: false, betSize: "2442", profitPercentage: "-13,51%")
+        #expect(viewModel.total == expectedTotal)
+
+        let expectedRow0 = Row(id: 0, isON: false, betSize: "444", coefficient: "2,22", income: "-1456,32")
+        #expect(viewModel.rows[0] == expectedRow0)
+
+        let expectedRow1 = Row(id: 1, isON: false, betSize: "555", coefficient: "3,33", income: "-593,85")
+        #expect(viewModel.rows[1] == expectedRow1)
+
+        let expectedRow2 = Row(id: 2, isON: false, betSize: "666", coefficient: "4,44", income: "515,04")
+        #expect(viewModel.rows[2] == expectedRow2)
+
+        let expectedRow3 = Row(id: 3, isON: false, betSize: "777", coefficient: "5,55", income: "1870,35")
+        #expect(viewModel.rows[3] == expectedRow3)
     }
 
     @Test
@@ -855,10 +822,10 @@ struct SurebetCalculatorViewModelTests {
         }
 
         // Then
-        // Проверяем, что состояние корректно (selectedRow должен быть одним из валидных значений)
+        // Проверяем, что состояние корректно (selectedRow должен быть одним из валидных значений или nil)
         await MainActor.run {
             if let selected = viewModel.selectedRow {
-                #expect(rowTypes.contains(selected) || selected == .none)
+                #expect(rowTypes.contains(selected))
             }
         }
     }
