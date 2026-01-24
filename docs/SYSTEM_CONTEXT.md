@@ -4412,3 +4412,329 @@ enum FocusableField: Hashable {
 5. ❌ `$viewModel.property` для Binding → View напрямую меняет состояние
 
 ---
+
+### 4.4. Analytics Flow
+
+Проект использует типобезопасную систему аналитики на базе AppMetrica SDK. Все события отправляются только в Release-сборках.
+
+---
+
+#### Архитектура аналитики
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      AnalyticsService                            │
+│                       (Protocol)                                 │
+│  func log(name: String, parameters: [String: Value]?)           │
+└─────────────────────────────────────────────────────────────────┘
+                              ▲
+                              │ implements
+                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                      AnalyticsManager                            │
+│                    (struct, Sendable)                            │
+│                                                                  │
+│  #if !DEBUG                                                      │
+│      AppMetrica.reportEvent(name: name, parameters: params)      │
+│  #endif                                                          │
+└─────────────────────────────────────────────────────────────────┘
+                              ▲
+                              │ DI через init
+                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                   ViewModel / View                               │
+│                                                                  │
+│  private let analyticsService: AnalyticsService                  │
+│                                                                  │
+│  init(analyticsService: AnalyticsService = AnalyticsManager())   │
+│                                                                  │
+│  analyticsService.log(name: "Event", parameters: [...])          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+#### Протокол AnalyticsService
+
+```swift
+// AnalyticsService.swift
+public protocol AnalyticsService: Sendable {
+    func log(name: String, parameters: [String: AnalyticsParameterValue]?)
+}
+```
+
+**Ключевые правила:**
+1. `Sendable` — безопасно передавать между actor'ами
+2. Параметры опциональны — событие может быть без параметров
+3. Протокол позволяет легко создавать Mock для тестов
+
+---
+
+#### Типобезопасные параметры
+
+```swift
+// AnalyticsManager.swift
+public enum AnalyticsParameterValue: Sendable {
+    case string(String)
+    case int(Int)
+    case double(Double)
+    case bool(Bool)
+    
+    var anyValue: Any {
+        switch self {
+        case .string(let value): return value
+        case .int(let value): return value
+        case .double(let value): return value
+        case .bool(let value): return value
+        }
+    }
+}
+```
+
+**Зачем enum вместо Any:**
+1. Type-safety на этапе компиляции
+2. `Sendable` конформность — безопасность в Swift 6
+3. Explicit конвертация в `Any` только для AppMetrica API
+
+**Примеры использования:**
+```swift
+// Bool параметр
+analyticsService.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(true)])
+
+// String параметр
+analyticsService.log(name: "ButtonTapped", parameters: ["button_id": .string("submit")])
+
+// Int параметр
+analyticsService.log(name: "ItemSelected", parameters: ["index": .int(2)])
+
+// Без параметров
+analyticsService.log(name: "AppLaunched", parameters: nil)
+```
+
+---
+
+#### AnalyticsManager — реализация
+
+```swift
+// AnalyticsManager.swift
+public struct AnalyticsManager: AnalyticsService, Sendable {
+    public init() {}
+    
+    public func log(name: String, parameters: [String: AnalyticsParameterValue]?) {
+    #if !DEBUG
+        // Конвертация в формат AppMetrica
+        let appMetricaParameters = parameters?.reduce(into: [AnyHashable: Any]()) { result, pair in
+            result[pair.key] = pair.value.anyValue
+        }
+        // Отправка в AppMetrica
+        AppMetrica.reportEvent(name: name, parameters: appMetricaParameters)
+    #endif
+    }
+    
+    // Static метод для обратной совместимости (не использовать в новом коде)
+    public static func log(name: String, parameters: [String: AnalyticsParameterValue]? = nil) {
+        let manager = AnalyticsManager()
+        manager.log(name: name, parameters: parameters)
+    }
+}
+```
+
+**Ключевые особенности:**
+1. `struct` + `Sendable` — потокобезопасность
+2. `#if !DEBUG` — события НЕ отправляются в Debug-сборках
+3. `reduce(into:)` — эффективная конвертация словаря
+4. Статический метод — **deprecated**, использовать DI
+
+---
+
+#### Dependency Injection для аналитики
+
+**В ViewModel:**
+```swift
+// RootViewModel.swift
+@MainActor
+final class RootViewModel: ObservableObject {
+    private let analyticsService: AnalyticsService
+    
+    init(
+        analyticsService: AnalyticsService = AnalyticsManager(),
+        reviewService: ReviewService = ReviewHandler()
+    ) {
+        self.analyticsService = analyticsService
+        // ...
+    }
+    
+    func handleReviewYes() async {
+        alertIsPresented = false
+        await reviewService.requestReview()
+        analyticsService.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(true)])
+    }
+}
+```
+
+**В View (когда нет ViewModel):**
+```swift
+// FullscreenBannerView.swift
+struct FullscreenBannerView: View {
+    @Binding var isPresented: Bool
+    
+    private let analyticsService: AnalyticsService
+    
+    @MainActor
+    init(
+        isPresented: Binding<Bool>,
+        analyticsService: AnalyticsService = AnalyticsManager()
+    ) {
+        self._isPresented = isPresented
+        self.analyticsService = analyticsService
+    }
+    
+    // Использование
+    func handleBannerTap() {
+        if let banner = service.getBannerFromDefaults() {
+            analyticsService.log(name: "OpenedBanner(\(banner.id)", parameters: nil)
+            // ...
+        }
+    }
+}
+```
+
+---
+
+#### Каталог событий приложения
+
+| Событие | Где триггерится | Параметры | Описание |
+|---------|-----------------|-----------|----------|
+| `RequestReview` | `RootViewModel.handleReviewNo()` | `enjoying_calculator: Bool` | Пользователь ответил "Нет" на запрос отзыва |
+| `RequestReview` | `RootViewModel.handleReviewYes()` | `enjoying_calculator: Bool` | Пользователь ответил "Да" на запрос отзыва |
+| `OpenedBanner(\(id))` | `FullscreenBannerView.handleBannerTap()` | `nil` | Клик по fullscreen баннеру |
+| `ClosedBanner(\(id))` | `FullscreenBannerView.handleCloseTap()` | `nil` | Закрытие fullscreen баннера |
+
+**Формат имени события:**
+- Простые: `EventName` (CamelCase)
+- С ID: `EventName(\(id))` — динамическое имя с идентификатором
+
+---
+
+#### Примеры из кодовой базы
+
+**Событие с Bool параметром:**
+```swift
+// RootViewModel.swift
+func handleReviewNo() {
+    alertIsPresented = false
+    analyticsService.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(false)])
+}
+
+func handleReviewYes() async {
+    alertIsPresented = false
+    await reviewService.requestReview()
+    analyticsService.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(true)])
+}
+```
+
+**Событие с динамическим именем (ID баннера):**
+```swift
+// FullscreenBannerView.swift
+func handleCloseTap() {
+    if let banner = service.getBannerFromDefaults() {
+        analyticsService.log(name: "ClosedBanner(\(banner.id)", parameters: nil)
+    }
+    isPresented = false
+}
+
+func handleBannerTap() {
+    if let banner = service.getBannerFromDefaults() {
+        analyticsService.log(name: "OpenedBanner(\(banner.id)", parameters: nil)
+        openURL(banner.actionURL)
+    }
+}
+```
+
+---
+
+#### Mock для тестирования
+
+```swift
+// MockAnalyticsService.swift
+final class MockAnalyticsService: AnalyticsService, @unchecked Sendable {
+    var loggedEvents: [(name: String, parameters: [String: AnalyticsParameterValue]?)] = []
+    
+    func log(name: String, parameters: [String: AnalyticsParameterValue]?) {
+        loggedEvents.append((name, parameters))
+    }
+    
+    // Хелперы для ассертов
+    var lastEventName: String? { loggedEvents.last?.name }
+    var lastEventParameters: [String: AnalyticsParameterValue]? { loggedEvents.last?.parameters }
+    
+    func reset() {
+        loggedEvents.removeAll()
+    }
+}
+```
+
+**Использование в тестах:**
+```swift
+// RootViewModelTests.swift
+@MainActor
+@Suite
+struct RootViewModelTests {
+    private let mockAnalytics = MockAnalyticsService()
+    
+    @Test
+    func handleReviewNo_logsEventWithFalse() {
+        // Given
+        let viewModel = RootViewModel(analyticsService: mockAnalytics)
+        
+        // When
+        viewModel.handleReviewNo()
+        
+        // Then
+        #expect(mockAnalytics.lastEventName == "RequestReview")
+        #expect(mockAnalytics.lastEventParameters?["enjoying_calculator"] == .bool(false))
+    }
+    
+    @Test
+    func handleReviewYes_logsEventWithTrue() async {
+        // Given
+        let viewModel = RootViewModel(analyticsService: mockAnalytics)
+        
+        // When
+        await viewModel.handleReviewYes()
+        
+        // Then
+        #expect(mockAnalytics.lastEventName == "RequestReview")
+        #expect(mockAnalytics.lastEventParameters?["enjoying_calculator"] == .bool(true))
+    }
+}
+```
+
+---
+
+#### Правила для AI-агента
+
+**При добавлении нового события:**
+1. Использовать DI — внедрять `AnalyticsService` через init
+2. Использовать типобезопасные параметры — `AnalyticsParameterValue` enum
+3. Имя события — CamelCase, описательное
+4. Добавить событие в таблицу каталога (в этом файле)
+5. Написать тест с `MockAnalyticsService`
+
+**НЕ делать:**
+1. ❌ `AnalyticsManager.log(...)` — статический метод deprecated
+2. ❌ Отправлять события в `viewDidLoad`/`onAppear` без бизнес-смысла
+3. ❌ Хардкодить параметры как `Any` — использовать enum
+4. ❌ Логировать sensitive данные (email, телефон, и т.д.)
+
+**Шаблон для нового события:**
+```swift
+// 1. В ViewModel/View — использовать существующий analyticsService
+analyticsService.log(name: "NewEventName", parameters: ["param_key": .string("value")])
+
+// 2. В тесте — проверить с MockAnalyticsService
+#expect(mockAnalytics.lastEventName == "NewEventName")
+#expect(mockAnalytics.lastEventParameters?["param_key"] == .string("value"))
+```
+
+---
