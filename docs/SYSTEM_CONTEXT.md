@@ -1009,3 +1009,221 @@ VALIDATE_PRODUCT = YES
 5. **Учитывай iPad** — проверяй layouts на `.regular` size class
 
 ---
+
+### 2.2. Внешние зависимости
+
+Проект использует **3 внешних зависимости** через Swift Package Manager.
+
+#### Таблица зависимостей
+
+| Библиотека | Версия | Используется в | Назначение |
+|------------|--------|----------------|------------|
+| **AppMetrica SDK** | 5.11.0+ | `AnalyticsManager`, `Root` | Аналитика событий |
+| **SwiftLint** | 0.59.1+ | Все модули (Build Tool Plugin) | Статический анализ кода |
+| **SDWebImageSwiftUI** | 3.1.3+ | `Banner` | Загрузка и кэширование изображений |
+
+---
+
+#### AppMetrica SDK (Аналитика)
+
+**GitHub:** https://github.com/appmetrica/appmetrica-sdk-ios
+
+**Инициализация в AppDelegate:**
+
+```swift
+// SurebetCalculatorApp.swift
+final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        #if !DEBUG  // Только в Release
+        let apiKey = "f7e1f335-475a-4b6c-ba4a-77988745bc7a"
+        if let configuration = AppMetricaConfiguration(apiKey: apiKey) {
+            AppMetrica.activate(with: configuration)
+        }
+        #endif
+        return true
+    }
+}
+```
+
+**Типобезопасная обёртка (AnalyticsManager):**
+
+```swift
+import AppMetricaCore
+
+// Типобезопасные параметры вместо [String: Any]
+public enum AnalyticsParameterValue: Sendable {
+    case string(String)
+    case int(Int)
+    case double(Double)
+    case bool(Bool)
+}
+
+public struct AnalyticsManager: AnalyticsService, Sendable {
+    public func log(name: String, parameters: [String: AnalyticsParameterValue]?) {
+        #if !DEBUG
+        let appMetricaParameters = parameters?.reduce(into: [AnyHashable: Any]()) { result, pair in
+            result[pair.key] = pair.value.anyValue
+        }
+        AppMetrica.reportEvent(name: name, parameters: appMetricaParameters)
+        #endif
+    }
+}
+```
+
+**Примеры логирования событий:**
+
+```swift
+// Простое событие
+AnalyticsManager.log(name: "ClickingOnAnAdvertisement")
+
+// Событие с параметрами
+analyticsService.log(name: "RequestReview", parameters: ["accepted": .bool(true)])
+
+// Событие с динамическим именем
+analyticsService.log(name: "OpenedBanner(\(banner.id)", parameters: nil)
+```
+
+**Реэкспорт для App:**
+
+```swift
+// Root.swift — реэкспорт типов AppMetrica
+public typealias AppMetrica = AppMetricaCore.AppMetrica
+public typealias AppMetricaConfiguration = AppMetricaCore.AppMetricaConfiguration
+
+// Использование в App (импортирует только Root)
+import Root
+AppMetrica.activate(with: configuration)
+```
+
+**Правила:**
+1. Инициализация **только в Release** (`#if !DEBUG`)
+2. Использовать обёртку `AnalyticsManager`, не `AppMetrica` напрямую
+3. Типобезопасные параметры через `AnalyticsParameterValue`
+4. Протокол `AnalyticsService` для тестируемости
+
+---
+
+#### SDWebImageSwiftUI (Загрузка изображений)
+
+**GitHub:** https://github.com/SDWebImage/SDWebImageSwiftUI
+
+**Основной компонент — WebImage:**
+
+```swift
+import SDWebImageSwiftUI
+
+struct BannerView: View {
+    var body: some View {
+        WebImage(url: URL(string: imageURL))
+            .resizable()           // Масштабируемое
+            .scaledToFit()         // Сохранение пропорций
+            .cornerRadius(10)      // Скругление углов
+            .onTapGesture { ... }  // Обработка тапа
+    }
+}
+```
+
+**Функции WebImage:**
+- Автоматическая загрузка из сети
+- Встроенное кэширование (память + диск)
+- Поддержка placeholder и error state
+- Поддержка GIF-анимации
+- SwiftUI-нативный API
+
+**Когда использовать:**
+- Загрузка изображений из сети в UI
+- Отображение баннеров, аватаров, превью
+- Когда нужен автоматический кэш
+
+**Когда НЕ использовать:**
+- Для фоновой загрузки без отображения (используй URLSession)
+- Для статичных Asset изображений (используй `Image("name")`)
+
+---
+
+#### SwiftLint (Линтер)
+
+**GitHub:** https://github.com/realm/SwiftLint
+
+**Интеграция как Build Tool Plugin:**
+
+```swift
+// Package.swift
+.target(
+    name: "SurebetCalculator",
+    dependencies: [...],
+    plugins: [
+        .plugin(
+            name: "SwiftLintBuildToolPlugin",
+            package: "SwiftLint"
+        )
+    ]
+)
+```
+
+**Особенности:**
+- Запускается **автоматически** при каждой сборке
+- Подключен ко **всем модулям** (targets и testTargets)
+- Нарушения отображаются как warnings/errors в Xcode
+- Не требует отдельной команды запуска
+
+**Проверка ворнингов линтера:**
+
+```bash
+# Через Cursor IDE
+read_lints  # Показывает ворнинги линтера
+
+# Через терминал (manual)
+swift run --package-path SurebetCalculatorPackage swiftlint lint
+```
+
+**Основные проверяемые правила:**
+- `trailing_whitespace` — пробелы в конце строк
+- `line_length` — максимальная длина строки
+- `nesting` — глубина вложенности
+- `force_cast` — принудительное приведение типов (`as!`)
+- `force_unwrapping` — принудительное разворачивание (`!`)
+
+**Правила для AI-агента:**
+1. **Перед коммитом** проверять `read_lints` на изменённых файлах
+2. Исправлять все warnings перед коммитом
+3. Не добавлять `// swiftlint:disable` без крайней необходимости
+
+---
+
+#### Добавление новой зависимости
+
+```swift
+// 1. Добавить в Package.swift dependencies
+dependencies: [
+    // ...existing...
+    .package(
+        url: "https://github.com/organization/PackageName.git",
+        .upToNextMinor(from: "1.0.0")
+    ),
+],
+
+// 2. Добавить в нужный target
+.target(
+    name: "ModuleName",
+    dependencies: [
+        // ...existing...
+        .product(name: "ProductName", package: "PackageName"),
+    ],
+    // ...
+),
+
+// 3. Импортировать в Swift файле
+import ProductName
+```
+
+**Правила при добавлении зависимостей:**
+1. Использовать `.upToNextMinor` для контролируемых обновлений
+2. Добавлять только в модули, где зависимость реально используется
+3. Если зависимость нужна в App — реэкспортировать через `Root`
+4. Документировать назначение в этом разделе
+
+---
