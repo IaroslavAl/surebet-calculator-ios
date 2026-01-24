@@ -3377,3 +3377,559 @@ Button("New Action") {
 ```
 
 ---
+
+### 4.2. Network → Cache → UI (Banner)
+
+Модуль `Banner` реализует **паттерн "загрузка в фоне → кэширование → отображение из кэша"** для минимизации сетевых запросов и мгновенного отображения баннеров.
+
+#### Общая схема потока
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           1. BACKGROUND FETCH                                │
+│  RootView.onAppear → .task { try? await Banner.fetchBanner() }              │
+│                                      │                                       │
+│                                      ▼                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                           2. NETWORK (Service)                               │
+│  fetchBannerAndImage()                                                       │
+│      │                                                                       │
+│      ├─► fetchBanner() → GET http://api.surebet-calculator.ru/banner        │
+│      │       → decode JSON → BannerModel                                     │
+│      │       → saveBannerToDefaults()                                        │
+│      │                                                                       │
+│      └─► downloadImage(from: imageURL) → GET image                          │
+│              → saveBannerImageData()                                         │
+│                                      │                                       │
+│                                      ▼                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                           3. CACHE (UserDefaults)                            │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │ stored_banner              │ BannerModel (JSON encoded)                 ││
+│  │ stored_banner_image_data   │ Data (raw image bytes)                     ││
+│  │ stored_banner_image_url_string │ String (URL для invalidation)          ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                      │                                       │
+│                                      ▼                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                           4. DISPLAY CHECK                                   │
+│  RootViewModel.showFullscreenBanner()                                        │
+│      if fullscreenBannerIsAvailable && Banner.isBannerFullyCached            │
+│          → fullscreenBannerIsPresented = true                                │
+│                                      │                                       │
+│                                      ▼                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                           5. UI (FullscreenBannerView)                       │
+│  service.getStoredBannerImageData() → UIImage(data:) → Image(uiImage:)      │
+│  service.getBannerFromDefaults() → actionURL, id для аналитики              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+#### Модель данных
+
+```swift
+// BannerModel.swift
+public struct BannerModel: Codable, Sendable {
+    let id: String           // Уникальный ID для аналитики
+    let title: String        // Заголовок (не используется в UI)
+    let body: String         // Описание (не используется в UI)
+    let partnerCode: String? // Партнёрский код (опционально)
+    let imageURL: URL        // URL изображения для загрузки
+    let actionURL: URL       // URL для открытия по тапу
+}
+
+// Пример JSON ответа API:
+{
+    "id": "promo-2024-01",
+    "title": "Новогодняя акция",
+    "body": "Получите бонус",
+    "partnerCode": "NEWYEAR",
+    "imageURL": "https://cdn.example.com/banner.png",
+    "actionURL": "https://partner.example.com/promo"
+}
+```
+
+---
+
+#### Стратегия кэширования
+
+**Ключи UserDefaults:**
+
+```swift
+// UserDefaultsKeys.swift
+enum UserDefaultsKeys {
+    static let banner = "stored_banner"                      // BannerModel JSON
+    static let bannerImageData = "stored_banner_image_data"  // Raw Data
+    static let bannerImageURLString = "stored_banner_image_url_string"  // URL для invalidation
+}
+```
+
+**Стратегия инвалидации кэша:**
+
+| Событие | Действие |
+|---------|----------|
+| Новый `imageURL` в ответе API | Скачать новое изображение |
+| `imageURL` не изменился | Использовать кэшированное изображение |
+| Пустой ответ API | Очистить весь кэш (баннер + изображение) |
+| Ошибка сети | Очистить весь кэш |
+| Пустой `imageURL` | Очистить весь кэш |
+
+```swift
+// Service.swift — логика инвалидации
+func fetchBannerAndImage() async throws {
+    let banner = try await fetchBanner()
+    
+    // Проверка валидности imageURL
+    guard !banner.imageURL.absoluteString.isEmpty else {
+        clearAllBannerData()
+        throw BannerError.invalidImageURL
+    }
+    
+    // Сравнение URL — ключевая оптимизация
+    let storedImageURL = getStoredBannerImageURL()
+    if storedImageURL != banner.imageURL || getStoredBannerImageData() == nil {
+        // URL изменился или нет данных → скачиваем
+        try await downloadImage(from: banner.imageURL)
+    }
+    // Если URL совпадает и данные есть → пропускаем загрузку
+}
+```
+
+**Проверка полноты кэша:**
+
+```swift
+func isBannerFullyCached() -> Bool {
+    guard getBannerFromDefaults() != nil else { return false }  // Есть модель?
+    guard getStoredBannerImageData() != nil else { return false }  // Есть картинка?
+    return true  // Кэш полный
+}
+```
+
+---
+
+#### BannerService — протокол
+
+```swift
+// BannerService.swift
+public protocol BannerService: Sendable {
+    // MARK: - Network
+    
+    /// Загружает баннер и изображение с сервера
+    func fetchBannerAndImage() async throws
+    
+    /// Загружает только модель баннера
+    func fetchBanner() async throws -> BannerModel
+    
+    /// Скачивает изображение по URL
+    func downloadImage(from url: URL) async throws
+    
+    // MARK: - Cache (Banner)
+    
+    /// Сохраняет модель баннера в UserDefaults
+    func saveBannerToDefaults(_ banner: BannerModel)
+    
+    /// Читает модель баннера из UserDefaults
+    func getBannerFromDefaults() -> BannerModel?
+    
+    /// Удаляет модель баннера из UserDefaults
+    func clearBannerFromDefaults()
+    
+    // MARK: - Cache (Image)
+    
+    /// Читает данные изображения из UserDefaults
+    func getStoredBannerImageData() -> Data?
+    
+    /// Читает URL изображения из UserDefaults (для invalidation)
+    func getStoredBannerImageURL() -> URL?
+    
+    // MARK: - Status
+    
+    /// Проверяет полноту кэша (баннер + изображение)
+    func isBannerFullyCached() -> Bool
+}
+```
+
+---
+
+#### Service — реализация
+
+```swift
+// Service.swift
+struct Service: BannerService, @unchecked Sendable {
+    // MARK: - Properties
+    
+    private let baseURL: URL          // http://api.surebet-calculator.ru
+    private let session: URLSession   // .shared по умолчанию
+    private let defaults: UserDefaults // .standard по умолчанию
+    
+    // MARK: - Initialization
+    
+    init(
+        baseURL: URL? = nil,          // DI для тестов
+        session: URLSession = .shared,
+        defaults: UserDefaults = .standard
+    ) {
+        self.baseURL = baseURL ?? URL(string: BannerConstants.apiBaseURL)!
+        self.session = session
+        self.defaults = defaults
+    }
+    
+    // MARK: - Network
+    
+    func fetchBanner() async throws -> BannerModel {
+        let url = baseURL.appendingPathComponent("banner")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = BannerConstants.requestTimeout  // 10 сек
+        
+        let (data, response) = try await session.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200..<300).contains(httpResponse.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+        
+        guard !data.isEmpty else {
+            clearAllBannerData()
+            throw BannerError.bannerNotFound
+        }
+        
+        let banner = try JSONDecoder().decode(BannerModel.self, from: data)
+        saveBannerToDefaults(banner)
+        return banner
+    }
+    
+    func downloadImage(from url: URL) async throws {
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = BannerConstants.requestTimeout
+        
+        let (data, response) = try await session.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200..<300).contains(httpResponse.statusCode),
+              !data.isEmpty else {
+            clearAllBannerData()
+            throw URLError(.cannotDecodeContentData)
+        }
+        
+        saveBannerImageData(data, imageURL: url)
+    }
+    
+    // MARK: - Cache
+    
+    func saveBannerToDefaults(_ banner: BannerModel) {
+        if let data = try? JSONEncoder().encode(banner) {
+            defaults.set(data, forKey: UserDefaultsKeys.banner)
+        }
+    }
+    
+    func saveBannerImageData(_ data: Data, imageURL: URL) {
+        defaults.set(data, forKey: UserDefaultsKeys.bannerImageData)
+        defaults.set(imageURL.absoluteString, forKey: UserDefaultsKeys.bannerImageURLString)
+    }
+    
+    private func clearAllBannerData() {
+        defaults.removeObject(forKey: UserDefaultsKeys.banner)
+        defaults.removeObject(forKey: UserDefaultsKeys.bannerImageData)
+        defaults.removeObject(forKey: UserDefaultsKeys.bannerImageURLString)
+    }
+}
+```
+
+---
+
+#### Banner Public API
+
+```swift
+// Banner.swift — точка входа модуля
+public enum Banner {
+    // MARK: - Views
+    
+    /// Inline баннер с WebImage (SDWebImageSwiftUI)
+    public static var bannerView: some View {
+        BannerView()
+    }
+    
+    /// Fullscreen баннер с кэшированным изображением
+    @MainActor
+    public static func fullscreenBannerView(isPresented: Binding<Bool>) -> some View {
+        FullscreenBannerView(isPresented: isPresented, service: Service())
+    }
+    
+    /// Fullscreen баннер с DI для тестов
+    @MainActor
+    public static func fullscreenBannerView(isPresented: Binding<Bool>, service: BannerService) -> some View {
+        FullscreenBannerView(isPresented: isPresented, service: service)
+    }
+    
+    // MARK: - Network
+    
+    /// Фоновая загрузка баннера и изображения
+    public static func fetchBanner() async throws {
+        try await Service().fetchBannerAndImage()
+    }
+    
+    /// Загрузка с DI для тестов
+    public static func fetchBanner(service: BannerService) async throws {
+        try await service.fetchBannerAndImage()
+    }
+    
+    // MARK: - Cache Status
+    
+    /// Проверка готовности кэша для отображения
+    public static var isBannerFullyCached: Bool {
+        Service().isBannerFullyCached()
+    }
+}
+```
+
+---
+
+#### Интеграция в RootView
+
+**1. Фоновая загрузка при запуске:**
+
+```swift
+// RootView.swift
+private struct BannerTaskModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content.task {
+            // Фоновая загрузка — ошибки игнорируются
+            try? await Banner.fetchBanner()
+        }
+    }
+}
+```
+
+**2. Проверка условий показа:**
+
+```swift
+// RootViewModel.swift
+func showFullscreenBanner() {
+    // Условия показа:
+    // 1. Онбординг пройден
+    // 2. Review alert уже показан
+    // 3. Каждое 3-е открытие приложения
+    // 4. Кэш полный (баннер + изображение)
+    if fullscreenBannerIsAvailable, Banner.isBannerFullyCached {
+        fullscreenBannerIsPresented = true
+    }
+}
+
+var fullscreenBannerIsAvailable: Bool {
+    onboardingIsShown &&
+    requestReviewWasShown &&
+    numberOfOpenings.isMultiple(of: 3)
+}
+```
+
+**3. Overlay для показа:**
+
+```swift
+// RootView.swift
+private struct FullscreenBannerOverlayModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+    
+    func body(content: Content) -> some View {
+        content.overlay {
+            if viewModel.fullscreenBannerIsPresented {
+                Banner.fullscreenBannerView(isPresented: $viewModel.fullscreenBannerIsPresented)
+                    .transition(.move(edge: .bottom))
+            }
+        }
+    }
+}
+```
+
+---
+
+#### FullscreenBannerView — отображение из кэша
+
+```swift
+// FullscreenBannerView.swift
+struct FullscreenBannerView: View {
+    @Binding var isPresented: Bool
+    
+    private let service: BannerService
+    private let analyticsService: AnalyticsService
+    
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.75)  // Затемнение фона
+            bannerImage
+        }
+    }
+}
+
+private extension FullscreenBannerView {
+    @ViewBuilder
+    var bannerImage: some View {
+        // Читаем из кэша — НЕ сетевой запрос
+        if let imageData = service.getStoredBannerImageData(),
+           let uiImage = UIImage(data: imageData) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFit()
+                .cornerRadius(cornerRadius)
+                .overlay(alignment: .topTrailing) { closeButton }
+                .onTapGesture { handleBannerTap() }
+        }
+    }
+    
+    func handleBannerTap() {
+        if let banner = service.getBannerFromDefaults() {
+            // Аналитика с ID баннера
+            analyticsService.log(name: "OpenedBanner(\(banner.id)", parameters: nil)
+            // Открытие URL партнёра
+            UIApplication.shared.open(banner.actionURL)
+        }
+        // Закрытие с задержкой
+        Task {
+            try await Task.sleep(nanoseconds: BannerConstants.bannerCloseDelay)
+            isPresented = false
+        }
+    }
+    
+    func handleCloseTap() {
+        if let banner = service.getBannerFromDefaults() {
+            analyticsService.log(name: "ClosedBanner(\(banner.id)", parameters: nil)
+        }
+        isPresented = false
+    }
+}
+```
+
+---
+
+#### Диаграмма последовательности
+
+```mermaid
+sequenceDiagram
+    participant App as RootView
+    participant VM as RootViewModel
+    participant Banner as Banner Module
+    participant Service as BannerService
+    participant Network as URLSession
+    participant Cache as UserDefaults
+    participant UI as FullscreenBannerView
+    
+    Note over App: App Launch
+    
+    App->>Banner: .task { Banner.fetchBanner() }
+    Banner->>Service: fetchBannerAndImage()
+    Service->>Network: GET /banner
+    Network-->>Service: BannerModel JSON
+    Service->>Cache: saveBannerToDefaults()
+    
+    alt imageURL changed or no cached data
+        Service->>Network: GET imageURL
+        Network-->>Service: Image Data
+        Service->>Cache: saveBannerImageData()
+    end
+    
+    App->>VM: showFullscreenBanner()
+    VM->>Banner: isBannerFullyCached
+    Banner->>Service: isBannerFullyCached()
+    Service->>Cache: getBannerFromDefaults()
+    Cache-->>Service: BannerModel?
+    Service->>Cache: getStoredBannerImageData()
+    Cache-->>Service: Data?
+    Service-->>Banner: true/false
+    
+    alt conditions met && cache full
+        VM->>VM: fullscreenBannerIsPresented = true
+        App->>UI: show FullscreenBannerView
+        UI->>Service: getStoredBannerImageData()
+        Service->>Cache: read image data
+        Cache-->>Service: Data
+        Service-->>UI: Data
+        UI->>UI: UIImage(data:) → display
+    end
+```
+
+---
+
+#### Два типа баннеров в проекте
+
+| Тип | View | Источник изображения | Когда показывается |
+|-----|------|---------------------|-------------------|
+| **Inline** | `BannerView` | `WebImage(url:)` — SDWebImageSwiftUI | В калькуляторе (hardcoded URL) |
+| **Fullscreen** | `FullscreenBannerView` | `UIImage(data:)` — из UserDefaults | Overlay каждое 3-е открытие |
+
+**Inline баннер** использует `SDWebImageSwiftUI` для загрузки "на лету":
+
+```swift
+// BannerView.swift — использует WebImage
+WebImage(url: .init(string: url))
+    .resizable()
+    .scaledToFit()
+```
+
+**Fullscreen баннер** использует **предзагруженные данные** из кэша:
+
+```swift
+// FullscreenBannerView.swift — использует кэш
+if let imageData = service.getStoredBannerImageData(),
+   let uiImage = UIImage(data: imageData) {
+    Image(uiImage: uiImage)
+}
+```
+
+---
+
+#### Логирование (OSLog)
+
+Модуль использует `BannerLogger` для отладки:
+
+```swift
+// Уровни логов:
+BannerLogger.service.debug("Запрос баннера и картинки начат")
+BannerLogger.service.info("Баннер успешно декодирован")
+BannerLogger.service.warning("Ответ пустой — баннер отсутствует")
+BannerLogger.service.error("Ошибка загрузки: \(error.localizedDescription)")
+```
+
+Просмотр логов в Console.app: фильтр по `subsystem: Banner`.
+
+---
+
+#### Обработка ошибок
+
+```swift
+enum BannerError: Error, Sendable {
+    case bannerNotFound    // Пустой ответ от API
+    case invalidImageURL   // Пустой imageURL в модели
+}
+
+// Стратегия: при ошибке — очистить кэш и throw
+func fetchBannerAndImage() async throws {
+    do {
+        let banner = try await fetchBanner()
+        // ...
+    } catch {
+        clearAllBannerData()  // Очистка при любой ошибке
+        throw error           // Пробрасываем наверх
+    }
+}
+
+// Вызывающий код игнорирует ошибки — баннер опционален
+.task { try? await Banner.fetchBanner() }
+```
+
+---
+
+#### Правила для AI-агента
+
+| Правило | Описание |
+|---------|----------|
+| **Кэш перед показом** | Всегда проверять `isBannerFullyCached` перед показом |
+| **Фоновая загрузка** | Использовать `.task { }` для фоновой загрузки |
+| **Игнорировать ошибки** | `try?` — баннер не критичен для UX |
+| **Инвалидация по URL** | Сравнивать `imageURL` для определения необходимости загрузки |
+| **Очистка при ошибках** | При любой ошибке сети — очищать весь кэш |
+| **DI для тестов** | Использовать версии методов с `service:` параметром |
+
+---
