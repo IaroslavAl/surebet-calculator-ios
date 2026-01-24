@@ -41,7 +41,8 @@ private extension TotalRowView {
             Text(profitPercentageLabel)
             TextView(
                 text: viewModel.total.profitPercentage,
-                isPercent: true
+                isPercent: true,
+                accessibilityId: AccessibilityIdentifiers.TotalRow.profitPercentageText
             )
         }
     }

@@ -12,6 +12,7 @@ struct ToggleButton: View {
     var body: some View {
         Button(action: actionWithImpactFeedback, label: label)
             .animation(.easeInOut(duration: animationDuration), value: isON)
+            .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
 
@@ -37,13 +38,13 @@ private extension ToggleButton {
     func label() -> some View {
         if isON {
             Image(systemName: "soccerball")
-                .frame(height: height)
+                .frame(minWidth: 0, minHeight: height, maxHeight: height)
                 .foregroundColor(.green)
                 .padding(.horizontal, horizontalPadding)
                 .transition(transition)
         } else {
             Image(systemName: "circle")
-                .frame(height: height)
+                .frame(minWidth: 0, minHeight: height, maxHeight: height)
                 .foregroundColor(.red)
                 .padding(.horizontal, horizontalPadding)
                 .transition(transition)
@@ -54,6 +55,15 @@ private extension ToggleButton {
         let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
         viewModel.send(.selectRow(row))
         impactFeedback.impactOccurred()
+    }
+
+    var accessibilityIdentifier: String {
+        switch row {
+        case .total:
+            return AccessibilityIdentifiers.TotalRow.toggleButton
+        case let .row(id):
+            return AccessibilityIdentifiers.Row.toggleButton(id)
+        }
     }
 }
 

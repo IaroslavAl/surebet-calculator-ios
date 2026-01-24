@@ -17,7 +17,7 @@ struct SurebetCalculatorView: View {
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: toolbar)
-            .frame(maxHeight: .infinity, alignment: .top)
+            .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
             .font(font)
             .environmentObject(viewModel)
             .animation(.default, value: viewModel.selectedNumberOfRows)
@@ -91,9 +91,13 @@ private extension SurebetCalculatorView {
         ToolbarItem(placement: .topBarTrailing) {
             NavigationClearButton()
         }
+        // WORKAROUND: ToolbarItemGroup(placement: .keyboard) вызывает runtime warning
+        // "Invalid frame dimension (negative or non-finite)" - это известный баг SwiftUI.
+        // Warning безвреден и не влияет на работу приложения.
+        // https://developer.apple.com/forums/thread/709656
         ToolbarItemGroup(placement: .keyboard) {
             KeyboardClearButton()
-            Spacer()
+            Spacer(minLength: 0)
             KeyboardDoneButton()
         }
     }
@@ -109,6 +113,7 @@ private extension SurebetCalculatorView {
                 viewModel.send(.addRow)
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
             }
+            .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.addRowButton)
     }
 
     var removeButton: some View {
@@ -122,6 +127,7 @@ private extension SurebetCalculatorView {
                 viewModel.send(.removeRow)
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
             }
+            .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.removeRowButton)
     }
 }
 

@@ -5,17 +5,18 @@ struct TextView: View {
 
     let text: String
     let isPercent: Bool
+    var accessibilityId: String?
 
     // MARK: - Body
 
     var body: some View {
         Text(text)
             .padding(textPadding)
-            .frame(height: frameHeight)
-            .frame(maxWidth: .infinity)
+            .frame(minWidth: 0, maxWidth: .infinity, minHeight: frameHeight, maxHeight: frameHeight)
             .background(Color(uiColor: .secondarySystemFill))
             .cornerRadius(cornerRadius)
             .foregroundColor(color)
+            .accessibilityIdentifier(accessibilityId ?? "")
     }
 }
 

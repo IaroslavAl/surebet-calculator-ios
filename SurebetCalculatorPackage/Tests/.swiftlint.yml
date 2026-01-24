@@ -1,0 +1,4 @@
+disabled_rules:
+  - blanket_disable_command
+
+type_body_length: 650

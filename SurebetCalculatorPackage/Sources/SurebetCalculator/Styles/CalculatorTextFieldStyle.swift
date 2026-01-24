@@ -9,7 +9,7 @@ struct CalculatorTextFieldStyle: TextFieldStyle {
         configuration
             .multilineTextAlignment(.center)
             .padding(padding)
-            .frame(height: frameHeight)
+            .frame(minWidth: 0, minHeight: frameHeight, maxHeight: frameHeight)
             .background(backgroundColor)
             .cornerRadius(cornerRadius)
             .keyboardType(.decimalPad)

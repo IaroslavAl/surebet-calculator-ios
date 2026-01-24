@@ -53,6 +53,8 @@
 - Использовать `async/await`, `Task`, `Actor` вместо старых механизмов
 - Все ViewModel должны быть помечены `@MainActor`
 - Проверять `Sendable` конформность для всех моделей данных и сервисов с async методами
+- **Правило:** `NSLock` уже является `Sendable`, не нужно использовать `nonisolated(unsafe)` для констант типа `NSLock`
+- **Правило:** Не использовать `swiftlint:disable:next sendable_warning` - это не валидное правило SwiftLint
 
 ### Типизация
 - Использовать строгую типизацию
@@ -128,6 +130,9 @@
 - Тестовый класс должен быть помечен `@MainActor`, если тестируемый класс помечен `@MainActor`
 - Использовать структуры вместо кортежей с более чем 2 элементами
 - Проверять не только компиляцию, но и выполнение тестов
+- **КРИТИЧНО:** При использовании MockURLProtocol в параллельных тестах использовать потокобезопасную маршрутизацию по URL, а не один глобальный хендлер
+- **Правило:** Регистрировать хендлеры для полного URL (с путем), а не только baseURL, так как Service делает запросы к `baseURL.appendingPathComponent("banner")`
+- **Правило:** Удалять неиспользуемые переменные в тестах (например, `bannerData`, если используется `bannerDataWithUniqueImage`)
 
 ---
 
@@ -148,6 +153,129 @@
 - **Решение:** Удалить неиспользуемые моки, заменить кортеж на структуру, добавить `@MainActor` к тестовому классу
 - **Урок:** Проверять зависимости тестового таргета, использовать структуры вместо больших кортежей, синхронизировать MainActor аннотации
 
+### 2026-01-27: Race Condition в MockURLProtocol при параллельных тестах
+- **Ошибка:** Тесты падали с ошибками `-1009` и `-1011` случайным образом при параллельном выполнении
+- **Причина:** Использовался один глобальный `static var requestHandler` в `MockURLProtocol`, который перезаписывался параллельными тестами во время выполнения запроса
+- **Решение:** Реализовать потокобезопасный реестр хендлеров по URL:
+  - Использовать `[String: RequestHandler]` словарь с ключом `URL.absoluteString`
+  - Синхронизировать доступ через `NSLock`
+  - Регистрировать хендлеры через `register(url:handler:)` и удалять через `unregister(url:)`
+  - В `startLoading()` искать хендлер по URL запроса
+- **Критично:** Регистрировать хендлеры для полного URL (с путем), а не только baseURL
+  - Service делает запросы к `baseURL.appendingPathComponent("banner")`
+  - Нужно регистрировать хендлер для `uniqueBaseURL.appendingPathComponent("banner")`, а не для `uniqueBaseURL`
+- **Урок:** В Swift 6 тесты выполняются параллельно по умолчанию - нужно обеспечивать полную изоляцию тестов через уникальные URL и потокобезопасные реестры хендлеров
+
+### 2026-01-27: SwiftLint и Sendable предупреждения
+- **Ошибка:** Попытка отключить предупреждения Sendable через `swiftlint:disable:next sendable_warning`
+- **Причина:** `sendable_warning` не является валидным правилом SwiftLint - это предупреждение компилятора Swift 6
+- **Решение:** Не пытаться отключать предупреждения Sendable через SwiftLint, они не критичны для тестового кода
+- **Ошибка:** Использование `nonisolated(unsafe)` для `NSLock`
+- **Причина:** `NSLock` уже является `Sendable` типом
+- **Решение:** Убрать `nonisolated(unsafe)` для констант типа `NSLock`
+- **Урок:** Проверять, является ли тип уже `Sendable`, перед использованием `nonisolated(unsafe)`
+
+### 2026-01-24: UI тесты и SwiftUI accessibility identifiers
+- **Ошибка:** `accessibilityIdentifier` на SwiftUI Button с custom label не всегда виден в XCUITest
+- **Причина:** SwiftUI может создавать сложную иерархию accessibility, где identifier не пробрасывается
+- **Решение:** Использовать поиск по тексту кнопки (`app.buttons["Button Text"]`) или `app.images["system.image.name"]` для системных иконок
+- **Урок:** При написании UI тестов для SwiftUI:
+  - `app.textFields["identifier"]` работает хорошо
+  - `app.staticTexts["identifier"]` работает хорошо
+  - `app.buttons["Button Text"]` надёжнее чем `app.buttons["identifier"]`
+  - `app.images["system.name"]` для системных SF Symbols
+  - `app.otherElements["identifier"]` для контейнеров (VStack и т.д.)
+- **Критично:** Launch arguments для UI тестов обрабатываются в AppDelegate через `ProcessInfo.processInfo.arguments`
+
+### 2026-01-24: UI тесты в Swift 6 - MainActor isolation
+- **Ошибка:** `Call to main actor-isolated initializer 'init()' in a synchronous nonisolated context`
+- **Причина:** XCUIApplication и все его методы в Swift 6 требуют MainActor isolation
+- **Решение:** Пометить тестовый класс `@MainActor`:
+  ```swift
+  @MainActor
+  final class SurebetCalculatorUITests: XCTestCase { ... }
+  ```
+- **Урок:** В Swift 6 все UI тестовые классы должны быть помечены `@MainActor`
+
+### 2026-01-24: UI тесты - Launch Arguments формат
+- **Ошибка:** Launch arguments `-resetUserDefaults`, `YES` не работают
+- **Причина:** Неправильный формат - `YES` передаётся как отдельный аргумент
+- **Решение:** Использовать только флаг без значения: `["-resetUserDefaults"]`
+- **Код обработки в AppDelegate:**
+  ```swift
+  if ProcessInfo.processInfo.arguments.contains("-resetUserDefaults") {
+      UserDefaults.standard.removePersistentDomain(forName: bundleID)
+  }
+  ```
+- **Урок:** Launch arguments - это массив строк, каждый флаг - отдельный элемент
+
+### 2026-01-24: UI тесты - Disabled TextField нельзя редактировать
+- **Ошибка:** `Failed to synthesize event: Neither element nor any descendant has keyboard focus`
+- **Причина:** По умолчанию `selectedRow = .total`, поэтому все `row_X_bet_size_text_field` заблокированы (disabled)
+- **Решение:** Использовать поля, которые всегда enabled:
+  - `total_row_bet_size_text_field` - всегда enabled когда selectedRow == .total
+  - `row_X_coefficient_text_field` - всегда enabled
+- **Урок:** Перед написанием UI тестов изучить логику приложения - какие поля enabled/disabled в каком состоянии
+
+### 2026-01-24: UI тесты - Множественные элементы с одинаковым текстом
+- **Ошибка:** `Multiple matching elements found` для кнопки "Close"
+- **Причина:** На последней странице онбординга две кнопки: X (Close onboarding) и основная (Close)
+- **Решение:** 
+  - Добавить уникальный `accessibilityLabel` для кнопки X: `"Close onboarding"`
+  - Использовать NSPredicate для поиска: `app.buttons.matching(NSPredicate(format: "label == 'Close'"))`
+- **Урок:** Всегда добавлять уникальные accessibilityLabel для кнопок с иконками
+
+### 2026-01-24: UI тесты - Image с onTapGesture
+- **Ошибка:** Кнопки +/- (Image с onTapGesture) не находятся как buttons
+- **Причина:** Image с onTapGesture - это не Button, а Image в accessibility tree
+- **Решение:** Искать через `app.images["identifier"]` вместо `app.buttons["identifier"]`
+- **Урок:** Image с onTapGesture и accessibilityIdentifier ищется через `app.images`, не `app.buttons`
+
+### 2026-01-24: XCTestCase setUp/tearDown и MainActor в Swift 6
+- **Ошибка:** `Main actor-isolated property 'app' can not be mutated from a nonisolated context` в `setUpWithError()`
+- **Причина:** Методы `setUpWithError()` и `tearDownWithError()` не наследуют `@MainActor` изоляцию от класса
+- **Решение:** Использовать async версии методов:
+  ```swift
+  @MainActor
+  final class MyUITests: XCTestCase {
+      override func setUp() async throws {
+          try await super.setUp()
+          app = XCUIApplication()
+      }
+      
+      override func tearDown() async throws {
+          app = nil
+          try await super.tearDown()
+      }
+  }
+  ```
+- **Урок:** В Swift 6 для `@MainActor` тестовых классов использовать `setUp() async throws` вместо `setUpWithError() throws`
+
+### 2026-01-24: Swift Testing - Race Condition в тестах с UserDefaults
+- **Ошибка:** Тесты падают случайным образом из-за race condition при работе с UserDefaults
+- **Причина:** Swift Testing по умолчанию выполняет тесты параллельно, а UserDefaults - shared state
+- **Решение:** Добавить `@Suite(.serialized)` для последовательного выполнения тестов:
+  ```swift
+  @MainActor
+  @Suite(.serialized)
+  struct RootViewModelTests { ... }
+  ```
+- **Урок:** Тесты, работающие с shared state (UserDefaults, Keychain, файлы), должны выполняться последовательно через `@Suite(.serialized)`
+
+### 2026-01-24: SwiftUI - Invalid frame dimension в keyboard toolbar (БАГ SWIFTUI)
+- **Ошибка:** `Invalid frame dimension (negative or non-finite)` runtime warning в UI тестах при работе с клавиатурой
+- **Причина:** **Известный баг SwiftUI** - `ToolbarItemGroup(placement: .keyboard)` вызывает runtime warning при появлении/исчезновении клавиатуры независимо от содержимого
+- **Попытки исправления (НЕ РАБОТАЮТ):**
+  - `Spacer(minLength: 0)` вместо `Spacer()` - не помогает
+  - `.fixedSize()` на кнопках - не помогает
+  - Убрать анимации - не помогает
+  - Использовать отдельные `ToolbarItem` вместо `ToolbarItemGroup` - не помогает
+  - `.frame(minWidth: 0)` на компонентах - не помогает
+- **Единственное решение:** Убрать keyboard toolbar полностью - тогда warnings исчезают
+- **Рекомендация:** **Игнорировать warning** - это runtime diagnostic от симулятора, не влияет на работу приложения, тесты проходят
+- **Ссылка:** https://developer.apple.com/forums/thread/709656
+- **Урок:** `ToolbarItemGroup(placement: .keyboard)` в SwiftUI имеет известный баг с "Invalid frame dimension" warnings. Это не ошибка приложения
+
 ---
 
-**Последнее обновление:** 2026-01-27
+**Последнее обновление:** 2026-01-24

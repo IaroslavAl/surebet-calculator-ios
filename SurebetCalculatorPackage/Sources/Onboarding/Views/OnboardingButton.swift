@@ -11,6 +11,8 @@ struct OnboardingButton: View {
         Button(action: action) {
             label
         }
+        .accessibilityLabel(text)
+        .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.nextButton)
     }
 }
 

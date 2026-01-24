@@ -32,6 +32,7 @@ struct TextFieldView: View {
                     viewModel.send(.setFocus(focus))
                 }
             }
+            .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
 
@@ -57,6 +58,17 @@ private extension TextFieldView {
             return viewModel.rows[id].betSize
         case let .rowCoefficient(id):
             return viewModel.rows[id].coefficient
+        }
+    }
+
+    var accessibilityIdentifier: String {
+        switch focusableField {
+        case .totalBetSize:
+            return AccessibilityIdentifiers.TotalRow.betSizeTextField
+        case let .rowBetSize(id):
+            return AccessibilityIdentifiers.Row.betSizeTextField(id)
+        case let .rowCoefficient(id):
+            return AccessibilityIdentifiers.Row.coefficientTextField(id)
         }
     }
 }

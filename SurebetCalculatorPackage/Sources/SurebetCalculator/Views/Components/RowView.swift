@@ -60,7 +60,8 @@ private extension RowView {
             }
             TextView(
                 text: viewModel.rows[id].income,
-                isPercent: false
+                isPercent: false,
+                accessibilityId: AccessibilityIdentifiers.Row.incomeText(id)
             )
         }
     }

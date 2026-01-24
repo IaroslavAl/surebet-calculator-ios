@@ -23,13 +23,18 @@ struct Service: BannerService, @unchecked Sendable {
     // MARK: - Initialization
 
     init(
+        baseURL: URL? = nil,
         session: URLSession = .shared,
         defaults: UserDefaults = .standard
     ) {
-        guard let url = URL(string: BannerConstants.apiBaseURL) else {
-            fatalError("Invalid base URL: \(BannerConstants.apiBaseURL)")
+        if let baseURL = baseURL {
+            self.baseURL = baseURL
+        } else {
+            guard let url = URL(string: BannerConstants.apiBaseURL) else {
+                fatalError("Invalid base URL: \(BannerConstants.apiBaseURL)")
+            }
+            self.baseURL = url
         }
-        self.baseURL = url
         self.session = session
         self.defaults = defaults
     }
@@ -140,7 +145,13 @@ struct Service: BannerService, @unchecked Sendable {
 
     func downloadImage(from url: URL) async throws {
         BannerLogger.service.debug("Скачивание картинки: \(url.absoluteString, privacy: .public)")
-        let (data, response) = try await session.data(from: url)
+
+        // Используем URLRequest вместо прямого URL для совместимости с MockURLProtocol
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = BannerConstants.requestTimeout
+
+        let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             BannerLogger.service.error("Ошибка: ответ не HTTPURLResponse")

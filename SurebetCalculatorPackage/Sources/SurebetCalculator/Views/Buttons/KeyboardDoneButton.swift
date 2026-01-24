@@ -11,6 +11,7 @@ struct KeyboardDoneButton: View {
         Button(text) {
             viewModel.send(.hideKeyboard)
         }
+        .accessibilityIdentifier(AccessibilityIdentifiers.Keyboard.doneButton)
     }
 }
 
