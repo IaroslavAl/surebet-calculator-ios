@@ -17,6 +17,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        // Обработка launch arguments для UI тестов
+        processUITestArguments()
+
         #if !DEBUG
         let apiKey = "f7e1f335-475a-4b6c-ba4a-77988745bc7a"
         if let configuration = AppMetricaConfiguration(apiKey: apiKey) {
@@ -24,5 +27,24 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         }
         #endif
         return true
+    }
+
+    // MARK: - Private Methods
+
+    /// Обрабатывает launch arguments для UI тестов
+    private func processUITestArguments() {
+        let arguments = ProcessInfo.processInfo.arguments
+
+        // Сброс UserDefaults для чистого состояния
+        if arguments.contains("-resetUserDefaults") {
+            if let bundleID = Bundle.main.bundleIdentifier {
+                UserDefaults.standard.removePersistentDomain(forName: bundleID)
+            }
+        }
+
+        // Пропуск онбординга
+        if arguments.contains("-onboardingIsShown") {
+            UserDefaults.standard.set(true, forKey: "onboardingIsShown")
+        }
     }
 }
