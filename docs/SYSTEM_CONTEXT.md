@@ -189,3 +189,225 @@ public enum NewModule {
 ```
 
 ---
+
+### 1.2. Паттерн MVVM
+
+Проект использует **Model-View-ViewModel** с дополнительным слоем **Service** для бизнес-логики.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         SwiftUI View                             │
+│  @StateObject viewModel = ViewModel()                           │
+│  .environmentObject(viewModel)                                  │
+│                              │                                   │
+│                    viewModel.send(.action)                      │
+│                              ▼                                   │
+├─────────────────────────────────────────────────────────────────┤
+│                        ViewModel                                 │
+│  @MainActor final class: ObservableObject                       │
+│  @Published private(set) var state                              │
+│  private let service: ServiceProtocol                           │
+│                              │                                   │
+│                    service.calculate()                          │
+│                              ▼                                   │
+├─────────────────────────────────────────────────────────────────┤
+│                         Service                                  │
+│  protocol: Sendable                                             │
+│  struct DefaultService: ServiceProtocol                         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Роли компонентов
+
+| Слой | Ответственность | Паттерны |
+|------|-----------------|----------|
+| **View** | UI-рендеринг, передача действий в ViewModel | `@StateObject`, `@EnvironmentObject`, `.onChange` |
+| **ViewModel** | Управление состоянием, обработка действий, вызов сервисов | `@MainActor`, `ObservableObject`, `@Published`, `ViewAction` enum |
+| **Service** | Чистая бизнес-логика без состояния | Protocol + struct, `Sendable` |
+
+#### View (SwiftUI)
+
+View **владеет** ViewModel через `@StateObject` и передаёт его дочерним view через `.environmentObject()`.
+
+```swift
+// Корневой View — владеет ViewModel
+struct SurebetCalculatorView: View {
+    @StateObject private var viewModel = SurebetCalculatorViewModel()
+    
+    var body: some View {
+        VStack {
+            TotalRowView()
+            // ...
+        }
+        .environmentObject(viewModel)  // Передача дочерним
+    }
+}
+
+// Дочерний View — наблюдает ViewModel
+struct TotalRowView: View {
+    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    
+    var body: some View {
+        TextField(...)
+            .onChange(of: text) { newValue in
+                viewModel.send(.setTextFieldText(.totalBet, newValue))
+            }
+    }
+}
+```
+
+**Правила для View:**
+1. Только корневой View использует `@StateObject`
+2. Дочерние View используют `@EnvironmentObject`
+3. View не содержит бизнес-логики — только вызов `viewModel.send()`
+4. Анимации через `.animation()` модификатор
+
+#### ViewModel (@MainActor, ObservableObject)
+
+ViewModel управляет состоянием и обрабатывает действия через паттерн **ViewAction**.
+
+```swift
+@MainActor
+final class SurebetCalculatorViewModel: ObservableObject {
+    // MARK: - Properties
+    
+    // Состояние — readonly для внешнего доступа
+    @Published private(set) var total: TotalRow
+    @Published private(set) var rows: [Row]
+    @Published private(set) var selectedRow: RowType?
+    
+    // Сервис — внедряется через init
+    private let calculationService: CalculationService
+    
+    // MARK: - Initialization
+    
+    init(
+        total: TotalRow = TotalRow(),
+        rows: [Row] = Row.createRows(),
+        calculationService: CalculationService = DefaultCalculationService()
+    ) {
+        self.total = total
+        self.rows = rows
+        self.calculationService = calculationService
+    }
+    
+    // MARK: - Public Methods
+    
+    // Паттерн ViewAction — все действия в одном enum
+    enum ViewAction {
+        case selectRow(RowType)
+        case addRow
+        case removeRow
+        case setTextFieldText(FocusableField, String)
+        case clearAll
+    }
+    
+    // Единая точка входа для всех действий от View
+    func send(_ action: ViewAction) {
+        switch action {
+        case let .selectRow(row):
+            select(row)
+        case .addRow:
+            addRow()
+        case let .setTextFieldText(field, text):
+            set(field, text: text)
+            calculate()
+        case .clearAll:
+            clearAll()
+        }
+    }
+}
+
+// MARK: - Private Methods
+
+private extension SurebetCalculatorViewModel {
+    func calculate() {
+        let result = calculationService.calculate(
+            total: total,
+            rows: rows,
+            selectedRow: selectedRow,
+            displayedRowIndexes: displayedRowIndexes
+        )
+        if let newTotal = result.total { total = newTotal }
+        if let newRows = result.rows { rows = newRows }
+    }
+}
+```
+
+**Правила для ViewModel:**
+1. Всегда `@MainActor final class: ObservableObject`
+2. Состояние через `@Published private(set)` — View может читать, но не писать
+3. Все действия через `send(_ action: ViewAction)`
+4. Сервисы через `private let` + DI в `init`
+5. `@AppStorage` для персистентного состояния (UserDefaults)
+
+#### Service (Protocol + Struct)
+
+Service содержит чистую бизнес-логику без состояния.
+
+```swift
+// Протокол — определяет контракт
+protocol CalculationService: Sendable {
+    func calculate(
+        total: TotalRow,
+        rows: [Row],
+        selectedRow: RowType?,
+        displayedRowIndexes: Range<Int>
+    ) -> (total: TotalRow?, rows: [Row]?)
+}
+
+// Реализация — stateless struct
+struct DefaultCalculationService: CalculationService, Sendable {
+    func calculate(
+        total: TotalRow,
+        rows: [Row],
+        selectedRow: RowType?,
+        displayedRowIndexes: Range<Int>
+    ) -> (total: TotalRow?, rows: [Row]?) {
+        let calculator = Calculator(
+            total: total,
+            rows: rows,
+            selectedRow: selectedRow,
+            displayedRowIndexes: displayedRowIndexes
+        )
+        return calculator.calculate()
+    }
+}
+```
+
+**Правила для Service:**
+1. Всегда протокол + struct реализация
+2. `Sendable` конформность обязательна
+3. Stateless — нет stored properties с состоянием
+4. Может использовать вспомогательные структуры (Calculator, NetworkClient)
+
+#### Правила взаимодействия между слоями
+
+| Направление | Как | Пример |
+|-------------|-----|--------|
+| View → ViewModel | `viewModel.send(.action)` | `viewModel.send(.addRow)` |
+| ViewModel → View | `@Published` | `@Published var rows: [Row]` |
+| ViewModel → Service | Прямой вызов метода | `calculationService.calculate(...)` |
+| Service → ViewModel | Return value | `return (total, rows)` |
+
+**Запрещено:**
+- View напрямую вызывает Service
+- Service знает о ViewModel
+- ViewModel напрямую меняет UI
+- Циклические зависимости
+
+#### Dependency Injection
+
+DI реализуется через параметры `init` с дефолтными значениями:
+
+```swift
+// Production использует дефолтные значения
+let viewModel = SurebetCalculatorViewModel()
+
+// Тесты передают моки
+let viewModel = SurebetCalculatorViewModel(
+    calculationService: MockCalculationService()
+)
+```
+
+---
