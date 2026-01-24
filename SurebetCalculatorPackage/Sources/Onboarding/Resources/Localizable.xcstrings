@@ -35,6 +35,23 @@
         }
       }
     },
+    "Close onboarding" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close onboarding"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть онбординг"
+          }
+        }
+      }
+    },
     "Enter the bet amount and coefficients for all outcomes after deactivating all switches." : {
       "extractionState" : "manual",
       "localizations" : {

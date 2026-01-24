@@ -13,6 +13,7 @@ struct OnboardingIndex: View {
                 Circle()
                     .frame(width: size(index))
                     .foregroundColor(color(index))
+                    .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.pageIndicator(index))
             }
         }
         .animation(.default, value: viewModel.currentPage)

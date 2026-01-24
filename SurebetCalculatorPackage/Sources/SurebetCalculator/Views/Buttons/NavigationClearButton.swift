@@ -14,6 +14,7 @@ struct NavigationClearButton: View {
             Image(systemName: "trash")
                 .accessibilityLabel(String(localized: "Clear all"))
         }
+        .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.clearButton)
     }
 }
 

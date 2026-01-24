@@ -14,6 +14,7 @@ struct KeyboardClearButton: View {
             Text(String(localized: "Clear"))
                 .foregroundColor(.red)
         }
+        .accessibilityIdentifier(AccessibilityIdentifiers.Keyboard.clearButton)
     }
 }
 

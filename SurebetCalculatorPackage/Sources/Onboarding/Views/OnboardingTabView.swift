@@ -12,11 +12,13 @@ struct OnboardingTabView: View {
             ForEach(viewModel.pages.indices, id: \.self) { index in
                 OnboardingPageView(page: viewModel.pages[index])
                     .tag(index)
+                    .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.pageView(index))
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .animation(.default, value: viewModel.currentPage)
         .transition(.move(edge: .trailing))
+        .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.tabView)
     }
 }
 
