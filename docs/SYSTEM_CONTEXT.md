@@ -1194,6 +1194,385 @@ swift run --package-path SurebetCalculatorPackage swiftlint lint
 
 ---
 
+### 2.3. Swift 6 Concurrency
+
+Проект использует **Swift 6** с **strict concurrency checking**. Это обеспечивает потокобезопасность на уровне компиляции.
+
+#### @MainActor — изоляция UI-кода
+
+`@MainActor` гарантирует выполнение кода на главном потоке. Используется для всего UI-связанного кода.
+
+**Где применяется @MainActor:**
+
+| Компонент | Пример | Обоснование |
+|-----------|--------|-------------|
+| **ViewModel** | `@MainActor final class RootViewModel` | Изменяет `@Published` свойства, связанные с UI |
+| **View** | `@MainActor struct RootView` | SwiftUI View всегда на main thread |
+| **Public API модулей** | `@MainActor public static func view()` | Возвращает SwiftUI View |
+| **ReviewService** | `@MainActor public protocol ReviewService` | Использует UIApplication, SKStoreReviewController |
+| **Тестовые классы** | `@MainActor struct RootViewModelTests` | Тестирует MainActor-изолированные ViewModel |
+
+**Паттерн ViewModel:**
+
+```swift
+@MainActor
+final class SurebetCalculatorViewModel: ObservableObject {
+    // @Published требует MainActor
+    @Published private(set) var rows: [Row]
+    @Published private(set) var total: TotalRow
+    
+    // Все методы автоматически MainActor-изолированы
+    func send(_ action: ViewAction) {
+        switch action {
+        case .addRow:
+            addRow()  // Безопасно — тот же actor
+        case let .setTextFieldText(field, text):
+            set(field, text: text)
+            calculate()
+        }
+    }
+}
+```
+
+**Паттерн Public API модуля:**
+
+```swift
+public enum SurebetCalculator {
+    @MainActor
+    public static func view() -> some View {
+        SurebetCalculatorView()  // Возвращает MainActor-изолированный View
+    }
+}
+```
+
+**Правила @MainActor:**
+1. Все ViewModel — `@MainActor final class`
+2. Все View — `@MainActor struct`
+3. Public API с возвратом View — `@MainActor static func`
+4. Протоколы для UI-сервисов — `@MainActor protocol`
+5. Тесты для MainActor ViewModel — `@MainActor struct`
+
+---
+
+#### Sendable — потокобезопасные типы
+
+`Sendable` подтверждает, что тип можно безопасно передавать между потоками/actors.
+
+**Типы, требующие Sendable:**
+
+| Категория | Пример | Как соответствовать |
+|-----------|--------|---------------------|
+| **Модели данных** | `struct Row: Sendable` | Автоматически для struct с Sendable полями |
+| **Сервисные протоколы** | `protocol CalculationService: Sendable` | Явное указание в протоколе |
+| **Реализации сервисов** | `struct DefaultCalculationService: Sendable` | Stateless struct |
+| **Enum'ы** | `enum CalculationMethod: Sendable` | Автоматически для enum без associated values |
+| **Ошибки** | `enum BannerError: Error, Sendable` | Явное указание |
+
+**Примеры моделей:**
+
+```swift
+// Автоматически Sendable — все поля Sendable
+struct Row: Equatable, Sendable {
+    let id: Int
+    var isON = false
+    var coefficient = ""
+    var betSize = ""
+}
+
+struct TotalRow: Equatable, Sendable {
+    var isON = true
+    var betSize = ""
+    var profitInPercent = ""
+    var profitInMoney = ""
+}
+
+enum RowType: Equatable, Sendable {
+    case total
+    case row(_ id: Int)
+}
+```
+
+**Протоколы сервисов:**
+
+```swift
+// Все сервисные протоколы Sendable
+protocol CalculationService: Sendable {
+    func calculate(...) -> (total: TotalRow?, rows: [Row]?)
+}
+
+public protocol AnalyticsService: Sendable {
+    func log(name: String, parameters: [String: AnalyticsParameterValue]?)
+}
+
+public protocol BannerService: Sendable {
+    func fetchBannerAndImage() async throws
+    func fetchBanner() async throws -> BannerModel
+}
+```
+
+**@unchecked Sendable — для классов с mutable state:**
+
+```swift
+// URLSession и UserDefaults безопасны, но компилятор не знает
+struct Service: BannerService, @unchecked Sendable {
+    private let baseURL: URL
+    private let session: URLSession      // Thread-safe
+    private let defaults: UserDefaults   // Thread-safe
+}
+
+// Моки в тестах
+@MainActor
+final class MockReviewService: ReviewService, @unchecked Sendable {
+    var requestReviewCallCount = 0  // Mutable, но @MainActor изолирует
+}
+```
+
+**Правила Sendable:**
+1. Все модели данных — `Sendable`
+2. Все сервисные протоколы — `Sendable`
+3. Stateless struct — автоматически `Sendable`
+4. Struct с URLSession/UserDefaults — `@unchecked Sendable`
+5. Моки с @MainActor — `@unchecked Sendable`
+
+---
+
+#### async/await — асинхронные операции
+
+**Сетевые запросы:**
+
+```swift
+struct Service: BannerService, @unchecked Sendable {
+    func fetchBannerAndImage() async throws {
+        // Последовательные async операции
+        let banner = try await fetchBanner()
+        
+        if storedImageURL != banner.imageURL {
+            try await downloadImage(from: banner.imageURL)
+        }
+    }
+    
+    func fetchBanner() async throws -> BannerModel {
+        // URLSession.data возвращает (Data, URLResponse)
+        let (data, response) = try await session.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200..<300).contains(httpResponse.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+        
+        return try JSONDecoder().decode(BannerModel.self, from: data)
+    }
+}
+```
+
+**Task.sleep для задержек:**
+
+```swift
+@MainActor
+public final class ReviewHandler: ReviewService {
+    public func requestReview() async {
+        // Задержка перед показом системного диалога
+        try? await Task.sleep(nanoseconds: 1_000_000_000)  // 1 секунда
+        
+        if let scene = UIApplication.shared.connectedScenes.first(...) as? UIWindowScene {
+            SKStoreReviewController.requestReview(in: scene)
+        }
+    }
+}
+```
+
+**Вызов async из sync (Task):**
+
+```swift
+// В RootViewModel
+func showRequestReview() {
+    #if !DEBUG
+    Task {
+        try? await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest)
+        // После await — обратно в MainActor контекст
+        alertIsPresented = true
+    }
+    #endif
+}
+```
+
+**async в тестах:**
+
+```swift
+@MainActor
+struct RootViewModelTests {
+    @Test
+    func handleReviewYesClosesAlertAndCallsService() async {
+        // Given
+        let mockReview = MockReviewService()
+        let viewModel = createViewModel(reviewService: mockReview)
+        
+        // When — await для async метода
+        await viewModel.handleReviewYes()
+        
+        // Then
+        #expect(mockReview.requestReviewCallCount == 1)
+    }
+    
+    @Test
+    func showRequestReviewAfterDelay() async {
+        let viewModel = createViewModel()
+        viewModel.showRequestReview()
+        
+        // Ждём завершения внутреннего Task
+        try? await Task.sleep(nanoseconds: delay + 100_000_000)
+        
+        #expect(viewModel.alertIsPresented == true)
+    }
+}
+```
+
+**Правила async/await:**
+1. Сетевые запросы — `async throws`
+2. Задержки — `Task.sleep(nanoseconds:)`
+3. Вызов async из sync — через `Task { }`
+4. В тестах — `async` функции с `await`
+5. Ожидание Task — дополнительный `Task.sleep` с запасом
+
+---
+
+#### UIDevice Workaround — nonisolated(unsafe)
+
+`UIDevice.current` помечен как `@MainActor` в iOS SDK, но реально thread-safe для чтения. Проблема: нельзя использовать в computed properties View без @MainActor.
+
+**Проблема:**
+
+```swift
+extension View {
+    var isIPad: Bool {
+        // ❌ Ошибка: Main actor-isolated property 'current' 
+        // can not be referenced from a non-isolated context
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+}
+```
+
+**Решение — двойной подход:**
+
+```swift
+/// Утилита для определения типа устройства
+enum Device {
+    /// Безопасная версия для @MainActor контекста
+    @MainActor
+    static var isIPad: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+
+    /// Nonisolated версия для использования из любого контекста
+    /// UIDevice.current реально безопасен для чтения (read-only)
+    nonisolated(unsafe) static var isIPadUnsafe: Bool {
+        MainActor.assumeIsolated {
+            UIDevice.current.userInterfaceIdiom == .pad
+        }
+    }
+}
+
+extension View {
+    /// Определяет, является ли текущее устройство iPad
+    var isIPad: Bool {
+        Device.isIPadUnsafe
+    }
+}
+```
+
+**Использование:**
+
+```swift
+struct SurebetCalculatorView: View {
+    var body: some View {
+        VStack {
+            // Использование в View — через extension
+            if isIPad {
+                iPadLayout
+            } else {
+                iPhoneLayout
+            }
+        }
+    }
+}
+
+// В @MainActor контексте — безопасная версия
+@MainActor
+func configureForDevice() {
+    if Device.isIPad {
+        // ...
+    }
+}
+```
+
+**Почему это безопасно:**
+1. `UIDevice.current` — singleton, создаётся один раз
+2. `.userInterfaceIdiom` — read-only property, не меняется
+3. SwiftUI View body вызывается на main thread
+4. `MainActor.assumeIsolated` — утверждение, что мы на main thread
+
+**Правила workaround:**
+1. Использовать **только для read-only** системных свойств
+2. `nonisolated(unsafe)` + `MainActor.assumeIsolated` — пара
+3. Документировать причину в комментарии
+4. Предоставлять обе версии: safe и unsafe
+
+---
+
+#### @Suite(.serialized) — тесты с shared state
+
+Когда тесты используют `UserDefaults` или другой shared state, они могут конфликтовать при параллельном выполнении.
+
+```swift
+/// Тесты выполняются последовательно для изоляции UserDefaults
+@MainActor
+@Suite(.serialized)  // Запускать тесты один за другим
+struct RootViewModelTests {
+    /// Очищает UserDefaults перед каждым тестом
+    func clearTestUserDefaults() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: "onboardingIsShown")
+        defaults.removeObject(forKey: "numberOfOpenings")
+    }
+    
+    @Test
+    func shouldShowOnboardingWhenNotShown() {
+        // Given
+        clearTestUserDefaults()  // Изоляция теста
+        let viewModel = createViewModel()
+        
+        // Then
+        #expect(viewModel.shouldShowOnboarding == true)
+    }
+}
+```
+
+**Когда использовать `.serialized`:**
+- Тесты с `@AppStorage` / `UserDefaults`
+- Тесты с singleton'ами
+- Тесты с файловой системой
+- Тесты с shared in-memory cache
+
+---
+
+#### Таблица паттернов Swift 6 Concurrency
+
+| Паттерн | Когда использовать | Пример |
+|---------|-------------------|--------|
+| `@MainActor class` | ViewModel с @Published | `@MainActor final class RootViewModel` |
+| `@MainActor struct` | SwiftUI View | `@MainActor struct RootView: View` |
+| `@MainActor protocol` | UI-зависимые сервисы | `@MainActor protocol ReviewService` |
+| `Sendable struct` | Модели данных | `struct Row: Sendable` |
+| `Sendable protocol` | Сервисные протоколы | `protocol CalculationService: Sendable` |
+| `@unchecked Sendable` | Struct с thread-safe зависимостями | `struct Service: @unchecked Sendable` |
+| `async throws` | Сетевые операции | `func fetchBanner() async throws` |
+| `Task { }` | Запуск async из sync | `Task { await service.fetch() }` |
+| `Task.sleep` | Задержки | `try? await Task.sleep(nanoseconds: 1_000_000_000)` |
+| `nonisolated(unsafe)` | Read-only системные свойства | `nonisolated(unsafe) static var isIPad` |
+| `@Suite(.serialized)` | Тесты с shared state | `@Suite(.serialized) struct Tests` |
+
+---
+
 #### Добавление новой зависимости
 
 ```swift
