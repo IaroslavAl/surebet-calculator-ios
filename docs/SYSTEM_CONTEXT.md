@@ -589,3 +589,301 @@ Tests/
 | Hand-written mocks | Без библиотек (Mockolo, Cuckoo) — полный контроль |
 
 ---
+
+### 1.4. Навигация
+
+Проект использует **условный рендеринг** вместо NavigationStack/NavigationPath. Навигация управляется состоянием в ViewModel.
+
+#### Навигационная структура
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        RootView                                  │
+│  @StateObject viewModel = RootViewModel()                        │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                    mainContent                               ││
+│  │  ┌───────────────────┬─────────────────────────────────────┐││
+│  │  │ isOnboardingShown │              Экран                  │││
+│  │  ├───────────────────┼─────────────────────────────────────┤││
+│  │  │      false        │ OnboardingView (fullscreen)         │││
+│  │  │      true         │ NavigationView > SurebetCalculator  │││
+│  │  └───────────────────┴─────────────────────────────────────┘││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                    Overlays (поверх контента)               ││
+│  │  • Alert (запрос отзыва)                                    ││
+│  │  • FullscreenBannerView (.overlay)                          ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Условный рендеринг экранов
+
+`RootView` определяет какой экран показывать на основе `@AppStorage`:
+
+```swift
+// RootView.swift
+@MainActor
+struct RootView: View {
+    @StateObject private var viewModel = RootViewModel()
+    
+    var body: some View {
+        mainContent
+            .modifier(LifecycleModifier(viewModel: viewModel))
+            .modifier(ReviewAlertModifier(viewModel: viewModel))
+            .modifier(FullscreenBannerOverlayModifier(viewModel: viewModel))
+            .modifier(AnimationModifier(viewModel: viewModel))
+    }
+}
+
+private extension RootView {
+    var mainContent: some View {
+        Group {
+            if viewModel.isOnboardingShown {
+                calculatorView  // Основной экран
+            } else {
+                onboardingView  // Первый запуск
+            }
+        }
+    }
+    
+    var calculatorView: some View {
+        NavigationView {
+            SurebetCalculator.view()
+        }
+        .navigationViewStyle(.stack)  // Важно для iPad
+    }
+}
+
+// RootViewModel.swift
+@MainActor
+final class RootViewModel: ObservableObject {
+    // Персистентное состояние в UserDefaults
+    @AppStorage("onboardingIsShown") private var onboardingIsShown = false
+    
+    var isOnboardingShown: Bool { onboardingIsShown }
+    
+    func updateOnboardingShown(_ value: Bool) {
+        onboardingIsShown = value
+    }
+}
+```
+
+**Ключевые паттерны:**
+1. `@AppStorage` — персистентное состояние между запусками
+2. `Group { if ... else }` — условный рендеринг без NavigationPath
+3. `NavigationView` с `.stack` — для iPad совместимости
+4. Состояние передаётся через `Binding` (onboardingIsShown)
+
+#### ViewModifier паттерн для разделения логики
+
+Вместо одного большого `body`, логика разбита на отдельные ViewModifier:
+
+```swift
+// Разделение ответственности через ViewModifier
+
+// 1. Lifecycle — обработка появления экрана
+private struct LifecycleModifier: ViewModifier {
+    let viewModel: RootViewModel
+    
+    func body(content: Content) -> some View {
+        content
+            .onAppear { viewModel.onAppear() }
+            .onAppear(perform: viewModel.showOnboardingView)
+            .onAppear(perform: viewModel.showRequestReview)
+            .onAppear(perform: viewModel.showFullscreenBanner)
+    }
+}
+
+// 2. Background task — фоновая загрузка данных
+private struct BannerTaskModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content.task { try? await Banner.fetchBanner() }
+    }
+}
+
+// 3. Alert — модальный диалог
+private struct ReviewAlertModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+    
+    func body(content: Content) -> some View {
+        content.alert(viewModel.requestReviewTitle, isPresented: $viewModel.alertIsPresented) {
+            Button(String(localized: "No")) { viewModel.handleReviewNo() }
+            Button(String(localized: "Yes")) { Task { await viewModel.handleReviewYes() } }
+        }
+    }
+}
+
+// 4. Animation — анимации переходов
+private struct AnimationModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+    
+    func body(content: Content) -> some View {
+        content
+            .animation(.default, value: viewModel.isOnboardingShown)
+            .animation(.easeInOut, value: viewModel.fullscreenBannerIsPresented)
+    }
+}
+```
+
+**Зачем ViewModifier:**
+- Single Responsibility — каждый модификатор отвечает за одну задачу
+- Тестируемость — модификаторы можно тестировать отдельно
+- Читаемость — `body` остаётся компактным
+
+#### Модальные Overlay
+
+Fullscreen баннер показывается поверх контента через `.overlay`:
+
+```swift
+private struct FullscreenBannerOverlayModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+    
+    func body(content: Content) -> some View {
+        content.overlay {
+            if viewModel.fullscreenBannerIsPresented {
+                Banner.fullscreenBannerView(isPresented: $viewModel.fullscreenBannerIsPresented)
+                    .transition(.move(edge: .bottom))
+            }
+        }
+    }
+}
+```
+
+**Условия показа баннера (`RootViewModel`):**
+```swift
+var fullscreenBannerIsAvailable: Bool {
+    onboardingIsShown &&              // После онбординга
+    requestReviewWasShown &&          // После показа review alert
+    numberOfOpenings.isMultiple(of: 3) // Каждое 3-е открытие
+}
+
+func showFullscreenBanner() {
+    if fullscreenBannerIsAvailable, Banner.isBannerFullyCached {
+        fullscreenBannerIsPresented = true
+    }
+}
+```
+
+**FullscreenBannerView — структура:**
+```swift
+struct FullscreenBannerView: View {
+    @Binding var isPresented: Bool
+    private let service: BannerService
+    
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.75)  // Затемнение фона
+            bannerImage                 // Изображение из кэша
+        }
+    }
+    
+    // Закрытие: isPresented = false
+    // Клик: открывает URL и закрывает через delay
+}
+```
+
+#### Transition анимации
+
+Переходы между экранами анимируются через `.transition`:
+
+```swift
+// Onboarding — выезжает снизу
+@ViewBuilder
+var onboardingView: some View {
+    if viewModel.shouldShowOnboardingWithAnimation {
+        Onboarding.view(onboardingIsShown: onboardingBinding)
+            .transition(.move(edge: .bottom))
+    }
+}
+
+// Баннер — выезжает снизу
+Banner.fullscreenBannerView(...)
+    .transition(.move(edge: .bottom))
+
+// Анимация привязана к изменению состояния
+.animation(.default, value: viewModel.isOnboardingShown)
+.animation(.easeInOut, value: viewModel.fullscreenBannerIsPresented)
+```
+
+**Паттерн двухфазной анимации Onboarding:**
+```swift
+// ViewModel
+@Published private(set) var isAnimation = false
+
+var shouldShowOnboardingWithAnimation: Bool {
+    shouldShowOnboarding && isAnimation  // Оба условия
+}
+
+func showOnboardingView() {
+    withAnimation { isAnimation = true }  // Триггер анимации
+}
+```
+
+#### Диаграмма навигационных состояний
+
+```mermaid
+stateDiagram-v2
+    [*] --> Onboarding: Первый запуск
+    Onboarding --> Calculator: onboardingIsShown = true
+    
+    state Calculator {
+        [*] --> Main
+        Main --> ReviewAlert: условия выполнены
+        ReviewAlert --> Main: dismiss
+        Main --> FullscreenBanner: условия + кэш
+        FullscreenBanner --> Main: close/tap
+    }
+    
+    note right of Onboarding
+        @AppStorage("onboardingIsShown") = false
+    end note
+    
+    note right of Calculator
+        @AppStorage("onboardingIsShown") = true
+    end note
+```
+
+#### Правила навигации в проекте
+
+| Правило | Описание |
+|---------|----------|
+| Условный рендеринг | `if/else` в `body` вместо NavigationPath |
+| @AppStorage | Персистентное состояние навигации |
+| ViewModifier | Разделение логики на отдельные модификаторы |
+| .overlay | Модальные экраны поверх контента |
+| .transition | Анимации появления/исчезновения |
+| Binding | Передача состояния между модулями |
+
+#### Как добавить новый overlay/modal
+
+```swift
+// 1. Добавить состояние в RootViewModel
+@Published var newModalIsPresented = false
+
+// 2. Создать ViewModifier
+private struct NewModalOverlayModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+    
+    func body(content: Content) -> some View {
+        content.overlay {
+            if viewModel.newModalIsPresented {
+                NewModalView(isPresented: $viewModel.newModalIsPresented)
+                    .transition(.move(edge: .bottom))
+            }
+        }
+    }
+}
+
+// 3. Добавить в RootView.body
+var body: some View {
+    mainContent
+        // ...existing modifiers...
+        .modifier(NewModalOverlayModifier(viewModel: viewModel))
+        .animation(.easeInOut, value: viewModel.newModalIsPresented)
+}
+```
+
+---
