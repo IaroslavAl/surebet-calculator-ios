@@ -887,3 +887,125 @@ var body: some View {
 ```
 
 ---
+
+## 2. Tech Stack (Технологический стек)
+
+### 2.1. Версии и платформы
+
+Проект использует **Swift 6** с полной поддержкой **Swift Concurrency** и strict concurrency checking.
+
+#### Таблица версий
+
+| Компонент | Версия | Где задаётся |
+|-----------|--------|--------------|
+| **Swift** | 6.0 | `Package.swift` (`swift-tools-version: 6.0`), `project.pbxproj` (`SWIFT_VERSION = 6.0`) |
+| **iOS Deployment Target** | 16.0+ | `Package.swift` (`.iOS(.v16)`), `project.pbxproj` (`IPHONEOS_DEPLOYMENT_TARGET = 16.0`) |
+| **Xcode** | 16.0+ | `project.pbxproj` (`LastUpgradeCheck = 1600`) |
+| **App Marketing Version** | 1.7.0 | `project.pbxproj` (`MARKETING_VERSION`), `Info.plist` (`CFBundleShortVersionString`) |
+
+#### Минимальные требования для разработки
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Требования для разработки                    │
+├─────────────────────────────────────────────────────────────────┤
+│  macOS          │ Sonoma 14.0+ (для Xcode 16)                   │
+│  Xcode          │ 16.0+ (обязательно для Swift 6)               │
+│  iOS Simulator  │ iOS 16.0+ (минимальная поддерживаемая версия) │
+│  Device         │ iPhone/iPad с iOS 16.0+                       │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Почему iOS 16.0:**
+- Стабильная база с широким охватом устройств
+- Поддержка всех используемых API SwiftUI
+- `NavigationView` с `.stack` стилем (до перехода на `NavigationStack`)
+
+#### Поддерживаемые устройства
+
+```swift
+// project.pbxproj
+TARGETED_DEVICE_FAMILY = "1,2"  // 1 = iPhone, 2 = iPad
+SUPPORTS_MACCATALYST = NO
+SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO
+```
+
+| Устройство | Поддержка | Ориентация |
+|------------|-----------|------------|
+| **iPhone** | ✅ Да | Только Portrait |
+| **iPad** | ✅ Да | Portrait + Landscape |
+| **Mac Catalyst** | ❌ Нет | — |
+| **Mac (Designed for iPad)** | ❌ Нет | — |
+
+#### Симуляторы для тестов
+
+Для запуска тестов используется симулятор с ID из `.cursor/rules/rules.mdc`:
+
+```bash
+# Команда сборки для тестов
+xcodebuild -project surebet-calculator.xcodeproj \
+    -scheme surebet-calculator \
+    -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9' \
+    build
+
+# Получить список доступных симуляторов
+xcrun simctl list devices available
+
+# Найти ID конкретного симулятора
+xcrun simctl list devices | grep "iPhone"
+```
+
+**Рекомендуемые симуляторы для тестирования:**
+
+| Категория | Устройство | Обоснование |
+|-----------|------------|-------------|
+| **Основной** | iPhone 15 Pro | Актуальное устройство |
+| **Маленький экран** | iPhone SE (3rd) | Проверка layout на минимальном экране |
+| **Большой экран** | iPhone 15 Pro Max | Проверка на максимальном размере |
+| **iPad** | iPad Pro 12.9" | Проверка iPad-специфичных layouts |
+
+#### Test Plan конфигурация
+
+Тесты запускаются через Test Plan (`surebet-calculator.xctestplan`):
+
+```
+Test Targets:
+├── AnalyticsManagerTests
+├── BannerTests
+├── OnboardingTests
+├── ReviewHandlerTests
+├── RootTests
+├── SurebetCalculatorTests
+└── SurebetCalculatorUITests (UI Tests в основном проекте)
+```
+
+Environment Variables для тестов:
+```json
+{
+  "AppMetrica_Key": "f7e1f335-475a-4b6c-ba4a-77988745bc7a"
+}
+```
+
+#### Важные Build Settings
+
+```swift
+// Debug конфигурация
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG
+SWIFT_OPTIMIZATION_LEVEL = "-Onone"
+ENABLE_TESTABILITY = YES
+
+// Release конфигурация  
+SWIFT_COMPILATION_MODE = wholemodule
+SWIFT_OPTIMIZATION_LEVEL = "-O"
+VALIDATE_PRODUCT = YES
+```
+
+#### Правила для AI-агента
+
+1. **Всегда проверяй iOS availability** — минимум iOS 16.0
+2. **Используй Swift 6 syntax** — `async/await`, `@MainActor`, строгие `Sendable`
+3. **Не используй deprecated API** — проверяй в документации Apple
+4. **Тестируй на минимальном iOS** — iOS 16.0 simulator
+5. **Учитывай iPad** — проверяй layouts на `.regular` size class
+
+---
