@@ -1606,3 +1606,348 @@ import ProductName
 4. Документировать назначение в этом разделе
 
 ---
+
+## 3. Rules (Правила и стандарты)
+
+### 3.1. Структура файлов
+
+Проект использует **модульную структуру** SPM. Каждый модуль — отдельная папка в `Sources/` с чёткой организацией файлов.
+
+#### Эталонная структура модуля
+
+```
+Sources/
+└── ModuleName/
+    ├── ModuleName.swift           # Public API (enum с static func view())
+    ├── ModuleNameConstants.swift  # Константы модуля
+    │
+    ├── Models/                    # Модели данных
+    │   ├── SomeModel.swift
+    │   └── AccessibilityIdentifiers.swift
+    │
+    ├── ViewModels/                # ViewModel'ы
+    │   └── ModuleNameViewModel.swift
+    │
+    ├── Views/                     # SwiftUI Views
+    │   ├── ModuleNameView.swift   # Корневой View модуля
+    │   ├── Buttons/               # Кнопки
+    │   │   └── SomeButton.swift
+    │   └── Components/            # Переиспользуемые компоненты
+    │       └── SomeComponent.swift
+    │
+    ├── Calculator/                # Бизнес-логика (optional)
+    │   ├── SomeService.swift      # Протокол
+    │   └── DefaultSomeService.swift  # Реализация
+    │
+    ├── Extensions/                # Расширения (optional)
+    │   ├── Double.swift
+    │   └── View+Device.swift
+    │
+    ├── Styles/                    # ViewModifier стили (optional)
+    │   └── SomeTextFieldStyle.swift
+    │
+    └── Resources/                 # Ресурсы
+        ├── Assets.xcassets/       # Изображения, цвета
+        └── Localizable.xcstrings  # Локализация
+```
+
+#### Назначение папок
+
+| Папка | Назначение | Содержимое |
+|-------|------------|------------|
+| **Models/** | Модели данных и enum'ы | `struct`, `enum` с Sendable/Equatable |
+| **ViewModels/** | Управление состоянием | `@MainActor final class: ObservableObject` |
+| **Views/** | UI компоненты | SwiftUI View структуры |
+| **Views/Buttons/** | Кнопки | Переиспользуемые Button компоненты |
+| **Views/Components/** | Компоненты | Переиспользуемые View компоненты |
+| **Calculator/** | Бизнес-логика | Protocol + struct реализация |
+| **Extensions/** | Расширения | `extension Type { }` |
+| **Styles/** | Стили | `TextFieldStyle`, `ButtonStyle` |
+| **Resources/** | Ресурсы | Assets, локализация |
+
+#### Public API модуля (ModuleName.swift)
+
+Каждый модуль экспортирует **один enum** с static методами:
+
+```swift
+// SurebetCalculator.swift
+import SwiftUI
+
+public enum SurebetCalculator {
+    // MARK: - Public Methods
+
+    @MainActor
+    public static func view() -> some View {
+        SurebetCalculatorView()
+    }
+}
+```
+
+**Паттерн для модулей с сервисами:**
+
+```swift
+// Banner.swift
+public enum Banner {
+    // MARK: - Views
+    
+    public static var bannerView: some View {
+        BannerView()
+    }
+
+    @MainActor
+    public static func fullscreenBannerView(isPresented: Binding<Bool>) -> some View {
+        FullscreenBannerView(isPresented: isPresented, service: Service())
+    }
+    
+    // Версия с DI для тестов
+    @MainActor
+    public static func fullscreenBannerView(isPresented: Binding<Bool>, service: BannerService) -> some View {
+        FullscreenBannerView(isPresented: isPresented, service: service)
+    }
+
+    // MARK: - Network
+    
+    public static func fetchBanner() async throws {
+        try await Service().fetchBannerAndImage()
+    }
+    
+    public static func fetchBanner(service: BannerService) async throws {
+        try await service.fetchBannerAndImage()
+    }
+
+    // MARK: - Cache
+    
+    public static var isBannerFullyCached: Bool {
+        Service().isBannerFullyCached()
+    }
+}
+```
+
+**Паттерн для Root (реэкспорт зависимостей):**
+
+```swift
+// Root.swift
+import AppMetricaCore
+import SwiftUI
+
+public enum Root {
+    @MainActor
+    public static func view() -> some View {
+        RootView()
+    }
+}
+
+// Реэкспорт для App
+public typealias AppMetrica = AppMetricaCore.AppMetrica
+public typealias AppMetricaConfiguration = AppMetricaCore.AppMetricaConfiguration
+```
+
+#### Constants файл (AppConstants.swift)
+
+Константы группируются во вложенные enum'ы:
+
+```swift
+/// Константы приложения, сгруппированные по категориям
+enum AppConstants {
+    // MARK: - Layout
+
+    /// Константы для отступов (padding)
+    enum Padding {
+        static let small: CGFloat = 8
+        static let medium: CGFloat = 12
+        static let large: CGFloat = 16
+        static let extraLarge: CGFloat = 24
+    }
+
+    /// Константы для высот элементов
+    enum Heights {
+        static let compact: CGFloat = 40
+        static let regular: CGFloat = 60
+    }
+
+    /// Константы для радиусов скругления углов
+    enum CornerRadius {
+        static let small: CGFloat = 10
+        static let medium: CGFloat = 12
+        static let large: CGFloat = 15
+    }
+
+    // MARK: - Delays
+
+    enum Delays {
+        /// Задержка перед запросом отзыва (1 секунда)
+        static let reviewRequest: UInt64 = NSEC_PER_SEC * 1
+    }
+
+    // MARK: - Other
+
+    enum Other {
+        static let minimumTextScaleFactor: CGFloat = 0.5
+        static let firstPageIndex = 0
+    }
+}
+```
+
+**Использование:**
+
+```swift
+.padding(AppConstants.Padding.large)
+.cornerRadius(AppConstants.CornerRadius.medium)
+```
+
+#### Модели (Models/)
+
+```swift
+// Row.swift
+import Foundation
+
+struct Row: Equatable, Sendable {
+    let id: Int
+    var isON = false
+    var betSize = ""
+    var coefficient = ""
+    var income = "0"
+
+    static func createRows(_ number: Int = 10) -> [Row] {
+        (0..<number).map { Row(id: $0) }
+    }
+}
+```
+
+**Правила:**
+1. `struct` по умолчанию
+2. `Equatable, Sendable` для безопасности
+3. Factory method как `static func` внутри типа
+4. Дефолтные значения для удобства инициализации
+
+#### Структура тестов
+
+```
+Tests/
+└── ModuleNameTests/
+    ├── ModuleNameViewModelTests.swift
+    ├── SomeServiceTests.swift
+    └── Mocks/
+        ├── MockSomeService.swift
+        └── MockAnotherService.swift
+```
+
+| Файл | Содержимое |
+|------|------------|
+| `*ViewModelTests.swift` | Тесты ViewModel |
+| `*ServiceTests.swift` | Тесты сервисов |
+| `*ExtensionTests.swift` | Тесты расширений |
+| `Mocks/Mock*.swift` | Hand-written моки |
+
+#### Примеры организации по модулям
+
+**SurebetCalculator (полная структура):**
+```
+SurebetCalculator/
+├── SurebetCalculator.swift
+├── AppConstants.swift
+├── Calculator/
+│   ├── CalculationService.swift
+│   ├── Calculator.swift
+│   └── DefaultCalculationService.swift
+├── Extensions/
+│   ├── Double.swift
+│   ├── String.swift
+│   └── View+Device.swift
+├── Models/
+│   ├── AccessibilityIdentifiers.swift
+│   ├── CalculationMethod.swift
+│   ├── FocusableField.swift
+│   ├── NumberOfRows.swift
+│   ├── Row.swift
+│   ├── RowType.swift
+│   └── TotalRow.swift
+├── Resources/
+│   └── Localizable.xcstrings
+├── Styles/
+│   └── CalculatorTextFieldStyle.swift
+├── ViewModels/
+│   └── SurebetCalculatorViewModel.swift
+└── Views/
+    ├── SurebetCalculatorView.swift
+    ├── Buttons/
+    │   ├── KeyboardClearButton.swift
+    │   ├── KeyboardDoneButton.swift
+    │   ├── NavigationClearButton.swift
+    │   └── ToggleButton.swift
+    └── Components/
+        ├── RowView.swift
+        ├── TextFieldView.swift
+        ├── TextView.swift
+        └── TotalRowView.swift
+```
+
+**Banner (простой модуль с сетью):**
+```
+Banner/
+├── Banner.swift
+├── BannerConstants.swift
+├── BannerLogger.swift
+├── BannerService.swift           # Протокол
+├── BannerView.swift
+├── FullscreenBannerView.swift
+├── Service.swift                 # Реализация BannerService
+├── View+Device.swift
+├── Models/
+│   ├── BannerModel.swift
+│   └── UserDefaultsKeys.swift
+└── Resources/
+    └── Assets.xcassets/
+```
+
+**Root (минимальный модуль):**
+```
+Root/
+├── Root.swift
+├── RootView.swift
+├── RootViewModel.swift
+└── Resources/
+    └── Localizable.xcstrings
+```
+
+**AnalyticsManager (модуль без UI):**
+```
+AnalyticsManager/
+├── AnalyticsManager.swift        # Реализация
+└── AnalyticsService.swift        # Протокол
+```
+
+#### Правила создания нового модуля
+
+1. **Создать папку** в `Sources/ModuleName/`
+2. **Создать Public API** — `ModuleName.swift` с enum
+3. **Добавить в Package.swift**:
+```swift
+.target(
+    name: "ModuleName",
+    dependencies: [],
+    resources: [.process("Resources")],
+    plugins: [.plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")]
+),
+```
+4. **Создать папки по необходимости** — Models/, Views/, ViewModels/
+5. **Добавить зависимость в Root** (если модуль экспортирует View)
+6. **Создать тесты** в `Tests/ModuleNameTests/`
+
+#### Правила именования файлов
+
+| Категория | Паттерн | Пример |
+|-----------|---------|--------|
+| Public API | `ModuleName.swift` | `Banner.swift` |
+| Константы | `ModuleNameConstants.swift` или `AppConstants.swift` | `BannerConstants.swift` |
+| ViewModel | `ModuleNameViewModel.swift` | `RootViewModel.swift` |
+| Корневой View | `ModuleNameView.swift` | `SurebetCalculatorView.swift` |
+| Компонент View | `ComponentNameView.swift` | `RowView.swift` |
+| Кнопка | `ActionButton.swift` | `ToggleButton.swift` |
+| Протокол сервиса | `ServiceName.swift` | `CalculationService.swift` |
+| Реализация | `DefaultServiceName.swift` или `Service.swift` | `DefaultCalculationService.swift` |
+| Расширение | `ExtendedType.swift` или `Type+Feature.swift` | `Double.swift`, `View+Device.swift` |
+| Модель | `ModelName.swift` | `Row.swift` |
+| Мок | `MockServiceName.swift` | `MockCalculationService.swift` |
+
+---
