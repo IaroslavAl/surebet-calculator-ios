@@ -2608,3 +2608,315 @@ git commit -m "refactor: извлечь CalculationService из ViewModel"
 5. **Ветка должна соответствовать типу изменений**
 
 ---
+
+### 3.4. Локализация
+
+Проект использует **String Catalogs** (`.xcstrings`) — современный формат локализации Apple, представленный в Xcode 15.
+
+#### Поддерживаемые языки
+
+| Язык | Код | Роль |
+|------|-----|------|
+| **English** | `en` | Source language (язык-источник) |
+| **Russian** | `ru` | Перевод |
+
+#### Структура файлов локализации
+
+Каждый модуль с UI имеет свой файл локализации:
+
+```
+Sources/
+├── Root/
+│   └── Resources/
+│       └── Localizable.xcstrings      # "Do you like the app?", "Yes", "No"
+├── SurebetCalculator/
+│   └── Resources/
+│       └── Localizable.xcstrings      # "Surebet calculator", "Bet size", "Clear"
+└── Onboarding/
+    └── Resources/
+        └── Localizable.xcstrings      # "Next", "Close", "More details"
+```
+
+**Подключение в Package.swift:**
+
+```swift
+.target(
+    name: "ModuleName",
+    dependencies: [...],
+    resources: [.process("Resources")],  // Включает .xcstrings
+    plugins: [...]
+),
+```
+
+SPM автоматически обрабатывает `.xcstrings` файлы и делает строки доступными через `String(localized:)`.
+
+---
+
+#### Формат String Catalog (.xcstrings)
+
+String Catalog — JSON-файл с метаданными и переводами:
+
+```json
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Do you like the app?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you like the app?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вам нравится приложение?"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
+```
+
+**Поля:**
+- `sourceLanguage` — язык-источник (всегда `en`)
+- `extractionState` — `manual` (добавлено вручную) или `stale` (устарело)
+- `state` — `translated` (переведено), `new` (новая строка), `needs_review`
+
+---
+
+#### Использование String(localized:)
+
+**Базовый синтаксис:**
+
+```swift
+// Простая строка
+let title = String(localized: "Surebet calculator")
+
+// В SwiftUI
+Text(String(localized: "Done"))
+Button(String(localized: "Clear")) { ... }
+```
+
+**Bundle определяется автоматически** — SPM генерирует `Bundle.module` для каждого модуля, и `String(localized:)` автоматически использует правильный bundle.
+
+---
+
+#### Паттерны использования в проекте
+
+**1. Computed property для строк (рекомендуемый):**
+
+```swift
+struct KeyboardDoneButton: View {
+    var body: some View {
+        Button(text) { ... }
+    }
+}
+
+private extension KeyboardDoneButton {
+    var text: String { String(localized: "Done") }
+}
+```
+
+**Преимущества:**
+- Строка вычисляется один раз
+- Чистый `body`
+- Легко найти все строки в файле
+
+**2. Static computed property для моделей:**
+
+```swift
+struct OnboardingPage: Identifiable, Sendable {
+    let description: String
+
+    static func createPages() -> [OnboardingPage] {
+        [
+            .init(image: image1, description: description1),
+            .init(image: image2, description: description2),
+        ]
+    }
+}
+
+private extension OnboardingPage {
+    static var description1: String {
+        String(localized: "Calculate by inputting the total bet amount and coefficients for all outcomes.")
+    }
+    static var description2: String {
+        String(localized: "Input the bet size for a single outcome and coefficients for all outcomes to calculate.")
+    }
+}
+```
+
+**3. Inline для простых случаев:**
+
+```swift
+// В alerts
+Button(String(localized: "Yes")) { ... }
+Button(String(localized: "No")) { ... }
+
+// В accessibilityLabel
+.accessibilityLabel(String(localized: "Clear all"))
+.accessibilityLabel(String(localized: "Close onboarding"))
+```
+
+**4. Условная логика:**
+
+```swift
+var text: String {
+    let firstPage = OnboardingConstants.firstPageIndex
+    let lastPage = viewModel.pages.index(before: viewModel.pages.endIndex)
+    
+    if viewModel.currentPage == firstPage {
+        return String(localized: "More details")
+    }
+    if viewModel.currentPage == lastPage {
+        return String(localized: "Close")
+    }
+    return String(localized: "Next")
+}
+```
+
+---
+
+#### Правила добавления новых строк
+
+**1. Добавить строку в код:**
+
+```swift
+// В View или ViewModel
+let newLabel = String(localized: "New feature label")
+```
+
+**2. Добавить в Localizable.xcstrings модуля:**
+
+```json
+{
+  "strings" : {
+    "New feature label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New feature label"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новая метка функции"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+**Или через Xcode:**
+1. Открыть `.xcstrings` файл в Xcode
+2. Нажать `+` для добавления новой строки
+3. Ввести ключ (английский текст)
+4. Добавить переводы для всех языков
+
+---
+
+#### Что локализовать
+
+| Категория | Локализовать | Пример |
+|-----------|--------------|--------|
+| **Тексты UI** | ✅ Да | Labels, кнопки, заголовки |
+| **Accessibility labels** | ✅ Да | VoiceOver описания |
+| **Alert messages** | ✅ Да | Заголовки и кнопки алертов |
+| **Placeholder** | ✅ Да | Подсказки в TextField |
+| **Числа** | ❌ Нет | Используй NumberFormatter |
+| **Даты** | ❌ Нет | Используй DateFormatter |
+| **Имена файлов** | ❌ Нет | Assets, изображения |
+| **Идентификаторы** | ❌ Нет | AccessibilityIdentifiers |
+
+---
+
+#### Чего избегать
+
+**❌ Хардкод строк:**
+
+```swift
+// Плохо
+Text("Surebet calculator")
+Button("Clear") { ... }
+
+// Хорошо
+Text(String(localized: "Surebet calculator"))
+Button(String(localized: "Clear")) { ... }
+```
+
+**❌ Конкатенация строк:**
+
+```swift
+// Плохо — нарушает порядок слов в разных языках
+let message = String(localized: "Hello") + ", " + userName + "!"
+
+// Хорошо — интерполяция (если нужна)
+let message = String(localized: "Hello, \(userName)!")
+```
+
+**❌ Числа в строках без форматирования:**
+
+```swift
+// Плохо
+let text = "Total: \(amount)"
+
+// Хорошо — используй Double.formattedBetValue()
+let text = "Total: \(amount.formattedBetValue())"
+```
+
+---
+
+#### Таблица строк по модулям
+
+**Root (3 строки):**
+| Ключ | EN | RU |
+|------|----|----|
+| `Do you like the app?` | Do you like the app? | Вам нравится приложение? |
+| `Yes` | Yes | Да |
+| `No` | No | Нет |
+
+**SurebetCalculator (9 строк):**
+| Ключ | EN | RU |
+|------|----|----|
+| `Surebet calculator` | Surebet calculator | Калькулятор вилок |
+| `Total bet size` | Total bet size | Общий размер ставки |
+| `Profit percentage` | Profit percentage | Процент прибыли |
+| `Bet size` | Bet size | Размер ставки |
+| `Coefficient` | Coefficient | Коэффициент |
+| `Income` | Income | Доход |
+| `Clear` | Clear | Очистить |
+| `Clear all` | Clear all | Очистить всё |
+| `Done` | Done | Готово |
+
+**Onboarding (8 строк):**
+| Ключ | EN | RU |
+|------|----|----|
+| `Next` | Next | Далее |
+| `Close` | Close | Закрыть |
+| `More details` | More details | Подробнее |
+| `Close onboarding` | Close onboarding | Закрыть онбординг |
+| `Image` | Image | Изображение |
+| + 3 длинных описания страниц | ... | ... |
+
+---
+
+#### Правила для AI-агента
+
+1. **Никогда не хардкодить** строки в UI — всегда `String(localized:)`
+2. **Добавлять переводы сразу** — en + ru в `.xcstrings`
+3. **Использовать computed properties** для строк в View
+4. **Accessibility labels** тоже локализовать
+5. **Числа форматировать** через `NumberFormatter` или extension
+6. **Проверять существующие строки** — возможно, нужная уже есть
+
+---
