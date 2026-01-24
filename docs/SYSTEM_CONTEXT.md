@@ -2920,3 +2920,460 @@ let text = "Total: \(amount.formattedBetValue())"
 6. **Проверять существующие строки** — возможно, нужная уже есть
 
 ---
+
+## 4. Data Flow (Поток данных)
+
+### 4.1. UI → ViewModel → Service
+
+Проект использует **однонаправленный поток данных** с паттерном **ViewAction** для всех взаимодействий пользователя с UI.
+
+#### Общая схема потока
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              SwiftUI View                                    │
+│  TextField → .onChange / Binding → viewModel.send(.action)                  │
+│  Button → .onTapGesture → viewModel.send(.action)                           │
+│                                      │                                       │
+│                                      ▼                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                              ViewModel                                       │
+│  func send(_ action: ViewAction)                                            │
+│      switch action {                                                         │
+│          case let .setTextFieldText(field, text):                           │
+│              set(field, text: text)  // Обновить состояние                  │
+│              calculate()              // → Service                           │
+│      }                                                                       │
+│                                      │                                       │
+│                                      ▼                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                              Service                                         │
+│  let result = calculationService.calculate(total, rows, ...)                │
+│                                      │                                       │
+│                                      ▼                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                         @Published обновляется                               │
+│  total = result.total                                                        │
+│  rows = result.rows                                                          │
+│                                      │                                       │
+│                                      ▼                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                          View перерисовывается                               │
+│  SwiftUI автоматически обновляет UI при изменении @Published                │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+#### Паттерн ViewAction
+
+`ViewAction` — вложенный enum в ViewModel, содержащий **все возможные действия пользователя**.
+
+**Пример из SurebetCalculatorViewModel:**
+
+```swift
+@MainActor
+final class SurebetCalculatorViewModel: ObservableObject {
+    // MARK: - Properties
+    
+    @Published private(set) var total: TotalRow
+    @Published private(set) var rows: [Row]
+    @Published private(set) var selectedRow: RowType?
+    @Published private(set) var focus: FocusableField?
+    
+    private let calculationService: CalculationService
+    
+    // MARK: - Public Methods
+    
+    /// Все возможные действия от View
+    enum ViewAction {
+        case selectRow(RowType)              // Выбор строки (toggle)
+        case addRow                          // Добавить строку
+        case removeRow                       // Удалить строку
+        case setTextFieldText(FocusableField, String)  // Ввод текста
+        case setFocus(FocusableField?)       // Установить фокус
+        case clearFocusableField             // Очистить активное поле
+        case clearAll                        // Очистить всё
+        case hideKeyboard                    // Скрыть клавиатуру
+    }
+    
+    /// Единая точка входа для всех действий от View
+    func send(_ action: ViewAction) {
+        switch action {
+        case let .selectRow(row):
+            select(row)
+        case .addRow:
+            addRow()
+        case .removeRow:
+            removeRow()
+        case let .setTextFieldText(field, text):
+            set(field, text: text)
+        case let .setFocus(focus):
+            set(focus)
+        case .clearFocusableField:
+            clearFocusableField()
+        case .clearAll:
+            clearAll()
+        case .hideKeyboard:
+            hideKeyboard()
+        }
+    }
+}
+```
+
+**Пример из OnboardingViewModel (минимальный):**
+
+```swift
+@MainActor
+final class OnboardingViewModel: ObservableObject {
+    @Published private(set) var currentPage: Int
+    @Published private(set) var onboardingIsShown: Bool
+    
+    enum ViewAction {
+        case setCurrentPage(Int)
+        case dismiss
+    }
+    
+    func send(_ action: ViewAction) {
+        switch action {
+        case let .setCurrentPage(index):
+            setCurrentPage(index)
+        case .dismiss:
+            dismiss()
+        }
+    }
+}
+```
+
+**Преимущества паттерна ViewAction:**
+1. **Единая точка входа** — все действия проходят через `send()`
+2. **Типобезопасность** — enum гарантирует корректные параметры
+3. **Тестируемость** — легко вызывать действия в тестах
+4. **Traceable** — можно логировать все действия
+5. **Расширяемость** — добавление нового действия = новый case
+
+---
+
+#### Flow обработки пользовательского ввода
+
+**1. TextField ввод через Binding:**
+
+```swift
+// TextFieldView.swift
+struct TextFieldView: View {
+    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    
+    let focusableField: FocusableField
+    
+    var body: some View {
+        TextField(placeholder, text: bindingText)
+            .focused($isFocused, equals: focusableField)
+            .onTapGesture {
+                viewModel.send(.setFocus(focusableField))
+            }
+    }
+}
+
+private extension TextFieldView {
+    /// Binding создаёт двустороннюю связь:
+    /// - get: читает из ViewModel
+    /// - set: вызывает viewModel.send() при изменении
+    var bindingText: Binding<String> {
+        Binding(
+            get: { text },  // Чтение из @Published
+            set: { viewModel.send(.setTextFieldText(focusableField, $0)) }  // Запись через action
+        )
+    }
+    
+    var text: String {
+        switch focusableField {
+        case .totalBetSize:
+            return viewModel.total.betSize
+        case let .rowBetSize(id):
+            return viewModel.rows[id].betSize
+        case let .rowCoefficient(id):
+            return viewModel.rows[id].coefficient
+        }
+    }
+}
+```
+
+**2. Button tap:**
+
+```swift
+// SurebetCalculatorView.swift
+var addButton: some View {
+    Image(systemName: "plus.circle")
+        .onTapGesture {
+            viewModel.send(.addRow)
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        }
+}
+
+// ToggleButton.swift
+struct ToggleButton: View {
+    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    let row: RowType
+    
+    var body: some View {
+        Button(action: actionWithImpactFeedback, label: label)
+    }
+    
+    func actionWithImpactFeedback() {
+        viewModel.send(.selectRow(row))
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+    }
+}
+```
+
+**3. Background tap (dismiss keyboard):**
+
+```swift
+var backgroundTapGesture: some View {
+    Color.clear
+        .contentShape(.rect)
+        .onTapGesture {
+            viewModel.send(.hideKeyboard)
+        }
+}
+```
+
+---
+
+#### Обработка в ViewModel → Service
+
+После получения action, ViewModel обрабатывает его и вызывает Service при необходимости:
+
+```swift
+// SurebetCalculatorViewModel.swift
+private extension SurebetCalculatorViewModel {
+    /// Обработка ввода текста в поле
+    func set(_ textField: FocusableField, text: String) {
+        switch textField {
+        case .totalBetSize:
+            setTotalBetSize(text: text)
+        case let .rowBetSize(id):
+            setRowBetSize(id: id, text: text)
+        case let .rowCoefficient(id):
+            setRowCoefficient(id: id, text: text)
+        }
+        calculate()  // → Service
+    }
+    
+    /// Выбор строки (toggle)
+    func select(_ row: RowType) {
+        if selectedRow == row {
+            deselectCurrentRow()
+            selectedRow = nil
+        } else {
+            deselectCurrentRow()
+            switch row {
+            case .total:
+                total.isON = true
+            case let .row(id):
+                rows[id].isON = true
+            }
+            selectedRow = row
+        }
+        calculate()  // → Service
+    }
+    
+    /// Вызов Service для вычислений
+    func calculate() {
+        let (updatedTotal, updatedRows) = calculationService.calculate(
+            total: total,
+            rows: rows,
+            selectedRow: selectedRow,
+            displayedRowIndexes: displayedRowIndexes
+        )
+        // Обновление @Published → View перерисуется
+        total = updatedTotal ?? total
+        rows = updatedRows ?? rows
+    }
+}
+```
+
+---
+
+#### Service — чистая бизнес-логика
+
+Service — stateless struct, выполняющий вычисления без побочных эффектов:
+
+```swift
+// CalculationService.swift — протокол
+protocol CalculationService: Sendable {
+    func calculate(
+        total: TotalRow,
+        rows: [Row],
+        selectedRow: RowType?,
+        displayedRowIndexes: Range<Int>
+    ) -> (total: TotalRow?, rows: [Row]?)
+}
+
+// DefaultCalculationService.swift — реализация
+struct DefaultCalculationService: CalculationService, Sendable {
+    func calculate(
+        total: TotalRow,
+        rows: [Row],
+        selectedRow: RowType?,
+        displayedRowIndexes: Range<Int>
+    ) -> (total: TotalRow?, rows: [Row]?) {
+        // Делегирование в Calculator для сложных вычислений
+        let calculator = Calculator(
+            total: total,
+            rows: rows,
+            selectedRow: selectedRow,
+            displayedRowIndexes: displayedRowIndexes
+        )
+        return calculator.calculate()
+    }
+}
+```
+
+**Характеристики Service:**
+- `Sendable` — потокобезопасен
+- Stateless — нет stored state
+- Pure functions — результат зависит только от входных данных
+- Тестируемый — легко мокать
+
+---
+
+#### Полный пример flow: ввод коэффициента
+
+```
+1. Пользователь вводит "1.5" в TextField коэффициента строки 0
+                              │
+                              ▼
+2. TextFieldView.bindingText.set вызывается
+   viewModel.send(.setTextFieldText(.rowCoefficient(0), "1.5"))
+                              │
+                              ▼
+3. ViewModel.send() → switch case .setTextFieldText
+   → set(.rowCoefficient(0), text: "1.5")
+                              │
+                              ▼
+4. set() → setRowCoefficient(id: 0, text: "1.5")
+   rows[0].coefficient = "1.5"
+   → calculate()
+                              │
+                              ▼
+5. calculate() → calculationService.calculate(...)
+   Calculator вычисляет betSize и income для строк
+   → return (updatedTotal, updatedRows)
+                              │
+                              ▼
+6. ViewModel обновляет @Published:
+   total = updatedTotal
+   rows = updatedRows
+                              │
+                              ▼
+7. SwiftUI видит изменение @Published
+   → View перерисовывается с новыми значениями
+```
+
+---
+
+#### Диаграмма зависимостей компонентов
+
+```mermaid
+graph TD
+    subgraph View["SwiftUI Views"]
+        TV[TextFieldView]
+        TB[ToggleButton]
+        SCV[SurebetCalculatorView]
+    end
+    
+    subgraph ViewModel["ViewModel Layer"]
+        VM[SurebetCalculatorViewModel]
+        VA[ViewAction enum]
+    end
+    
+    subgraph Service["Service Layer"]
+        CS[CalculationService]
+        DCS[DefaultCalculationService]
+        CALC[Calculator]
+    end
+    
+    subgraph State["@Published State"]
+        TOTAL[@Published total]
+        ROWS[@Published rows]
+        FOCUS[@Published focus]
+    end
+    
+    TV -->|"send(.setTextFieldText)"| VM
+    TB -->|"send(.selectRow)"| VM
+    SCV -->|"send(.addRow)"| VM
+    
+    VM --> VA
+    VM -->|"calculate()"| CS
+    CS --> DCS
+    DCS --> CALC
+    
+    CALC -->|"return (total, rows)"| VM
+    VM --> TOTAL
+    VM --> ROWS
+    VM --> FOCUS
+    
+    TOTAL -->|"triggers update"| TV
+    ROWS -->|"triggers update"| SCV
+```
+
+---
+
+#### Правила для AI-агента
+
+| Правило | Описание |
+|---------|----------|
+| **Все действия через ViewAction** | Не вызывать приватные методы ViewModel из View |
+| **Один send() на действие** | Одно пользовательское действие = один вызов send() |
+| **calculate() после изменений** | Если данные изменились — вызвать calculate() |
+| **Service = pure functions** | Service не хранит состояние, не знает о ViewModel |
+| **@Published private(set)** | View читает, но не пишет напрямую |
+| **Binding через send()** | set: в Binding должен вызывать viewModel.send() |
+
+---
+
+#### Как добавить новое действие
+
+**1. Добавить case в ViewAction:**
+
+```swift
+enum ViewAction {
+    // ... existing cases ...
+    case newAction(SomeParameter)
+}
+```
+
+**2. Обработать в send():**
+
+```swift
+func send(_ action: ViewAction) {
+    switch action {
+    // ... existing cases ...
+    case let .newAction(param):
+        handleNewAction(param)
+    }
+}
+```
+
+**3. Реализовать приватный метод:**
+
+```swift
+private extension SurebetCalculatorViewModel {
+    func handleNewAction(_ param: SomeParameter) {
+        // Обновить состояние
+        // Вызвать Service при необходимости
+        // @Published обновится автоматически
+    }
+}
+```
+
+**4. Вызвать из View:**
+
+```swift
+Button("New Action") {
+    viewModel.send(.newAction(parameter))
+}
+```
+
+---
