@@ -1839,6 +1839,487 @@ Tests/
 | `*ExtensionTests.swift` | Тесты расширений |
 | `Mocks/Mock*.swift` | Hand-written моки |
 
+---
+
+### 3.2. Нейминг и код-стайл
+
+Проект следует строгим конвенциям нейминга и форматирования для обеспечения консистентности кодовой базы.
+
+#### Правила нейминга файлов
+
+| Категория | Паттерн | Пример |
+|-----------|---------|--------|
+| **Public API модуля** | `ModuleName.swift` | `Banner.swift`, `Root.swift` |
+| **ViewModel** | `ModuleNameViewModel.swift` | `RootViewModel.swift`, `SurebetCalculatorViewModel.swift` |
+| **View (корневой)** | `ModuleNameView.swift` | `SurebetCalculatorView.swift`, `RootView.swift` |
+| **View (компонент)** | `ComponentNameView.swift` | `RowView.swift`, `TotalRowView.swift` |
+| **View (кнопка)** | `ActionButton.swift` | `ToggleButton.swift`, `KeyboardClearButton.swift` |
+| **Service (протокол)** | `ServiceName.swift` | `CalculationService.swift`, `BannerService.swift` |
+| **Service (реализация)** | `DefaultServiceName.swift` или `Service.swift` | `DefaultCalculationService.swift` |
+| **Constants** | `AppConstants.swift` или `ModuleNameConstants.swift` | `AppConstants.swift`, `BannerConstants.swift` |
+| **Extension** | `ExtendedType.swift` или `Type+Feature.swift` | `Double.swift`, `View+Device.swift` |
+| **Model** | `ModelName.swift` | `Row.swift`, `TotalRow.swift`, `BannerModel.swift` |
+| **Mock (тесты)** | `MockServiceName.swift` | `MockCalculationService.swift`, `MockAnalyticsService.swift` |
+
+#### Правила нейминга типов
+
+**Классы и структуры:**
+
+```swift
+// ViewModel — @MainActor final class с суффиксом ViewModel
+@MainActor
+final class SurebetCalculatorViewModel: ObservableObject { }
+
+// View — struct с суффиксом View
+struct SurebetCalculatorView: View { }
+
+// Model — struct, существительное, без суффиксов
+struct Row: Equatable, Sendable { }
+struct TotalRow: Equatable, Sendable { }
+
+// Service реализация — struct с префиксом Default
+struct DefaultCalculationService: CalculationService, Sendable { }
+
+// Service внутренняя реализация — просто Service
+struct Service: BannerService, @unchecked Sendable { }
+```
+
+**Протоколы:**
+
+```swift
+// Сервисный протокол — существительное с суффиксом Service
+protocol CalculationService: Sendable { }
+public protocol BannerService: Sendable { }
+
+// UI-сервисный протокол — с @MainActor
+@MainActor
+public protocol ReviewService: Sendable { }
+```
+
+**Enum'ы:**
+
+```swift
+// Обычный enum — существительное, CamelCase
+enum RowType: Equatable, Sendable {
+    case total
+    case row(_ id: Int)
+}
+
+// Enum для констант — CamelCase
+enum AppConstants {
+    enum Padding { }
+    enum Heights { }
+}
+
+// Enum с public API модуля — имя модуля
+public enum Banner { }
+public enum SurebetCalculator { }
+
+// ViewAction — вложенный enum в ViewModel
+enum ViewAction {
+    case selectRow(RowType)
+    case addRow
+    case setTextFieldText(FocusableField, String)
+}
+```
+
+#### Правила нейминга свойств и методов
+
+**Свойства:**
+
+```swift
+// Boolean — начинается с is/has/should/can
+var isON: Bool
+var isFieldDisabled: Bool
+var shouldShowOnboarding: Bool
+var isBannerFullyCached: Bool
+
+// Коллекции — множественное число
+var rows: [Row]
+var displayedRowIndexes: Range<Int>
+
+// Optional — без суффикса, контекст понятен из типа
+var selectedRow: RowType?
+var focus: FocusableField?
+
+// @Published — private(set) для readonly из View
+@Published private(set) var total: TotalRow
+@Published private(set) var rows: [Row]
+
+// @AppStorage — приватные, ключ = имя переменной или версия
+@AppStorage("onboardingIsShown") private var onboardingIsShown = false
+@AppStorage("1.7.0") private var requestReviewWasShown = false
+```
+
+**Методы:**
+
+```swift
+// Действия — глагол в начале
+func send(_ action: ViewAction)
+func select(_ row: RowType)
+func calculate()
+func clearAll()
+
+// Getters — существительное или is-префикс
+func getBannerFromDefaults() -> BannerModel?
+func isFieldDisabled(_ field: FocusableField) -> Bool
+
+// Асинхронные — без async в названии (это уже в сигнатуре)
+func fetchBanner() async throws -> BannerModel
+func requestReview() async
+
+// Factory — create/make префикс
+static func createRows(_ number: Int = 10) -> [Row]
+
+// Обработчики событий — handle/on префикс
+func handleReviewYes() async
+func handleReviewNo()
+func onAppear()
+```
+
+#### MARK секции
+
+Используй `// MARK: - Section Name` для визуального разделения кода в Xcode:
+
+**Порядок MARK секций в ViewModel:**
+
+```swift
+@MainActor
+final class SurebetCalculatorViewModel: ObservableObject {
+    // MARK: - Properties
+    
+    @Published private(set) var total: TotalRow
+    @Published private(set) var rows: [Row]
+    private let calculationService: CalculationService
+    
+    // MARK: - Initialization
+    
+    init(
+        total: TotalRow = TotalRow(),
+        calculationService: CalculationService = DefaultCalculationService()
+    ) {
+        self.total = total
+        self.calculationService = calculationService
+    }
+    
+    // MARK: - Public Methods
+    
+    enum ViewAction { ... }
+    
+    func send(_ action: ViewAction) { ... }
+}
+
+// MARK: - Public Extensions
+
+extension SurebetCalculatorViewModel {
+    var displayedRowIndexes: Range<Int> { ... }
+    func isFieldDisabled(_ field: FocusableField) -> Bool { ... }
+}
+
+// MARK: - Private Methods
+
+private extension SurebetCalculatorViewModel {
+    func select(_ row: RowType) { ... }
+    func calculate() { ... }
+}
+```
+
+**Порядок MARK секций в View:**
+
+```swift
+struct SurebetCalculatorView: View {
+    // MARK: - Properties
+    
+    @StateObject private var viewModel = SurebetCalculatorViewModel()
+    @FocusState private var isFocused
+    
+    // MARK: - Body
+    
+    var body: some View {
+        scrollableContent
+            .navigationTitle(navigationTitle)
+    }
+}
+
+// MARK: - Private Methods
+
+private extension SurebetCalculatorView {
+    var scrollableContent: some View { ... }
+    func scrollToEnd(proxy: ScrollViewProxy) { ... }
+}
+
+// MARK: - Private Computed Properties
+
+private extension SurebetCalculatorView {
+    var navigationTitle: String { String(localized: "Surebet calculator") }
+    var spacing: CGFloat { isIPad ? 24 : 16 }
+}
+```
+
+**MARK в Constants:**
+
+```swift
+enum AppConstants {
+    // MARK: - Layout
+    
+    enum Padding { ... }
+    enum Heights { ... }
+    enum CornerRadius { ... }
+    
+    // MARK: - Delays
+    
+    enum Delays { ... }
+    
+    // MARK: - Other
+    
+    enum Other { ... }
+}
+```
+
+**MARK в тестах:**
+
+```swift
+@MainActor
+struct SurebetCalculatorViewModelTests {
+    @Test
+    func selectRow() { ... }
+    
+    // MARK: - Tests with Mocks
+    
+    @Test
+    func calculationServiceIsCalledOnSelectRow() { ... }
+    
+    // MARK: - addRow Tests
+    
+    @Test
+    func addRowWhenNumberOfRowsIsLessThanTen() { ... }
+    
+    // MARK: - Concurrency Tests
+    
+    @Test
+    func mainActorIsolation() async { ... }
+}
+```
+
+**MARK для AccessibilityIdentifiers:**
+
+```swift
+public enum AccessibilityIdentifiers: Sendable {
+    // MARK: - Calculator
+    
+    public enum Calculator: Sendable { ... }
+    
+    // MARK: - Total Row
+    
+    public enum TotalRow: Sendable { ... }
+    
+    // MARK: - Row
+    
+    public enum Row: Sendable { ... }
+    
+    // MARK: - Keyboard
+    
+    public enum Keyboard: Sendable { ... }
+}
+```
+
+#### Порядок элементов в файле
+
+**ViewModel:**
+1. `// MARK: - Properties` — `@Published`, `@AppStorage`, `private let`
+2. `// MARK: - Initialization` — `init`
+3. `// MARK: - Public Methods` — `ViewAction` enum, `send()`, публичные методы
+4. `// MARK: - Public Extensions` — computed properties, вспомогательные публичные методы
+5. `// MARK: - Private Methods` — через `private extension`
+
+**View:**
+1. `// MARK: - Properties` — `@StateObject`, `@EnvironmentObject`, `@FocusState`, `let`
+2. `// MARK: - Body` — `var body: some View`
+3. `// MARK: - Private Methods` — через `private extension`
+4. `// MARK: - Private Computed Properties` — через отдельный `private extension`
+5. `#Preview` — в конце файла
+
+**Порядок свойств:**
+```swift
+// 1. Property wrappers (в порядке важности)
+@StateObject private var viewModel
+@EnvironmentObject private var parentViewModel
+@Environment(\.dismiss) private var dismiss
+@FocusState private var isFocused
+@State private var localState
+@Binding var externalBinding
+
+// 2. Обычные свойства
+let id: Int
+private let service: SomeService
+```
+
+#### Правила форматирования
+
+**Private extension вместо private методов:**
+
+```swift
+// ❌ Плохо — private в основном типе
+struct SomeView: View {
+    var body: some View { ... }
+    
+    private func helper() { }
+    private var computed: Int { }
+}
+
+// ✅ Хорошо — через private extension
+struct SomeView: View {
+    var body: some View { ... }
+}
+
+private extension SomeView {
+    func helper() { }
+    var computed: Int { }
+}
+```
+
+**Enum для констант:**
+
+```swift
+// ❌ Плохо — плоские константы
+let smallPadding: CGFloat = 8
+let mediumPadding: CGFloat = 12
+
+// ✅ Хорошо — вложенные enum
+enum AppConstants {
+    enum Padding {
+        static let small: CGFloat = 8
+        static let medium: CGFloat = 12
+    }
+}
+```
+
+**Init с параметрами на отдельных строках:**
+
+```swift
+// ❌ Плохо — всё в одну строку
+init(total: TotalRow = TotalRow(), rows: [Row] = Row.createRows(), service: CalculationService = DefaultCalculationService()) { }
+
+// ✅ Хорошо — каждый параметр на новой строке
+init(
+    total: TotalRow = TotalRow(),
+    rows: [Row] = Row.createRows(),
+    calculationService: CalculationService = DefaultCalculationService()
+) {
+    self.total = total
+    self.rows = rows
+    self.calculationService = calculationService
+}
+```
+
+**WORKAROUND комментарии:**
+
+```swift
+// WORKAROUND: ToolbarItemGroup(placement: .keyboard) вызывает runtime warning
+// "Invalid frame dimension (negative or non-finite)" - это известный баг SwiftUI.
+// Warning безвреден и не влияет на работу приложения.
+// https://developer.apple.com/forums/thread/709656
+ToolbarItemGroup(placement: .keyboard) { ... }
+
+// swiftlint:disable:next legacy_objc_type
+let formattedValue = formatter.string(from: self as NSNumber) ?? "0.00"
+```
+
+#### Swift Doc документация
+
+**Язык:** Русский.
+
+**Формат:** `///` для публичных API.
+
+**Протоколы — документируй каждый метод:**
+
+```swift
+/// Протокол для сервиса работы с баннерами.
+/// Обеспечивает инверсию зависимостей и позволяет легко тестировать компоненты.
+public protocol BannerService: Sendable {
+    /// Загружает баннер и изображение с сервера.
+    func fetchBannerAndImage() async throws
+
+    /// Загружает баннер с сервера.
+    /// - Returns: Модель баннера.
+    func fetchBanner() async throws -> BannerModel
+
+    /// Сохраняет баннер в UserDefaults.
+    /// - Parameter banner: Модель баннера для сохранения.
+    func saveBannerToDefaults(_ banner: BannerModel)
+}
+```
+
+**Методы с параметрами:**
+
+```swift
+/// Выполняет вычисления на основе текущего состояния калькулятора.
+/// - Parameters:
+///   - total: Текущая строка с итоговыми данными.
+///   - rows: Массив строк с данными о ставках.
+///   - selectedRow: Выбранная строка для вычислений.
+///   - displayedRowIndexes: Диапазон индексов отображаемых строк.
+/// - Returns: Кортеж с обновленными данными (total и rows), или nil если вычисления не требуются.
+func calculate(
+    total: TotalRow,
+    rows: [Row],
+    selectedRow: RowType?,
+    displayedRowIndexes: Range<Int>
+) -> (total: TotalRow?, rows: [Row]?)
+```
+
+**Enum'ы и константы:**
+
+```swift
+/// Константы приложения, сгруппированные по категориям
+enum AppConstants {
+    /// Константы для отступов (padding)
+    enum Padding {
+        /// Маленький отступ (8pt)
+        static let small: CGFloat = 8
+        
+        /// Средний отступ (12pt)
+        static let medium: CGFloat = 12
+    }
+}
+
+/// Идентификаторы доступности для UI элементов калькулятора.
+/// Используются для UI тестов.
+public enum AccessibilityIdentifiers: Sendable {
+    /// Идентификаторы для основного экрана калькулятора
+    public enum Calculator: Sendable { ... }
+}
+```
+
+**ViewModel — документируй публичные свойства и методы:**
+
+```swift
+/// ViewModel для управления состоянием и бизнес-логикой RootView
+@MainActor
+final class RootViewModel: ObservableObject {
+    /// Проверяет, нужно ли показать onboarding
+    var shouldShowOnboarding: Bool { !onboardingIsShown }
+    
+    /// Заголовок для запроса отзыва
+    var requestReviewTitle: String { String(localized: "Do you like the app?") }
+    
+    /// Обработка появления экрана
+    func onAppear() { numberOfOpenings += 1 }
+    
+    /// Обработка ответа "Да" на запрос отзыва
+    func handleReviewYes() async { ... }
+}
+```
+
+**Правила документирования:**
+1. Описывай **почему** сделано так, а не **что** делает код
+2. Обязательно документируй публичные API модулей
+3. Документируй протоколы полностью (каждый метод)
+4. Константы — кратко, с указанием значения в скобках
+5. WORKAROUND — с ссылкой на issue/форум
+
+---
+
 #### Примеры организации по модулям
 
 **SurebetCalculator (полная структура):**
