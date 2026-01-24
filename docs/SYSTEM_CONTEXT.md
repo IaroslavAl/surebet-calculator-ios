@@ -396,18 +396,196 @@ struct DefaultCalculationService: CalculationService, Sendable {
 - ViewModel напрямую меняет UI
 - Циклические зависимости
 
-#### Dependency Injection
+---
 
-DI реализуется через параметры `init` с дефолтными значениями:
+### 1.3. Dependency Injection
+
+Проект использует **Constructor Injection** с дефолтными значениями — простой и тестируемый паттерн без DI-контейнеров.
+
+#### Паттерн DI через init
 
 ```swift
-// Production использует дефолтные значения
-let viewModel = SurebetCalculatorViewModel()
-
-// Тесты передают моки
-let viewModel = SurebetCalculatorViewModel(
-    calculationService: MockCalculationService()
-)
+@MainActor
+final class SomeViewModel: ObservableObject {
+    // Зависимость хранится как private let
+    private let analyticsService: AnalyticsService
+    private let reviewService: ReviewService
+    
+    // Init с дефолтными значениями
+    init(
+        analyticsService: AnalyticsService = AnalyticsManager(),
+        reviewService: ReviewService = ReviewHandler()
+    ) {
+        self.analyticsService = analyticsService
+        self.reviewService = reviewService
+    }
+}
 ```
+
+**Ключевые правила:**
+1. Параметр = протокол, дефолтное значение = реализация
+2. `private let` для хранения — immutable после init
+3. Production код вызывает `SomeViewModel()` — дефолтные значения
+4. Тесты вызывают `SomeViewModel(analyticsService: MockAnalyticsService())` — моки
+
+#### Протоколы сервисов
+
+В проекте 4 основных сервисных протокола:
+
+**CalculationService** — вычисления калькулятора
+```swift
+protocol CalculationService: Sendable {
+    func calculate(
+        total: TotalRow,
+        rows: [Row],
+        selectedRow: RowType?,
+        displayedRowIndexes: Range<Int>
+    ) -> (total: TotalRow?, rows: [Row]?)
+}
+
+// Реализация
+struct DefaultCalculationService: CalculationService, Sendable { ... }
+```
+
+**AnalyticsService** — аналитика событий
+```swift
+public protocol AnalyticsService: Sendable {
+    func log(name: String, parameters: [String: AnalyticsParameterValue]?)
+}
+
+// Реализация
+public struct AnalyticsManager: AnalyticsService, Sendable { ... }
+```
+
+**ReviewService** — запрос отзывов
+```swift
+@MainActor
+public protocol ReviewService: Sendable {
+    func requestReview() async
+}
+
+// Реализация
+@MainActor
+public final class ReviewHandler: ReviewService { ... }
+```
+
+**BannerService** — работа с баннерами
+```swift
+public protocol BannerService: Sendable {
+    func fetchBannerAndImage() async throws
+    func fetchBanner() async throws -> BannerModel
+    func saveBannerToDefaults(_ banner: BannerModel)
+    func getBannerFromDefaults() -> BannerModel?
+    func clearBannerFromDefaults()
+    func downloadImage(from url: URL) async throws
+    func getStoredBannerImageData() -> Data?
+    func getStoredBannerImageURL() -> URL?
+    func isBannerFullyCached() -> Bool
+}
+
+// Реализация
+struct Service: BannerService, @unchecked Sendable { ... }
+```
+
+#### Создание моков для тестов
+
+Моки создаются вручную (hand-written mocks) без библиотек:
+
+```swift
+/// Мок для тестов — хранит историю вызовов
+final class MockCalculationService: CalculationService, @unchecked Sendable {
+    // Счётчик вызовов
+    var calculateCallCount = 0
+    
+    // Контролируемый результат
+    var calculateResult: (total: TotalRow?, rows: [Row]?)?
+    
+    // История входных данных
+    var calculateInputs: [CalculateInput] = []
+    
+    func calculate(
+        total: TotalRow,
+        rows: [Row],
+        selectedRow: RowType?,
+        displayedRowIndexes: Range<Int>
+    ) -> (total: TotalRow?, rows: [Row]?) {
+        calculateCallCount += 1
+        calculateInputs.append(CalculateInput(...))
+        return calculateResult ?? (nil, nil)
+    }
+}
+```
+
+**Паттерн мока:**
+1. `@unchecked Sendable` — для тестов допустимо
+2. `*CallCount` — счётчик вызовов для проверки
+3. `*Result` — контролируемый return value
+4. `*Inputs` — история входных параметров
+
+#### Примеры использования в тестах
+
+```swift
+@MainActor
+@Suite(.serialized)
+struct RootViewModelTests {
+    
+    /// Factory method для создания ViewModel с моками
+    func createViewModel(
+        analyticsService: AnalyticsService? = nil,
+        reviewService: ReviewService? = nil
+    ) -> RootViewModel {
+        let analytics = analyticsService ?? MockAnalyticsService()
+        let review = reviewService ?? MockReviewService()
+        return RootViewModel(
+            analyticsService: analytics,
+            reviewService: review
+        )
+    }
+    
+    @Test
+    func handleReviewYesCallsServiceAndLogsAnalytics() async {
+        // Given — создаём моки для контроля
+        let mockAnalytics = MockAnalyticsService()
+        let mockReview = MockReviewService()
+        let viewModel = createViewModel(
+            analyticsService: mockAnalytics,
+            reviewService: mockReview
+        )
+        
+        // When — выполняем действие
+        await viewModel.handleReviewYes()
+        
+        // Then — проверяем вызовы моков
+        #expect(mockReview.requestReviewCallCount == 1)
+        #expect(mockAnalytics.logCallCount == 1)
+        #expect(mockAnalytics.lastEventName == "RequestReview")
+    }
+}
+```
+
+#### Расположение файлов
+
+```
+Sources/
+└── ModuleName/
+    ├── SomeService.swift          # Протокол
+    └── DefaultSomeService.swift   # Реализация
+
+Tests/
+└── ModuleNameTests/
+    ├── SomeViewModelTests.swift
+    └── Mocks/
+        └── MockSomeService.swift  # Мок для тестов
+```
+
+#### Правила DI в проекте
+
+| Правило | Описание |
+|---------|----------|
+| Протокол в параметре | `service: ServiceProtocol` — не конкретный тип |
+| Дефолт = реализация | `= DefaultService()` — production готов из коробки |
+| Private let | Зависимости immutable после init |
+| Sendable | Все протоколы сервисов `Sendable` |
+| Hand-written mocks | Без библиотек (Mockolo, Cuckoo) — полный контроль |
 
 ---
