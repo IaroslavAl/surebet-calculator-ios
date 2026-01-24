@@ -3933,3 +3933,482 @@ func fetchBannerAndImage() async throws {
 | **DI для тестов** | Использовать версии методов с `service:` параметром |
 
 ---
+
+### 4.3. State Management
+
+Проект использует стандартные SwiftUI property wrappers для управления состоянием. Правильный выбор wrapper критичен для производительности и корректной работы UI.
+
+---
+
+#### Таблица выбора Property Wrapper
+
+| Wrapper | Где | Когда использовать | Пример из проекта |
+|---------|-----|-------------------|-------------------|
+| `@Published` | ViewModel | Состояние, обновляющее UI | `@Published private(set) var rows: [Row]` |
+| `@StateObject` | View (корень) | Создание и владение ViewModel | `@StateObject private var viewModel = RootViewModel()` |
+| `@ObservedObject` | ViewModifier | Наблюдение без владения | `@ObservedObject var viewModel: RootViewModel` |
+| `@EnvironmentObject` | Child View | Доступ к ViewModel из иерархии | `@EnvironmentObject private var viewModel` |
+| `@AppStorage` | ViewModel | Персистентное состояние (UserDefaults) | `@AppStorage("onboardingIsShown") var flag` |
+| `@Binding` | Child View | Двусторонняя связь с родителем | `@Binding var isPresented: Bool` |
+| `@FocusState` | View | Управление фокусом клавиатуры | `@FocusState private var isFocused` |
+
+---
+
+#### @Published — состояние ViewModel
+
+`@Published` используется для свойств ViewModel, изменение которых должно вызывать перерисовку UI.
+
+```swift
+// SurebetCalculatorViewModel.swift
+@MainActor
+final class SurebetCalculatorViewModel: ObservableObject {
+    // ВСЕГДА private(set) — View читает, но не пишет напрямую
+    @Published private(set) var total: TotalRow
+    @Published private(set) var rows: [Row]
+    @Published private(set) var selectedNumberOfRows: NumberOfRows
+    @Published private(set) var selectedRow: RowType?
+    @Published private(set) var focus: FocusableField?
+    
+    // Даже для Binding — private(set)
+    @Published private(set) var alertIsPresented = false
+    
+    // Изменение через action
+    func send(_ action: ViewAction) {
+        switch action {
+        case .showAlert:
+            alertIsPresented = true
+        case .hideAlert:
+            alertIsPresented = false
+        }
+    }
+}
+```
+
+**Правила:**
+1. **ВСЕГДА** `private(set)` — View никогда не пишет напрямую
+2. Изменение только через `send(_ action:)` или явный метод
+3. Binding создаётся вручную через `Binding(get:set:)` с action
+4. Всегда в паре с `ObservableObject` и `@MainActor`
+
+---
+
+#### @StateObject — владение ViewModel
+
+`@StateObject` создаёт и владеет экземпляром ViewModel. Использовать **только в корневом View** для данного ViewModel.
+
+```swift
+// SurebetCalculatorView.swift — корень для SurebetCalculatorViewModel
+struct SurebetCalculatorView: View {
+    @StateObject private var viewModel = SurebetCalculatorViewModel()
+    
+    var body: some View {
+        scrollableContent
+            .environmentObject(viewModel)  // Передача вниз
+    }
+}
+
+// RootView.swift — корень для RootViewModel
+struct RootView: View {
+    @StateObject private var viewModel = RootViewModel()
+    
+    var body: some View {
+        mainContent
+            .modifier(ReviewAlertModifier(viewModel: viewModel))
+    }
+}
+
+// OnboardingView.swift — корень для OnboardingViewModel
+struct OnboardingView: View {
+    @StateObject private var viewModel = OnboardingViewModel()
+    
+    var body: some View {
+        pageView
+            .environmentObject(viewModel)
+    }
+}
+```
+
+**Правила:**
+1. `@StateObject` создаётся **один раз** при первом появлении View
+2. Не пересоздаётся при перерисовке родителя (в отличие от `@ObservedObject`)
+3. Только для View, которое **владеет** ViewModel
+4. Всегда `private`
+
+---
+
+#### @ObservedObject — наблюдение без владения
+
+`@ObservedObject` используется когда ViewModel передаётся извне (через init). View **не владеет** экземпляром.
+
+```swift
+// RootView.swift — ViewModifier получает ViewModel через init
+private struct ReviewAlertModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel  // Не private!
+    
+    func body(content: Content) -> some View {
+        content
+            .alert(viewModel.requestReviewTitle, isPresented: $viewModel.alertIsPresented) {
+                Button("No") { viewModel.handleReviewNo() }
+                Button("Yes") { Task { await viewModel.handleReviewYes() } }
+            }
+    }
+}
+
+private struct FullscreenBannerOverlayModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+    
+    func body(content: Content) -> some View {
+        content.overlay {
+            if viewModel.fullscreenBannerIsPresented {
+                Banner.fullscreenBannerView(isPresented: $viewModel.fullscreenBannerIsPresented)
+            }
+        }
+    }
+}
+
+private struct AnimationModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+    
+    func body(content: Content) -> some View {
+        content
+            .animation(.default, value: viewModel.isOnboardingShown)
+            .animation(.easeInOut, value: viewModel.fullscreenBannerIsPresented)
+    }
+}
+```
+
+**Использование:**
+```swift
+// RootView.swift — передача в модификаторы
+var body: some View {
+    mainContent
+        .modifier(ReviewAlertModifier(viewModel: viewModel))
+        .modifier(FullscreenBannerOverlayModifier(viewModel: viewModel))
+        .modifier(AnimationModifier(viewModel: viewModel))
+}
+```
+
+**Правила:**
+1. Не `private` — передаётся через init
+2. Не создаёт экземпляр — только наблюдает
+3. Если родитель пересоздаст ViewModel — `@ObservedObject` получит новый экземпляр
+
+---
+
+#### @EnvironmentObject — через view hierarchy
+
+`@EnvironmentObject` позволяет передавать ViewModel через `.environmentObject()` без явного проброса через все промежуточные View.
+
+**Провайдер (корневой View):**
+```swift
+// SurebetCalculatorView.swift
+struct SurebetCalculatorView: View {
+    @StateObject private var viewModel = SurebetCalculatorViewModel()
+    
+    var body: some View {
+        VStack {
+            TotalRowView()      // Получит через @EnvironmentObject
+            RowView(id: 0)      // Получит через @EnvironmentObject
+            ToggleButton(row: .total)
+        }
+        .environmentObject(viewModel)  // Внедрение в иерархию
+    }
+}
+```
+
+**Потребители (дочерние View):**
+```swift
+// TotalRowView.swift
+struct TotalRowView: View {
+    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    
+    var body: some View {
+        Text(viewModel.total.profitPercentage)
+    }
+}
+
+// RowView.swift
+struct RowView: View {
+    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    let id: Int
+    
+    var body: some View {
+        HStack {
+            TextFieldView(focusableField: .rowCoefficient(id))
+        }
+    }
+}
+
+// ToggleButton.swift
+struct ToggleButton: View {
+    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    let row: RowType
+    
+    var body: some View {
+        Button {
+            viewModel.send(.selectRow(row))
+        } label: {
+            toggleImage
+        }
+    }
+}
+```
+
+**Preview с EnvironmentObject:**
+```swift
+#Preview {
+    TotalRowView()
+        .environmentObject(SurebetCalculatorViewModel())
+}
+
+#Preview {
+    ToggleButton(row: .total)
+        .environmentObject(SurebetCalculatorViewModel())
+}
+```
+
+**Правила:**
+1. Всегда `private` — не передаётся через init
+2. Crash если `.environmentObject()` не вызван выше по иерархии
+3. Использовать когда много уровней вложенности
+4. В Preview обязательно добавлять `.environmentObject()`
+
+---
+
+#### @AppStorage — персистентное состояние
+
+`@AppStorage` — обёртка над `UserDefaults` с автоматической синхронизацией.
+
+```swift
+// RootViewModel.swift
+@MainActor
+final class RootViewModel: ObservableObject {
+    // Персистентные флаги — сохраняются между запусками
+    @AppStorage("onboardingIsShown") private var onboardingIsShown = false
+    @AppStorage("1.7.0") private var requestReviewWasShown = false
+    @AppStorage("numberOfOpenings") private var numberOfOpenings = 0
+    
+    // Публичный доступ через computed property
+    var isOnboardingShown: Bool { onboardingIsShown }
+    
+    // Изменение через метод
+    func updateOnboardingShown(_ value: Bool) {
+        onboardingIsShown = value
+    }
+    
+    func onAppear() {
+        numberOfOpenings += 1  // Автоматически сохраняется в UserDefaults
+    }
+}
+```
+
+**Ключевые правила:**
+1. Ключ — строка (`"onboardingIsShown"`)
+2. Дефолтное значение задаётся при объявлении
+3. Изменения **автоматически** синхронизируются с `UserDefaults`
+4. Поддерживает: `Bool`, `Int`, `Double`, `String`, `Data`, `URL`
+5. Для версионных флагов использовать версию как ключ (`"1.7.0"`)
+
+**Тестирование:**
+```swift
+// В тестах — очистка UserDefaults перед каждым тестом
+@Suite(.serialized)  // Последовательное выполнение — shared state
+struct RootViewModelTests {
+    init() {
+        UserDefaults.standard.removeObject(forKey: "onboardingIsShown")
+        UserDefaults.standard.removeObject(forKey: "numberOfOpenings")
+    }
+}
+```
+
+---
+
+#### @Binding — двусторонняя связь
+
+`@Binding` создаёт двустороннюю связь с состоянием родителя.
+
+```swift
+// FullscreenBannerView.swift
+struct FullscreenBannerView: View {
+    @Binding var isPresented: Bool  // Изменение закроет overlay в родителе
+    
+    var body: some View {
+        ZStack {
+            bannerImage
+            closeButton
+        }
+    }
+    
+    private var closeButton: some View {
+        Button {
+            isPresented = false  // Меняем состояние родителя
+        } label: {
+            Image(systemName: "xmark.circle.fill")
+        }
+    }
+}
+
+// OnboardingView.swift
+struct OnboardingView: View {
+    @Binding var onboardingIsShown: Bool
+    
+    var body: some View {
+        pageView
+            .onChange(of: viewModel.onboardingIsShown) { newValue in
+                onboardingIsShown = newValue  // Синхронизация с родителем
+            }
+    }
+}
+```
+
+**Создание Binding из ViewModel:**
+```swift
+// RootView.swift
+private var onboardingBinding: Binding<Bool> {
+    Binding(
+        get: { viewModel.isOnboardingShown },
+        set: { viewModel.updateOnboardingShown($0) }
+    )
+}
+
+var body: some View {
+    Onboarding.view(onboardingIsShown: onboardingBinding)
+}
+```
+
+**Binding для @Published private(set) — через Binding(get:set:):**
+```swift
+// ViewModel — ВСЕГДА private(set)
+@Published private(set) var alertIsPresented = false
+
+func setAlertPresented(_ value: Bool) {
+    alertIsPresented = value
+}
+
+// View — создаём Binding вручную
+var alertBinding: Binding<Bool> {
+    Binding(
+        get: { viewModel.alertIsPresented },
+        set: { viewModel.setAlertPresented($0) }  // Через метод ViewModel
+    )
+}
+
+// Использование
+.alert("Title", isPresented: alertBinding) { ... }
+```
+
+**Правила:**
+1. Не `private` — передаётся через init
+2. Используется для `isPresented`, `selection`, `text` и т.д.
+3. **Всегда** создаётся вручную через `Binding(get:set:)` с вызовом метода/action ViewModel
+4. **Никогда** не использовать `$viewModel.property` — это нарушает инкапсуляцию
+
+---
+
+#### @FocusState — управление фокусом
+
+`@FocusState` управляет фокусом клавиатуры в SwiftUI.
+
+```swift
+// SurebetCalculatorView.swift
+struct SurebetCalculatorView: View {
+    @StateObject private var viewModel = SurebetCalculatorViewModel()
+    @FocusState private var isFocused  // Bool или Optional<Enum>
+    
+    var body: some View {
+        scrollableContent
+            .focused($isFocused)  // Связь с view hierarchy
+            .onTapGesture {
+                isFocused = false  // Dismiss keyboard
+            }
+    }
+}
+
+// TextFieldView.swift — с типизированным FocusState
+struct TextFieldView: View {
+    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    @FocusState private var isFocused: FocusableField?  // Enum?
+    
+    let focusableField: FocusableField
+    
+    var body: some View {
+        TextField(placeholder, text: bindingText)
+            .focused($isFocused, equals: focusableField)  // Фокус на конкретное поле
+            .onTapGesture {
+                viewModel.send(.setFocus(focusableField))
+            }
+    }
+}
+
+// FocusableField.swift — enum для типизации фокуса
+enum FocusableField: Hashable {
+    case totalBetSize
+    case rowBetSize(Int)
+    case rowCoefficient(Int)
+}
+```
+
+**Правила:**
+1. Всегда `private`
+2. Тип `Bool` или `Optional<Hashable>`
+3. Связывается через `.focused($state)` или `.focused($state, equals: value)`
+
+---
+
+#### Диаграмма потока состояния
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         RootView                                 │
+│  @StateObject viewModel = RootViewModel()                       │
+│  @AppStorage в ViewModel → UserDefaults                         │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │              ViewModifier                                │    │
+│  │  @ObservedObject viewModel ← передан через init         │    │
+│  │  $viewModel.alertIsPresented → .alert(isPresented:)     │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │         SurebetCalculatorView                            │    │
+│  │  @StateObject viewModel = SurebetCalculatorViewModel()  │    │
+│  │  .environmentObject(viewModel) ──────────────────────┐   │    │
+│  │                                                       │   │    │
+│  │  ┌───────────────────────────────────────────────┐   │   │    │
+│  │  │              Child Views                       │◄──┘   │    │
+│  │  │  @EnvironmentObject viewModel                 │        │    │
+│  │  │  viewModel.send(.action) → @Published update  │        │    │
+│  │  └───────────────────────────────────────────────┘        │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │         FullscreenBannerView                             │    │
+│  │  @Binding isPresented ← связь с RootViewModel           │    │
+│  │  isPresented = false → закрывает overlay                │    │
+│  └─────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+#### Правила для AI-агента
+
+| Сценарий | Используй | НЕ используй |
+|----------|-----------|--------------|
+| Корневой View создаёт ViewModel | `@StateObject` | `@ObservedObject` |
+| ViewModifier получает ViewModel | `@ObservedObject` | `@StateObject` |
+| Child View в глубокой иерархии | `@EnvironmentObject` | `@ObservedObject` |
+| Персистентный флаг | `@AppStorage` | `UserDefaults` напрямую |
+| isPresented для sheet/alert | `Binding(get:set:)` + action | `$viewModel.property` |
+| Управление фокусом клавиатуры | `@FocusState` | `@State` |
+| Локальное состояние View (animation) | `@State` | `@Published` |
+| Любое @Published свойство | `private(set)` | без `private(set)` |
+
+**Частые ошибки:**
+1. ❌ `@ObservedObject` в корневом View → ViewModel пересоздаётся
+2. ❌ `@StateObject` в ViewModifier → экземпляр не тот же
+3. ❌ `@EnvironmentObject` без `.environmentObject()` → crash
+4. ❌ `@Published` без `private(set)` → нарушение инкапсуляции
+5. ❌ `$viewModel.property` для Binding → View напрямую меняет состояние
+
+---
