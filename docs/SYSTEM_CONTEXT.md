@@ -5199,3 +5199,494 @@ struct FeatureTests {
 ```
 
 ---
+
+### 5.2. Принципы тестирования
+
+#### Зачем AI-агенту
+
+Знание принципов позволяет агенту писать изолированные и надёжные тесты:
+- Понимать особенности Swift 6 Concurrency в тестах
+- Правильно использовать `@MainActor` и `@Suite(.serialized)`
+- Следовать Given-When-Then структуре
+- Писать тесты, которые не влияют друг на друга
+
+---
+
+#### Swift Testing Framework
+
+Проект использует **Swift Testing** (не XCTest):
+
+| XCTest | Swift Testing |
+|--------|---------------|
+| `import XCTest` | `import Testing` |
+| `class ... : XCTestCase` | `struct ...` |
+| `func test...()` | `@Test func ...()` |
+| `XCTAssert...` | `#expect(...)` |
+| `XCTFail()` | `Issue.record()` |
+
+**Пример миграции:**
+
+```swift
+// XCTest (старый стиль)
+import XCTest
+class MyTests: XCTestCase {
+    func testSomething() {
+        XCTAssertEqual(1 + 1, 2)
+    }
+}
+
+// Swift Testing (используем этот)
+import Testing
+struct MyTests {
+    @Test
+    func something() {
+        #expect(1 + 1 == 2)
+    }
+}
+```
+
+---
+
+#### MainActor Isolation
+
+**Правило:** Если тестируемый ViewModel помечен `@MainActor`, тестовая структура тоже должна быть `@MainActor`.
+
+```swift
+// ViewModel
+@MainActor
+final class SurebetCalculatorViewModel: ObservableObject { ... }
+
+// Тест - ОБЯЗАТЕЛЬНО @MainActor
+@MainActor
+struct SurebetCalculatorViewModelTests {
+    @Test
+    func selectRow() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel()
+        
+        // When
+        viewModel.send(.selectRow(.row(0)))
+        
+        // Then
+        #expect(viewModel.selectedRow == .row(0))
+    }
+}
+```
+
+**Async тесты с MainActor:**
+
+```swift
+@Test
+func mainActorIsolation() async {
+    // Given
+    let viewModel = SurebetCalculatorViewModel()
+
+    // When & Then
+    // Используем MainActor.run для явного выполнения на MainActor
+    await MainActor.run {
+        viewModel.send(.selectRow(.row(0)))
+        #expect(viewModel.selectedRow == .row(0))
+    }
+}
+```
+
+**Concurrency тесты:**
+
+```swift
+@Test
+func concurrentSendCalls() async {
+    // Given
+    let viewModel = SurebetCalculatorViewModel()
+    
+    // When - параллельные вызовы
+    await withTaskGroup(of: Void.self) { group in
+        for index in 0..<100 {
+            group.addTask {
+                await MainActor.run {
+                    viewModel.send(.setTextFieldText(.rowCoefficient(index % 4), "\(index)"))
+                }
+            }
+        }
+    }
+    
+    // Then - проверяем на MainActor
+    await MainActor.run {
+        #expect(viewModel.rows.count == 4)
+    }
+}
+```
+
+---
+
+#### @Suite(.serialized) для Shared State
+
+**Проблема:** UserDefaults — глобальный singleton. Тесты, которые читают/пишут в UserDefaults, могут влиять друг на друга при параллельном выполнении.
+
+**Решение:** `@Suite(.serialized)` — гарантирует последовательное выполнение тестов в Suite.
+
+```swift
+/// Тесты выполняются последовательно для изоляции UserDefaults
+@MainActor
+@Suite(.serialized)
+struct RootViewModelTests {
+    // MARK: - Helper Methods
+    
+    /// Очищает UserDefaults для тестовых ключей
+    func clearTestUserDefaults() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: "onboardingIsShown")
+        defaults.removeObject(forKey: "1.7.0")
+        defaults.removeObject(forKey: "numberOfOpenings")
+    }
+    
+    // MARK: - Tests
+    
+    @Test
+    func shouldShowOnboardingWhenNotShown() {
+        // Given
+        clearTestUserDefaults()  // Очистка ПЕРЕД каждым тестом
+        let viewModel = createViewModel()
+        
+        // Then
+        #expect(viewModel.shouldShowOnboarding == true)
+    }
+    
+    @Test
+    func shouldShowOnboardingWhenAlreadyShown() {
+        // Given
+        clearTestUserDefaults()
+        let viewModel = createViewModel()
+        viewModel.updateOnboardingShown(true)
+        
+        // Then
+        #expect(viewModel.shouldShowOnboarding == false)
+    }
+}
+```
+
+**Альтернатива:** Использовать изолированный UserDefaults suite:
+
+```swift
+/// Создает тестовый UserDefaults с уникальным suite name
+private func createTestUserDefaults() -> UserDefaults {
+    let suiteName = "test.\(UUID().uuidString)"
+    return UserDefaults(suiteName: suiteName) ?? UserDefaults.standard
+}
+```
+
+---
+
+#### Given-When-Then структура
+
+**Обязательная структура** для всех тестов:
+
+```swift
+@Test
+func handleReviewYesWhenAlertIsPresented() async {
+    // Given - подготовка начального состояния
+    clearTestUserDefaults()
+    let mockAnalytics = MockAnalyticsService()
+    let mockReview = MockReviewService()
+    let viewModel = createViewModel(
+        analyticsService: mockAnalytics,
+        reviewService: mockReview
+    )
+    viewModel.alertIsPresented = true
+    
+    // When - выполнение тестируемого действия
+    await viewModel.handleReviewYes()
+    
+    // Then - проверка результата
+    #expect(viewModel.alertIsPresented == false)
+    #expect(mockReview.requestReviewCallCount == 1)
+    #expect(mockAnalytics.logCallCount == 1)
+}
+```
+
+**Вариант When & Then вместе** (для простых случаев):
+
+```swift
+@Test
+func requestReviewWhenMainActorIsolation() async {
+    // Given
+    let handler = ReviewHandler()
+
+    // When & Then
+    await handler.requestReview()
+    #expect(true)  // Если дошли сюда — MainActor isolation работает
+}
+```
+
+---
+
+#### #expect vs #require
+
+| Макрос | Поведение | Когда использовать |
+|--------|-----------|-------------------|
+| `#expect(condition)` | Записывает ошибку, тест продолжается | Обычные проверки |
+| `#require(condition)` | Выбрасывает ошибку, тест останавливается | Критичные preconditions |
+
+```swift
+@Test
+func fetchBannerWhenRequestSucceeds() async throws {
+    // Given
+    let service = createService()
+    
+    // When
+    let banner = try await service.fetchBanner()
+    
+    // Then
+    #expect(banner.id == "expected-id")  // Обычная проверка
+    #expect(banner.title == "Test")
+}
+
+@Test
+func unwrapOptional() throws {
+    // Given
+    let optional: String? = "value"
+    
+    // When & Then
+    let value = try #require(optional)  // Тест падает если nil
+    #expect(value == "value")
+}
+```
+
+**Проверка исключений:**
+
+```swift
+@Test
+func fetchBannerWhenNetworkError() async {
+    // Given
+    let service = createServiceWithError()
+
+    // When & Then
+    await #expect(throws: Error.self) {
+        try await service.fetchBanner()
+    }
+}
+```
+
+---
+
+#### Hand-written Mocks
+
+**Принцип:** Моки пишутся вручную, без библиотек (Mockito, Cuckoo и т.д.).
+
+**Структура мока:**
+
+```swift
+/// Мок для тестирования AnalyticsService
+final class MockAnalyticsService: AnalyticsService, @unchecked Sendable {
+    // MARK: - Tracking
+    
+    /// Количество вызовов метода log
+    var logCallCount = 0
+    
+    /// Последние переданные параметры
+    var lastLogName: String?
+    var lastLogParameters: [String: AnalyticsValue]?
+    
+    /// Все вызовы для детального анализа
+    var logCalls: [(name: String, parameters: [String: AnalyticsValue]?)] = []
+    
+    // MARK: - AnalyticsService
+    
+    func log(name: String, parameters: [String: AnalyticsValue]?) {
+        logCallCount += 1
+        lastLogName = name
+        lastLogParameters = parameters
+        logCalls.append((name, parameters))
+    }
+}
+```
+
+**Мок с configurable результатом:**
+
+```swift
+/// Мок для тестирования CalculationService
+final class MockCalculationService: CalculationService, @unchecked Sendable {
+    // MARK: - Tracking
+    
+    var calculateCallCount = 0
+    
+    // MARK: - Configurable Result
+    
+    /// Результат, который вернёт calculate()
+    var calculateResult = CalculationResult()
+    
+    // MARK: - CalculationService
+    
+    func calculate(rows: [Row], total: TotalRow, method: CalculationMethod) -> CalculationResult {
+        calculateCallCount += 1
+        return calculateResult
+    }
+}
+```
+
+**Важно:** `@unchecked Sendable` нужен для Swift 6, потому что мок имеет mutable state (счётчики), но используется только в тестах.
+
+---
+
+#### Helper-методы
+
+**Factory для ViewModel:**
+
+```swift
+/// Создает новый экземпляр RootViewModel с моками
+func createViewModel(
+    analyticsService: AnalyticsService? = nil,
+    reviewService: ReviewService? = nil
+) -> RootViewModel {
+    let analytics = analyticsService ?? MockAnalyticsService()
+    let review = reviewService ?? MockReviewService()
+    return RootViewModel(
+        analyticsService: analytics,
+        reviewService: review
+    )
+}
+```
+
+**Очистка UserDefaults:**
+
+```swift
+/// Очищает UserDefaults для тестовых ключей
+func clearTestUserDefaults() {
+    let defaults = UserDefaults.standard
+    defaults.removeObject(forKey: "onboardingIsShown")
+    defaults.removeObject(forKey: "1.7.0")
+    defaults.removeObject(forKey: "numberOfOpenings")
+}
+```
+
+**Изолированный URLSession для сетевых тестов:**
+
+```swift
+/// Создает моковый URLSession с MockURLProtocol
+private func createMockURLSession(
+    baseURL: URL,
+    handler: @escaping (URLRequest) throws -> (HTTPURLResponse, Data)
+) -> URLSession {
+    MockURLProtocol.register(url: baseURL, handler: handler)
+    
+    let config = URLSessionConfiguration.ephemeral
+    config.protocolClasses = [MockURLProtocol.self]
+    config.urlCache = nil
+    config.requestCachePolicy = .reloadIgnoringLocalCacheData
+    
+    return URLSession(configuration: config)
+}
+```
+
+---
+
+#### Правила для AI-агента
+
+**При написании нового теста:**
+
+1. **Framework:** `import Testing`, а не `XCTest`
+2. **Структура:** `struct`, а не `class`
+3. **Атрибут:** `@Test`, а не `func test...()`
+4. **Проверки:** `#expect(...)`, а не `XCTAssert...`
+5. **MainActor:** Добавить `@MainActor` если ViewModel помечен `@MainActor`
+6. **Serialized:** Добавить `@Suite(.serialized)` если тесты используют UserDefaults
+7. **Given-When-Then:** Структурировать тест с комментариями
+8. **Cleanup:** Вызывать `clearTestUserDefaults()` в начале каждого теста с UserDefaults
+9. **Async:** Использовать `async` для тестов с async методами
+
+**Чеклист перед PR:**
+
+- [ ] Все тесты проходят (`swift test`)
+- [ ] `@MainActor` добавлен где нужно
+- [ ] `@Suite(.serialized)` добавлен для тестов с shared state
+- [ ] Моки имеют `@unchecked Sendable`
+- [ ] Given-When-Then структура соблюдена
+- [ ] Helper-методы вынесены для переиспользования
+
+---
+
+#### Шаблон нового тестового файла
+
+```swift
+import Testing
+@testable import ModuleName
+
+@MainActor
+struct FeatureTests {
+    // MARK: - Helper Methods
+    
+    private func createViewModel() -> FeatureViewModel {
+        FeatureViewModel()
+    }
+    
+    // MARK: - Tests
+    
+    @Test
+    func featureWorksWhenCondition() {
+        // Given
+        let viewModel = createViewModel()
+        
+        // When
+        viewModel.performAction()
+        
+        // Then
+        #expect(viewModel.state == .expected)
+    }
+    
+    @Test
+    func asyncFeatureWorksWhenCondition() async {
+        // Given
+        let viewModel = createViewModel()
+        
+        // When
+        await viewModel.performAsyncAction()
+        
+        // Then
+        await MainActor.run {
+            #expect(viewModel.state == .expected)
+        }
+    }
+}
+```
+
+---
+
+#### Шаблон мока
+
+```swift
+import Foundation
+@testable import ModuleName
+
+/// Мок для тестирования протокола SomeService
+final class MockSomeService: SomeService, @unchecked Sendable {
+    // MARK: - Tracking
+    
+    var methodCallCount = 0
+    var lastParameter: String?
+    var methodCalls: [(param: String, date: Date)] = []
+    
+    // MARK: - Configurable Result
+    
+    var resultToReturn: Result = .success
+    var shouldThrowError = false
+    
+    // MARK: - SomeService
+    
+    func doSomething(param: String) async throws -> Result {
+        methodCallCount += 1
+        lastParameter = param
+        methodCalls.append((param, Date()))
+        
+        if shouldThrowError {
+            throw TestError.mock
+        }
+        
+        return resultToReturn
+    }
+}
+
+enum TestError: Error {
+    case mock
+}
+```
+
+---
