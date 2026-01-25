@@ -2,6 +2,7 @@ import Foundation
 import Testing
 @testable import AnalyticsManager
 
+// swiftlint:disable file_length
 /// Тесты для AnalyticsManager и AnalyticsService
 struct AnalyticsManagerTests {
     // MARK: - log(name:parameters:) Tests

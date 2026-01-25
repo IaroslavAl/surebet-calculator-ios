@@ -127,7 +127,7 @@ struct OnboardingViewModelTests {
         let mockAnalytics = MockAnalyticsService()
 
         // When
-        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        _ = OnboardingViewModel(analyticsService: mockAnalytics)
 
         // Then
         #expect(mockAnalytics.logEventCallCount >= 1)
@@ -146,7 +146,7 @@ struct OnboardingViewModelTests {
         let mockAnalytics = MockAnalyticsService()
 
         // When
-        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        _ = OnboardingViewModel(analyticsService: mockAnalytics)
 
         // Then
         #expect(mockAnalytics.logEventCallCount >= 2) // onboardingStarted + onboardingPageViewed

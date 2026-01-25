@@ -2,7 +2,7 @@
 @testable import SurebetCalculator
 import Testing
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length type_body_length
 @MainActor
 struct SurebetCalculatorViewModelTests {
     @Test
