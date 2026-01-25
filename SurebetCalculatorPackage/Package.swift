@@ -61,6 +61,9 @@ let package = Package(
         ),
         .target(
             name: "Onboarding",
+            dependencies: [
+                "AnalyticsManager",
+            ],
             resources: [.process("Resources")],
             plugins: [
                 .plugin(
@@ -114,7 +117,10 @@ let package = Package(
         ),
         .testTarget(
             name: "OnboardingTests",
-            dependencies: ["Onboarding"],
+            dependencies: [
+                "Onboarding",
+                "AnalyticsManager",
+            ],
             plugins: [
                 .plugin(
                     name: "SwiftLintBuildToolPlugin",

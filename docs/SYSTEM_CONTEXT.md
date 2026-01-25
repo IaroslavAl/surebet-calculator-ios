@@ -141,10 +141,10 @@ init(
 | Файл | Содержимое |
 |------|------------|
 | **[rules/CODING_STANDARDS.md](rules/CODING_STANDARDS.md)** | Swift 6, naming, Git, локализация |
+| **[rules/PROJECT_LESSONS.md](rules/PROJECT_LESSONS.md)** | База знаний об ошибках |
 | **[architecture/DATA_FLOW.md](architecture/DATA_FLOW.md)** | MVVM, DI, State, Analytics, Navigation |
 | **[architecture/MODULES.md](architecture/MODULES.md)** | Описание модулей и API |
 | **[testing/TESTING_STRATEGY.md](testing/TESTING_STRATEGY.md)** | Тесты, моки, паттерны |
-| **[../project_lessons.md](../project_lessons.md)** | База знаний об ошибках |
 
 ---
 

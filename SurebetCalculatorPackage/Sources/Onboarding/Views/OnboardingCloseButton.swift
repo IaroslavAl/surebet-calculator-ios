@@ -23,7 +23,7 @@ private extension OnboardingCloseButton {
     var imageName: String { "xmark" }
 
     func action() {
-        viewModel.send(.dismiss)
+        viewModel.send(.skip)
     }
 
     var label: some View {
