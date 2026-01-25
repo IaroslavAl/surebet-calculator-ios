@@ -1,3 +1,4 @@
+@testable import AnalyticsManager
 @testable import SurebetCalculator
 import Testing
 
@@ -873,5 +874,265 @@ struct SurebetCalculatorViewModelTests {
             #expect(viewModel.selectedRow == .total)
             #expect(viewModel.total.isON)
         }
+    }
+
+    // MARK: - Analytics Tests
+
+    /// Тест события calculator_row_added при добавлении строки
+    @Test
+    func analyticsWhenCalculatorRowAdded() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .two,
+            analyticsService: mockAnalytics
+        )
+
+        // When
+        viewModel.send(.addRow)
+
+        // Then
+        #expect(mockAnalytics.logEventCallCount >= 1)
+        #expect(mockAnalytics.logEventCalls.contains { event in
+            if case .calculatorRowAdded(let rowCount) = event {
+                return rowCount == 3
+            }
+            return false
+        })
+    }
+
+    /// Тест параметров события calculator_row_added
+    @Test
+    func analyticsWhenCalculatorRowAddedParameters() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .two,
+            analyticsService: mockAnalytics
+        )
+
+        // When
+        viewModel.send(.addRow)
+
+        // Then
+        let addedEvents = mockAnalytics.logEventCalls.compactMap { event -> Int? in
+            if case .calculatorRowAdded(let rowCount) = event {
+                return rowCount
+            }
+            return nil
+        }
+        #expect(addedEvents.contains(3))
+    }
+
+    /// Тест события calculator_row_added не вызывается при максимальном количестве строк
+    @Test
+    func analyticsWhenCalculatorRowAddedNotCalledAtMax() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .ten,
+            analyticsService: mockAnalytics
+        )
+        let initialCallCount = mockAnalytics.logEventCallCount
+
+        // When
+        viewModel.send(.addRow)
+
+        // Then
+        // Не должно быть новых вызовов, так как уже максимальное количество строк
+        #expect(mockAnalytics.logEventCallCount == initialCallCount)
+    }
+
+    /// Тест события calculator_row_removed при удалении строки
+    @Test
+    func analyticsWhenCalculatorRowRemoved() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .three,
+            analyticsService: mockAnalytics
+        )
+
+        // When
+        viewModel.send(.removeRow)
+
+        // Then
+        #expect(mockAnalytics.logEventCallCount >= 1)
+        #expect(mockAnalytics.logEventCalls.contains { event in
+            if case .calculatorRowRemoved(let rowCount) = event {
+                return rowCount == 2
+            }
+            return false
+        })
+    }
+
+    /// Тест параметров события calculator_row_removed
+    @Test
+    func analyticsWhenCalculatorRowRemovedParameters() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .three,
+            analyticsService: mockAnalytics
+        )
+
+        // When
+        viewModel.send(.removeRow)
+
+        // Then
+        let removedEvents = mockAnalytics.logEventCalls.compactMap { event -> Int? in
+            if case .calculatorRowRemoved(let rowCount) = event {
+                return rowCount
+            }
+            return nil
+        }
+        #expect(removedEvents.contains(2))
+    }
+
+    /// Тест события calculator_row_removed не вызывается при минимальном количестве строк
+    @Test
+    func analyticsWhenCalculatorRowRemovedNotCalledAtMin() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = SurebetCalculatorViewModel(
+            selectedNumberOfRows: .two,
+            analyticsService: mockAnalytics
+        )
+        let initialCallCount = mockAnalytics.logEventCallCount
+
+        // When
+        viewModel.send(.removeRow)
+
+        // Then
+        // Не должно быть новых вызовов, так как уже минимальное количество строк
+        #expect(mockAnalytics.logEventCallCount == initialCallCount)
+    }
+
+    /// Тест события calculator_cleared при очистке
+    @Test
+    func analyticsWhenCalculatorCleared() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = SurebetCalculatorViewModel(
+            total: .init(betSize: "777", profitPercentage: "10%"),
+            rows: [
+                .init(id: 0, betSize: "100", coefficient: "2.0"),
+                .init(id: 1),
+                .init(id: 2),
+                .init(id: 3)
+            ],
+            analyticsService: mockAnalytics
+        )
+        let initialCallCount = mockAnalytics.logEventCallCount
+
+        // When
+        viewModel.send(.clearAll)
+
+        // Then
+        #expect(mockAnalytics.logEventCallCount > initialCallCount)
+        #expect(mockAnalytics.logEventCalls.contains { event in
+            if case .calculatorCleared = event {
+                return true
+            }
+            return false
+        })
+    }
+
+    /// Тест события calculation_performed с debounce
+    @Test
+    func analyticsWhenCalculationPerformed() async {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = SurebetCalculatorViewModel(
+            rows: [
+                .init(id: 0, coefficient: "2.0"),
+                .init(id: 1, coefficient: "3.0"),
+                .init(id: 2),
+                .init(id: 3)
+            ],
+            analyticsService: mockAnalytics
+        )
+
+        // When
+        viewModel.send(.setTextFieldText(.totalBetSize, "100"))
+        // Ждём debounce время + небольшой запас (1 секунда + 0.5 секунды запас)
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 секунды
+
+        // Then
+        #expect(mockAnalytics.logEventCallCount >= 1)
+        #expect(mockAnalytics.logEventCalls.contains { event in
+            if case .calculationPerformed(let rowCount, _) = event {
+                return rowCount == 2
+            }
+            return false
+        })
+    }
+
+    /// Тест параметров события calculation_performed
+    @Test
+    func analyticsWhenCalculationPerformedParameters() async {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = SurebetCalculatorViewModel(
+            rows: [
+                .init(id: 0, coefficient: "2.0"),
+                .init(id: 1, coefficient: "3.0"),
+                .init(id: 2),
+                .init(id: 3)
+            ],
+            analyticsService: mockAnalytics
+        )
+
+        // When
+        viewModel.send(.setTextFieldText(.totalBetSize, "100"))
+        // Ждём debounce время + небольшой запас (1 секунда + 0.5 секунды запас)
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 секунды
+
+        // Then
+        let calculationEvents = mockAnalytics.logEventCalls.compactMap { event -> (Int, Double)? in
+            if case .calculationPerformed(let rowCount, let profitPercentage) = event {
+                return (rowCount, profitPercentage)
+            }
+            return nil
+        }
+        #expect(!calculationEvents.isEmpty)
+        if let event = calculationEvents.first {
+            #expect(event.0 == 2) // rowCount
+            #expect(event.1 >= 0) // profitPercentage должен быть неотрицательным для валидных коэффициентов
+        }
+    }
+
+    /// Тест debounce для calculation_performed - должно быть только одно событие при быстрых изменениях
+    @Test
+    func analyticsWhenCalculationPerformedDebounce() async {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = SurebetCalculatorViewModel(
+            rows: [
+                .init(id: 0, coefficient: "2.0"),
+                .init(id: 1, coefficient: "3.0"),
+                .init(id: 2),
+                .init(id: 3)
+            ],
+            analyticsService: mockAnalytics
+        )
+
+        // When
+        // Быстро меняем значения несколько раз
+        viewModel.send(.setTextFieldText(.totalBetSize, "100"))
+        viewModel.send(.setTextFieldText(.totalBetSize, "200"))
+        viewModel.send(.setTextFieldText(.totalBetSize, "300"))
+        // Ждём debounce время + небольшой запас (1 секунда + 0.5 секунды запас)
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 секунды
+
+        // Then
+        // Должно быть только одно событие calculation_performed из-за debounce
+        let calculationEvents = mockAnalytics.logEventCalls.filter { event in
+            if case .calculationPerformed = event {
+                return true
+            }
+            return false
+        }
+        #expect(calculationEvents.count == 1)
     }
 }
