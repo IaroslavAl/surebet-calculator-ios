@@ -27,9 +27,9 @@ private extension CalculatorTextFieldStyle {
     var frameHeight: CGFloat { Device.isIPadUnsafe ? 60 : 40 }
     var cornerRadius: CGFloat { Device.isIPadUnsafe ? 15 : 10 }
     var strokeLineWidth: CGFloat { Device.isIPadUnsafe ? 1.5 : 1 }
-    var strokeColor: Color { isEnabled ? .green : .clear }
+    var strokeColor: Color { isEnabled ? AppColors.primaryGreen : .clear }
     var backgroundColor: Color {
-        isValid ? Color(uiColor: .secondarySystemFill) : .red.opacity(0.3)
+        isValid ? AppColors.textFieldBackground : AppColors.errorBackground
     }
 }
 

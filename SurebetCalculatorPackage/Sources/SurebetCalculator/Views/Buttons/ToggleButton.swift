@@ -39,13 +39,13 @@ private extension ToggleButton {
         if isON {
             Image(systemName: "soccerball")
                 .frame(minWidth: 0, minHeight: height, maxHeight: height)
-                .foregroundColor(.green)
+                .foregroundColor(AppColors.primaryGreen)
                 .padding(.horizontal, horizontalPadding)
                 .transition(transition)
         } else {
             Image(systemName: "circle")
                 .frame(minWidth: 0, minHeight: height, maxHeight: height)
-                .foregroundColor(.red)
+                .foregroundColor(AppColors.primaryRed)
                 .padding(.horizontal, horizontalPadding)
                 .transition(transition)
         }

@@ -52,7 +52,7 @@ private extension BannerView {
                 width: BannerConstants.inlineCloseButtonSize,
                 height: BannerConstants.inlineCloseButtonSize
             )
-            .foregroundStyle(.black.opacity(0.25))
+            .foregroundStyle(BannerColors.closeButtonInline)
             .padding(BannerConstants.inlineCloseButtonPadding)
             .contentShape(.rect)
             .onTapGesture {

@@ -33,7 +33,7 @@ struct FullscreenBannerView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.75)
+            BannerColors.fullscreenBackground
             bannerImage
         }
         .onAppear {
@@ -66,7 +66,7 @@ private extension FullscreenBannerView {
         Image(systemName: "xmark.circle.fill")
             .resizable()
             .frame(width: BannerConstants.closeButtonSize, height: BannerConstants.closeButtonSize)
-            .foregroundStyle(.white.opacity(0.5))
+            .foregroundStyle(BannerColors.closeButtonFullscreen)
             .padding(BannerConstants.closeButtonPadding)
             .contentShape(.rect)
             .onTapGesture {

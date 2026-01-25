@@ -13,7 +13,7 @@ struct TextView: View {
         Text(text)
             .padding(textPadding)
             .frame(minWidth: 0, maxWidth: .infinity, minHeight: frameHeight, maxHeight: frameHeight)
-            .background(Color(uiColor: .secondarySystemFill))
+            .background(AppColors.textFieldBackground)
             .cornerRadius(cornerRadius)
             .foregroundColor(color)
             .accessibilityIdentifier(accessibilityId ?? "")
@@ -30,7 +30,7 @@ private extension TextView {
     var cornerRadius: CGFloat {
         isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
     }
-    var color: Color { text.isNumberNotNegative() ? .green : .red }
+    var color: Color { text.isNumberNotNegative() ? AppColors.validText : AppColors.invalidText }
 }
 
 #Preview {

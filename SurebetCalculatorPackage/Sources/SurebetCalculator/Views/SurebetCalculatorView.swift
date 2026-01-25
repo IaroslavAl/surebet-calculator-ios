@@ -104,7 +104,7 @@ private extension SurebetCalculatorView {
 
     var addButton: some View {
         Image(systemName: "plus.circle")
-            .foregroundStyle(viewModel.selectedNumberOfRows == .ten ? .gray : .green)
+            .foregroundStyle(viewModel.selectedNumberOfRows == .ten ? AppColors.inactiveButton : AppColors.activeButton)
             .font(buttonFont)
             .disabled(viewModel.selectedNumberOfRows == .ten)
             .padding(AppConstants.Padding.small)
@@ -118,7 +118,7 @@ private extension SurebetCalculatorView {
 
     var removeButton: some View {
         Image(systemName: "minus.circle")
-            .foregroundStyle(viewModel.selectedNumberOfRows == .two ? .gray : .red)
+            .foregroundStyle(viewModel.selectedNumberOfRows == .two ? AppColors.inactiveButton : AppColors.primaryRed)
             .font(buttonFont)
             .disabled(viewModel.selectedNumberOfRows == .two)
             .padding(AppConstants.Padding.small)

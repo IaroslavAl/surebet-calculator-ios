@@ -13,7 +13,6 @@ struct RootView: View {
 
     var body: some View {
         mainContent
-            .preferredColorScheme(.dark)
             .modifier(LifecycleModifier(viewModel: viewModel))
             .modifier(BannerTaskModifier())
             .modifier(ReviewAlertModifier(viewModel: viewModel))

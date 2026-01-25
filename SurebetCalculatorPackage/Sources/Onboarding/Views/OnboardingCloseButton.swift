@@ -29,9 +29,7 @@ private extension OnboardingCloseButton {
     var label: some View {
         Image(systemName: imageName)
             .font(.title)
-            .foregroundColor(
-                Color(uiColor: .darkGray)
-            )
+            .foregroundColor(OnboardingColors.closeButton)
     }
 }
 

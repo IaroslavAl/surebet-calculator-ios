@@ -40,11 +40,11 @@ private extension OnboardingButton {
 
     var label: some View {
         Text(text)
-            .foregroundColor(.white)
+            .foregroundColor(OnboardingColors.buttonText)
             .bold()
             .frame(maxWidth: .infinity)
             .padding()
-            .background(.green)
+            .background(OnboardingColors.buttonBackground)
             .cornerRadius(cornerRadius)
             .animation(.none, value: viewModel.currentPage)
     }

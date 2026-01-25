@@ -37,7 +37,7 @@ private extension OnboardingIndex {
     }
 
     func color(_ index: Int) -> Color {
-        Color(uiColor: index == viewModel.currentPage ? .darkGray : .lightGray)
+        index == viewModel.currentPage ? OnboardingColors.activeIndicator : OnboardingColors.inactiveIndicator
     }
 }
 
