@@ -3,6 +3,7 @@ import SwiftUI
 public enum Banner {
     // MARK: - Public Methods
 
+    @MainActor
     public static var bannerView: some View {
         BannerView()
     }
