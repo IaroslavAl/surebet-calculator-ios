@@ -55,6 +55,9 @@ enum AppConstants {
     enum Delays {
         /// Задержка перед запросом отзыва (1 секунда)
         static let reviewRequest: UInt64 = NSEC_PER_SEC * 1
+
+        /// Задержка для debounce аналитики расчёта (1 секунда)
+        static let calculationAnalytics: UInt64 = NSEC_PER_SEC * 1
     }
 
     // MARK: - Other

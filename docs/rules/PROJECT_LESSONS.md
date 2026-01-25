@@ -1,4 +1,4 @@
-# project_lessons.md
+# PROJECT_LESSONS.md
 
 Файл для хранения важных уроков, правил и стандартов разработки проекта SurebetCalculator.
 

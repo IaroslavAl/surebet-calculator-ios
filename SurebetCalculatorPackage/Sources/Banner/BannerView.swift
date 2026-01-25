@@ -5,16 +5,26 @@ import SwiftUI
 struct BannerView: View {
     // MARK: - Properties
 
-    private let link = "https://www.rebelbetting.com/valuebetting?x=surebet_profit&a_bid=c3ecdf4b"
+    private let analyticsService: AnalyticsService
 
     @State
     private var isPresented: Bool = true
+
+    // MARK: - Initialization
+
+    @MainActor
+    init(analyticsService: AnalyticsService = AnalyticsManager()) {
+        self.analyticsService = analyticsService
+    }
 
     // MARK: - Body
 
     var body: some View {
         if isPresented {
             bannerContent
+                .onAppear {
+                    logBannerViewed()
+                }
         }
     }
 }
@@ -23,7 +33,7 @@ struct BannerView: View {
 
 private extension BannerView {
     var bannerContent: some View {
-        WebImage(url: .init(string: url))
+        WebImage(url: .init(string: imageURL))
             .resizable()
             .scaledToFit()
             .cornerRadius(cornerRadius)
@@ -38,9 +48,12 @@ private extension BannerView {
     var closeButton: some View {
         Image(systemName: "xmark.circle.fill")
             .resizable()
-            .frame(width: 20, height: 20)
+            .frame(
+                width: BannerConstants.inlineCloseButtonSize,
+                height: BannerConstants.inlineCloseButtonSize
+            )
             .foregroundStyle(.black.opacity(0.25))
-            .padding(8)
+            .padding(BannerConstants.inlineCloseButtonPadding)
             .contentShape(.rect)
             .onTapGesture {
                 handleCloseTap()
@@ -48,16 +61,30 @@ private extension BannerView {
     }
 
     func handleBannerTap() {
-        openURL(link)
-        AnalyticsManager.log(name: "ClickingOnAnAdvertisement")
+        openURL(BannerConstants.inlineBannerAffiliateURL)
+        analyticsService.log(
+            event: .bannerClicked(bannerId: BannerConstants.inlineBannerId, bannerType: .inline)
+        )
     }
 
     func handleCloseTap() {
         isPresented = false
-        AnalyticsManager.log(name: "CloseBanner")
+        analyticsService.log(
+            event: .bannerClosed(bannerId: BannerConstants.inlineBannerId, bannerType: .inline)
+        )
     }
 
-    var cornerRadius: CGFloat { isIPad ? 15 : 10 }
+    func logBannerViewed() {
+        analyticsService.log(
+            event: .bannerViewed(bannerId: BannerConstants.inlineBannerId, bannerType: .inline)
+        )
+    }
+
+    var cornerRadius: CGFloat {
+        isIPad
+            ? BannerConstants.inlineBannerCornerRadiusiPad
+            : BannerConstants.inlineBannerCornerRadiusiPhone
+    }
 
     func openURL(_ url: String) {
         if let url = URL(string: url) {
@@ -65,12 +92,10 @@ private extension BannerView {
         }
     }
 
-    var url: String {
-        if isIPad {
-            "https://affiliates.rebelbetting.com/accounts/default1/banners/1ab8d504.jpg"
-        } else {
-            "https://affiliates.rebelbetting.com/accounts/default1/banners/c3ecdf4b.gif"
-        }
+    var imageURL: String {
+        isIPad
+            ? BannerConstants.inlineBannerImageURLiPad
+            : BannerConstants.inlineBannerImageURLiPhone
     }
 }
 

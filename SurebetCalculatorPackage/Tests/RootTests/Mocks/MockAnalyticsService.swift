@@ -18,7 +18,24 @@ final class MockAnalyticsService: AnalyticsService, @unchecked Sendable {
     /// Все вызовы метода log (для проверки истории)
     var logCalls: [(name: String, parameters: [String: AnalyticsParameterValue]?)] = []
 
+    /// Количество вызовов метода log(event:)
+    var logEventCallCount = 0
+
+    /// Последнее переданное событие
+    var lastEvent: AnalyticsEvent?
+
+    /// Все вызовы метода log(event:) (для проверки истории)
+    var logEventCalls: [AnalyticsEvent] = []
+
     // MARK: - AnalyticsService
+
+    func log(event: AnalyticsEvent) {
+        logEventCallCount += 1
+        lastEvent = event
+        logEventCalls.append(event)
+        // Также вызываем старый метод для обратной совместимости
+        log(name: event.name, parameters: event.parameters)
+    }
 
     func log(name: String, parameters: [String: AnalyticsParameterValue]?) {
         logCallCount += 1

@@ -1,3 +1,4 @@
+import AnalyticsManager
 import Foundation
 
 @MainActor
@@ -8,12 +9,18 @@ final class OnboardingViewModel: ObservableObject {
     @Published private(set) var onboardingIsShown: Bool
     let pages: [OnboardingPage]
 
+    private let analyticsService: AnalyticsService
+
     // MARK: - Initialization
 
-    init() {
+    init(analyticsService: AnalyticsService = AnalyticsManager()) {
         self.currentPage = 0
         self.onboardingIsShown = false
         self.pages = OnboardingPage.createPages()
+        self.analyticsService = analyticsService
+
+        logOnboardingStarted()
+        logPageViewed(index: 0)
     }
 
     // MARK: - Public Methods
@@ -21,6 +28,7 @@ final class OnboardingViewModel: ObservableObject {
     enum ViewAction {
         case setCurrentPage(Int)
         case dismiss
+        case skip
     }
 
     func send(_ action: ViewAction) {
@@ -29,6 +37,8 @@ final class OnboardingViewModel: ObservableObject {
             setCurrentPage(index)
         case .dismiss:
             dismiss()
+        case .skip:
+            skip()
         }
     }
 }
@@ -39,12 +49,35 @@ private extension OnboardingViewModel {
     func setCurrentPage(_ index: Int) {
         if pages.indices.contains(index) {
             currentPage = index
+            logPageViewed(index: index)
         } else {
-            dismiss()
+            completeOnboarding()
         }
     }
 
     func dismiss() {
+        completeOnboarding()
+    }
+
+    func skip() {
+        analyticsService.log(event: .onboardingSkipped(lastPageIndex: currentPage))
         onboardingIsShown = true
+    }
+
+    func completeOnboarding() {
+        analyticsService.log(event: .onboardingCompleted(pagesViewed: currentPage + 1))
+        onboardingIsShown = true
+    }
+
+    // MARK: - Analytics
+
+    func logOnboardingStarted() {
+        analyticsService.log(event: .onboardingStarted)
+    }
+
+    func logPageViewed(index: Int) {
+        guard pages.indices.contains(index) else { return }
+        let page = pages[index]
+        analyticsService.log(event: .onboardingPageViewed(pageIndex: index, pageTitle: page.image))
     }
 }

@@ -4,7 +4,7 @@ import Foundation
 // MARK: - Analytics Parameter Value
 
 /// Типобезопасное значение параметра аналитики
-public enum AnalyticsParameterValue: Sendable {
+public enum AnalyticsParameterValue: Sendable, Equatable {
     case string(String)
     case int(Int)
     case double(Double)
@@ -36,25 +36,24 @@ public struct AnalyticsManager: AnalyticsService, Sendable {
 
     // MARK: - Public Methods
 
+    /// Логирование типобезопасного события
+    /// - Parameter event: Событие для логирования
+    public func log(event: AnalyticsEvent) {
+        log(name: event.name, parameters: event.parameters)
+    }
+
     /// Логирование события с типобезопасными параметрами
     /// - Parameters:
     ///   - name: Название события
     ///   - parameters: Словарь параметров с типобезопасными значениями
+    /// - Note: Deprecated. Используйте `log(event:)` для типобезопасного логирования.
+    ///   Оставлен для внутреннего использования и обратной совместимости с тестами.
     public func log(name: String, parameters: [String: AnalyticsParameterValue]?) {
-    #if !DEBUG
+        #if !DEBUG
         let appMetricaParameters = parameters?.reduce(into: [AnyHashable: Any]()) { result, pair in
             result[pair.key] = pair.value.anyValue
         }
         AppMetrica.reportEvent(name: name, parameters: appMetricaParameters)
-    #endif
-    }
-
-    /// Статический метод для обратной совместимости
-    /// - Parameters:
-    ///   - name: Название события
-    ///   - parameters: Словарь параметров с типобезопасными значениями
-    public static func log(name: String, parameters: [String: AnalyticsParameterValue]? = nil) {
-        let manager = AnalyticsManager()
-        manager.log(name: name, parameters: parameters)
+        #endif
     }
 }

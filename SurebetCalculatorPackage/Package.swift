@@ -61,6 +61,9 @@ let package = Package(
         ),
         .target(
             name: "Onboarding",
+            dependencies: [
+                "AnalyticsManager",
+            ],
             resources: [.process("Resources")],
             plugins: [
                 .plugin(
@@ -102,6 +105,7 @@ let package = Package(
         .target(
             name: "SurebetCalculator",
             dependencies: [
+                "AnalyticsManager",
                 "Banner",
             ],
             resources: [.process("Resources")],
@@ -114,7 +118,10 @@ let package = Package(
         ),
         .testTarget(
             name: "OnboardingTests",
-            dependencies: ["Onboarding"],
+            dependencies: [
+                "Onboarding",
+                "AnalyticsManager",
+            ],
             plugins: [
                 .plugin(
                     name: "SwiftLintBuildToolPlugin",
@@ -124,7 +131,10 @@ let package = Package(
         ),
         .testTarget(
             name: "SurebetCalculatorTests",
-            dependencies: ["SurebetCalculator"],
+            dependencies: [
+                "SurebetCalculator",
+                "AnalyticsManager",
+            ],
             plugins: [
                 .plugin(
                     name: "SwiftLintBuildToolPlugin",

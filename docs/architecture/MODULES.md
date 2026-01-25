@@ -158,27 +158,50 @@ public protocol ReviewService: Sendable {
 
 ## AnalyticsManager
 
-Типобезопасная обёртка над AppMetrica.
+Типобезопасная обёртка над AppMetrica с каталогом событий.
 
 ```swift
+// Протокол сервиса аналитики
 public protocol AnalyticsService: Sendable {
+    /// Логирует типобезопасное событие
+    func log(event: AnalyticsEvent)
+    
+    /// Логирует событие с параметрами (deprecated)
     func log(name: String, parameters: [String: AnalyticsParameterValue]?)
 }
 
-public enum AnalyticsParameterValue: Sendable {
+// Типобезопасный каталог событий
+public enum AnalyticsEvent: Sendable, Equatable {
+    case onboardingStarted
+    case onboardingPageViewed(pageIndex: Int, pageTitle: String)
+    case calculatorRowAdded(rowCount: Int)
+    case bannerClicked(bannerId: String, bannerType: BannerType)
+    // ... и другие события
+}
+
+// Типобезопасные значения параметров
+public enum AnalyticsParameterValue: Sendable, Equatable {
     case string(String)
     case int(Int)
     case double(Double)
     case bool(Bool)
 }
 
+// Реализация
 public struct AnalyticsManager: AnalyticsService, Sendable {
-    public func log(name: String, parameters: [String: AnalyticsParameterValue]?) {
-        #if !DEBUG
-        AppMetrica.reportEvent(name: name, parameters: converted)
-        #endif
+    public func log(event: AnalyticsEvent) {
+        log(name: event.name, parameters: event.parameters)
     }
 }
+```
+
+**Использование:**
+```swift
+// Рекомендуемый способ (типобезопасный)
+analyticsService.log(event: .bannerClicked(bannerId: "123", bannerType: .fullscreen))
+
+// Deprecated (для обратной совместимости)
+analyticsService.log(name: "custom_event", parameters: ["key": .string("value")])
 ```
 
 ---
