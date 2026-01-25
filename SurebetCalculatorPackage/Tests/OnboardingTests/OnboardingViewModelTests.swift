@@ -1,3 +1,4 @@
+@testable import AnalyticsManager
 @testable import Onboarding
 import Testing
 
@@ -115,5 +116,203 @@ struct OnboardingViewModelTests {
         #expect(viewModel.onboardingIsShown == true)
         // currentPage должен остаться прежним
         #expect(viewModel.currentPage == 1)
+    }
+
+    // MARK: - Analytics Tests
+
+    /// Тест события onboarding_started при инициализации
+    @Test
+    func analyticsWhenOnboardingStarted() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+
+        // When
+        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+
+        // Then
+        #expect(mockAnalytics.logEventCallCount >= 1)
+        #expect(mockAnalytics.logEventCalls.contains { event in
+            if case .onboardingStarted = event {
+                return true
+            }
+            return false
+        })
+    }
+
+    /// Тест события onboarding_page_viewed при инициализации
+    @Test
+    func analyticsWhenOnboardingPageViewedOnInit() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+
+        // When
+        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+
+        // Then
+        #expect(mockAnalytics.logEventCallCount >= 2) // onboardingStarted + onboardingPageViewed
+        #expect(mockAnalytics.logEventCalls.contains { event in
+            if case .onboardingPageViewed(let pageIndex, _) = event {
+                return pageIndex == 0
+            }
+            return false
+        })
+    }
+
+    /// Тест события onboarding_page_viewed при смене страницы
+    @Test
+    func analyticsWhenOnboardingPageViewedOnPageChange() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        let initialCallCount = mockAnalytics.logEventCallCount
+
+        // When
+        viewModel.send(.setCurrentPage(1))
+
+        // Then
+        #expect(mockAnalytics.logEventCallCount > initialCallCount)
+        #expect(mockAnalytics.logEventCalls.contains { event in
+            if case .onboardingPageViewed(let pageIndex, _) = event {
+                return pageIndex == 1
+            }
+            return false
+        })
+    }
+
+    /// Тест параметров события onboarding_page_viewed
+    @Test
+    func analyticsWhenOnboardingPageViewedParameters() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+
+        // When
+        viewModel.send(.setCurrentPage(1))
+
+        // Then
+        let pageViewedEvents = mockAnalytics.logEventCalls.compactMap { event -> (Int, String)? in
+            if case .onboardingPageViewed(let pageIndex, let pageTitle) = event {
+                return (pageIndex, pageTitle)
+            }
+            return nil
+        }
+        #expect(pageViewedEvents.contains { $0.0 == 1 })
+        if let event = pageViewedEvents.first(where: { $0.0 == 1 }) {
+            #expect(!event.1.isEmpty)
+        }
+    }
+
+    /// Тест события onboarding_completed при dismiss
+    @Test
+    func analyticsWhenOnboardingCompletedOnDismiss() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        viewModel.send(.setCurrentPage(2))
+        let initialCallCount = mockAnalytics.logEventCallCount
+
+        // When
+        viewModel.send(.dismiss)
+
+        // Then
+        #expect(mockAnalytics.logEventCallCount > initialCallCount)
+        #expect(mockAnalytics.logEventCalls.contains { event in
+            if case .onboardingCompleted(let pagesViewed) = event {
+                return pagesViewed == 3 // currentPage + 1
+            }
+            return false
+        })
+    }
+
+    /// Тест события onboarding_completed при выходе за границы страниц
+    @Test
+    func analyticsWhenOnboardingCompletedOnOutOfRange() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        viewModel.send(.setCurrentPage(1))
+        let initialCallCount = mockAnalytics.logEventCallCount
+
+        // When
+        viewModel.send(.setCurrentPage(100))
+
+        // Then
+        #expect(mockAnalytics.logEventCallCount > initialCallCount)
+        #expect(mockAnalytics.logEventCalls.contains { event in
+            if case .onboardingCompleted(let pagesViewed) = event {
+                return pagesViewed == 2 // currentPage (1) + 1
+            }
+            return false
+        })
+    }
+
+    /// Тест события onboarding_skipped
+    @Test
+    func analyticsWhenOnboardingSkipped() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        viewModel.send(.setCurrentPage(2))
+        let initialCallCount = mockAnalytics.logEventCallCount
+
+        // When
+        viewModel.send(.skip)
+
+        // Then
+        #expect(mockAnalytics.logEventCallCount > initialCallCount)
+        #expect(mockAnalytics.logEventCalls.contains { event in
+            if case .onboardingSkipped(let lastPageIndex) = event {
+                return lastPageIndex == 2
+            }
+            return false
+        })
+    }
+
+    /// Тест параметров события onboarding_completed
+    @Test
+    func analyticsWhenOnboardingCompletedParameters() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        // Используем валидный индекс страницы
+        let validPageIndex = min(2, viewModel.pages.count - 1)
+        viewModel.send(.setCurrentPage(validPageIndex))
+
+        // When
+        viewModel.send(.dismiss)
+
+        // Then
+        // Проверяем последнее событие onboardingCompleted
+        let lastCompletedEvent = mockAnalytics.logEventCalls.reversed().first { event in
+            if case .onboardingCompleted = event {
+                return true
+            }
+            return false
+        }
+        #expect(lastCompletedEvent != nil)
+        if case .onboardingCompleted(let pagesViewed) = lastCompletedEvent {
+            #expect(pagesViewed == validPageIndex + 1)
+        }
+    }
+
+    /// Тест параметров события onboarding_skipped
+    @Test
+    func analyticsWhenOnboardingSkippedParameters() {
+        // Given
+        let mockAnalytics = MockAnalyticsService()
+        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        viewModel.send(.setCurrentPage(1))
+
+        // When
+        viewModel.send(.skip)
+
+        // Then
+        let skippedEvents = mockAnalytics.logEventCalls.compactMap { event -> Int? in
+            if case .onboardingSkipped(let lastPageIndex) = event {
+                return lastPageIndex
+            }
+            return nil
+        }
+        #expect(skippedEvents.contains(1))
     }
 }
