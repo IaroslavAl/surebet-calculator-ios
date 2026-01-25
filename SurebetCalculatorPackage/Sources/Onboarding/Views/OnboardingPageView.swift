@@ -13,6 +13,7 @@ struct OnboardingPageView: View {
                 .resizable()
                 .scaledToFit()
                 .padding(.vertical)
+                .padding(.horizontal, imagePadding)
                 .accessibilityLabel(OnboardingLocalizationKey.image.localized)
             Spacer()
             Text(page.description)
@@ -22,6 +23,15 @@ struct OnboardingPageView: View {
                 .minimumScaleFactor(OnboardingConstants.minimumTextScaleFactor)
             Spacer()
         }
+        .padding(.horizontal, contentPadding)
+    }
+
+    var contentPadding: CGFloat {
+        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingSmall
+    }
+
+    var imagePadding: CGFloat {
+        isIPad ? OnboardingConstants.paddingExtraExtraLarge : .zero
     }
 }
 

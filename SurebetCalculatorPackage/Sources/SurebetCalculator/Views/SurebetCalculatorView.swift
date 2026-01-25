@@ -14,13 +14,14 @@ struct SurebetCalculatorView: View {
 
     var body: some View {
         scrollableContent
+            .frame(maxWidth: .infinity)
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: toolbar)
             .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
             .font(AppConstants.Typography.body)
             .environmentObject(viewModel)
-            .animation(AppConstants.Animations.smoothTransition, value: viewModel.selectedNumberOfRows)
+            .animation(.default, value: viewModel.selectedNumberOfRows)
             .focused($isFocused)
             .onTapGesture {
                 isFocused = false
@@ -72,7 +73,7 @@ private extension SurebetCalculatorView {
     }
 
     func scrollToEnd(proxy: ScrollViewProxy) {
-        withAnimation(AppConstants.Animations.smoothTransition) {
+        withAnimation {
             proxy.scrollTo("EndOfView", anchor: .bottom)
         }
     }
@@ -103,45 +104,39 @@ private extension SurebetCalculatorView {
     }
 
     var addButton: some View {
-        Button(action: {
-            withAnimation(AppConstants.Animations.quickInteraction) {
+        Image(systemName: "plus.circle")
+            .foregroundStyle(
+                viewModel.selectedNumberOfRows == .ten
+                    ? AppColors.inactiveButton
+                    : AppColors.activeButton
+            )
+            .font(AppConstants.Typography.button)
+            .disabled(viewModel.selectedNumberOfRows == .ten)
+            .padding(AppConstants.Padding.small)
+            .contentShape(.rect)
+            .onTapGesture {
                 viewModel.send(.addRow)
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             }
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        }, label: {
-            Image(systemName: "plus.circle")
-                .foregroundStyle(
-                    viewModel.selectedNumberOfRows == .ten
-                        ? AppColors.inactiveButton
-                        : AppColors.activeButton
-                )
-                .font(AppConstants.Typography.button)
-        })
-        .disabled(viewModel.selectedNumberOfRows == .ten)
-        .padding(AppConstants.Padding.small)
-        .buttonStyle(ScaleButtonStyle())
-        .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.addRowButton)
+            .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.addRowButton)
     }
 
     var removeButton: some View {
-        Button(action: {
-            withAnimation(AppConstants.Animations.quickInteraction) {
+        Image(systemName: "minus.circle")
+            .foregroundStyle(
+                viewModel.selectedNumberOfRows == .two
+                    ? AppColors.inactiveButton
+                    : AppColors.primaryRed
+            )
+            .font(AppConstants.Typography.button)
+            .disabled(viewModel.selectedNumberOfRows == .two)
+            .padding(AppConstants.Padding.small)
+            .contentShape(.rect)
+            .onTapGesture {
                 viewModel.send(.removeRow)
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             }
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        }, label: {
-            Image(systemName: "minus.circle")
-                .foregroundStyle(
-                    viewModel.selectedNumberOfRows == .two
-                        ? AppColors.inactiveButton
-                        : AppColors.primaryRed
-                )
-                .font(AppConstants.Typography.button)
-        })
-        .disabled(viewModel.selectedNumberOfRows == .two)
-        .padding(AppConstants.Padding.small)
-        .buttonStyle(ScaleButtonStyle())
-        .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.removeRowButton)
+            .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.removeRowButton)
     }
 }
 
@@ -151,7 +146,7 @@ private extension SurebetCalculatorView {
     var navigationTitle: String { SurebetCalculatorLocalizationKey.navigationTitle.localized }
     var spacing: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
     var rowsSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.small : AppConstants.Padding.small }
 }
 
 #Preview {

@@ -43,10 +43,14 @@ private extension OnboardingButton {
             .foregroundColor(OnboardingColors.buttonText)
             .bold()
             .frame(maxWidth: .infinity)
-            .padding()
+            .padding(padding)
             .background(OnboardingColors.buttonBackground)
             .cornerRadius(cornerRadius)
             .animation(OnboardingConstants.Animations.quickInteraction, value: viewModel.currentPage)
+    }
+
+    var padding: CGFloat {
+        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingMedium
     }
 }
 

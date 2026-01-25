@@ -11,7 +11,7 @@ struct ToggleButton: View {
 
     var body: some View {
         Button(action: actionWithImpactFeedback, label: label)
-            .buttonStyle(ScaleButtonStyle())
+            .buttonStyle(.scale)
             .animation(AppConstants.Animations.quickInteraction, value: isON)
             .accessibilityIdentifier(accessibilityIdentifier)
     }
@@ -59,8 +59,7 @@ private extension ToggleButton {
         withAnimation(AppConstants.Animations.quickInteraction) {
             viewModel.send(.selectRow(row))
         }
-        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-        impactFeedback.impactOccurred()
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 
     var accessibilityIdentifier: String {

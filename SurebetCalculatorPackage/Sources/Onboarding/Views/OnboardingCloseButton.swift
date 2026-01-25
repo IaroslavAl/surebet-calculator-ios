@@ -11,7 +11,7 @@ struct OnboardingCloseButton: View {
         Button(action: action) {
             label
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: isIPad ? nil : .infinity, alignment: .leading)
         .accessibilityLabel(OnboardingLocalizationKey.closeOnboarding.localized)
         .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.closeButton)
     }

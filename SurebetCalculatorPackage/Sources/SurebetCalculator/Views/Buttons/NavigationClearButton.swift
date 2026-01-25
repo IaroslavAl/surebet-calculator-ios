@@ -12,9 +12,14 @@ struct NavigationClearButton: View {
             viewModel.send(.clearAll)
         } label: {
             Image(systemName: "trash")
+                .font(font)
                 .accessibilityLabel(SurebetCalculatorLocalizationKey.clearAll.localized)
         }
         .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.clearButton)
+    }
+
+    var font: Font {
+        isIPad ? .body : .title3
     }
 }
 
