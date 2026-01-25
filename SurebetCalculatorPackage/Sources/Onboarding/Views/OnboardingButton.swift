@@ -46,7 +46,7 @@ private extension OnboardingButton {
             .padding()
             .background(OnboardingColors.buttonBackground)
             .cornerRadius(cornerRadius)
-            .animation(.none, value: viewModel.currentPage)
+            .animation(OnboardingConstants.Animations.quickInteraction, value: viewModel.currentPage)
     }
 }
 

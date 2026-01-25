@@ -222,8 +222,8 @@ final class SurebetCalculatorUITests: XCTestCase {
         XCTAssertTrue(row1BetSize.exists)
         XCTAssertFalse(row2BetSize.exists, "Третья строка не должна существовать изначально")
 
-        // Ищем кнопку + по accessibilityIdentifier (это Image с onTapGesture)
-        let addButton = app.images[Identifiers.Calculator.addRowButton]
+        // Ищем кнопку + по accessibilityIdentifier (теперь это Button)
+        let addButton = app.buttons[Identifiers.Calculator.addRowButton]
         XCTAssertTrue(
             addButton.waitForExistence(timeout: 2),
             "Кнопка добавления строки должна существовать"
@@ -242,7 +242,7 @@ final class SurebetCalculatorUITests: XCTestCase {
         launchAppWithoutOnboarding()
 
         // Сначала добавляем строку
-        let addButton = app.images[Identifiers.Calculator.addRowButton]
+        let addButton = app.buttons[Identifiers.Calculator.addRowButton]
         XCTAssertTrue(addButton.waitForExistence(timeout: 2))
         addButton.tap()
 
@@ -250,7 +250,7 @@ final class SurebetCalculatorUITests: XCTestCase {
         XCTAssertTrue(row2BetSize.waitForExistence(timeout: 2), "Третья строка должна появиться")
 
         // Удаляем строку
-        let removeButton = app.images[Identifiers.Calculator.removeRowButton]
+        let removeButton = app.buttons[Identifiers.Calculator.removeRowButton]
         XCTAssertTrue(removeButton.waitForExistence(timeout: 2))
         removeButton.tap()
 
@@ -265,7 +265,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     func testCannotRemoveBelowMinimumRows() throws {
         launchAppWithoutOnboarding()
 
-        let removeButton = app.images[Identifiers.Calculator.removeRowButton]
+        let removeButton = app.buttons[Identifiers.Calculator.removeRowButton]
         XCTAssertTrue(removeButton.waitForExistence(timeout: 2))
         removeButton.tap()
 
@@ -280,7 +280,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     func testCannotAddAboveMaximumRows() throws {
         launchAppWithoutOnboarding()
 
-        let addButton = app.images[Identifiers.Calculator.addRowButton]
+        let addButton = app.buttons[Identifiers.Calculator.addRowButton]
         XCTAssertTrue(addButton.waitForExistence(timeout: 2))
 
         // Добавляем 8 строк (до 10)

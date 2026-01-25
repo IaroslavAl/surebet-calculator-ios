@@ -2,11 +2,11 @@ import Foundation
 import SwiftUI
 
 /// Константы приложения, сгруппированные по категориям
-enum AppConstants {
+public enum AppConstants {
     // MARK: - Layout
 
     /// Константы для отступов (padding)
-    enum Padding {
+    public enum Padding {
         /// Маленький отступ (8pt)
         static let small: CGFloat = 8
 
@@ -24,7 +24,7 @@ enum AppConstants {
     }
 
     /// Константы для высот элементов
-    enum Heights {
+    public enum Heights {
         /// Компактная высота (40pt)
         static let compact: CGFloat = 40
 
@@ -33,7 +33,7 @@ enum AppConstants {
     }
 
     /// Константы для радиусов скругления углов
-    enum CornerRadius {
+    public enum CornerRadius {
         /// Маленький радиус (10pt)
         static let small: CGFloat = 10
 
@@ -53,7 +53,7 @@ enum AppConstants {
     // MARK: - Delays
 
     /// Константы для задержек выполнения
-    enum Delays {
+    public enum Delays {
         /// Задержка перед запросом отзыва (1 секунда)
         static let reviewRequest: UInt64 = NSEC_PER_SEC * 1
 
@@ -64,7 +64,7 @@ enum AppConstants {
     // MARK: - Typography
 
     /// Система типографики приложения
-    enum Typography {
+    public enum Typography {
         /// Основной шрифт для контента (body для iPhone, title для iPad)
         @MainActor
         static var body: Font {
@@ -99,7 +99,7 @@ enum AppConstants {
     // MARK: - Other
 
     /// Прочие константы
-    enum Other {
+    public enum Other {
         /// Минимальный scale factor для текста
         static let minimumTextScaleFactor: CGFloat = 0.5
 

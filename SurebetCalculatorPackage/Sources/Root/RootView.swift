@@ -45,7 +45,7 @@ private extension RootView {
     var onboardingView: some View {
         if viewModel.shouldShowOnboardingWithAnimation {
             Onboarding.view(onboardingIsShown: onboardingBinding)
-                .transition(.move(edge: .bottom))
+                .transition(AppConstants.Animations.moveFromBottom)
         }
     }
 
@@ -108,7 +108,7 @@ private struct FullscreenBannerOverlayModifier: ViewModifier {
             .overlay {
                 if viewModel.fullscreenBannerIsPresented {
                     Banner.fullscreenBannerView(isPresented: $viewModel.fullscreenBannerIsPresented)
-                        .transition(.move(edge: .bottom))
+                        .transition(AppConstants.Animations.moveFromBottom)
                 }
             }
     }
@@ -119,8 +119,8 @@ private struct AnimationModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .animation(.default, value: viewModel.isOnboardingShown)
-            .animation(.easeInOut, value: viewModel.fullscreenBannerIsPresented)
+            .animation(AppConstants.Animations.smoothTransition, value: viewModel.isOnboardingShown)
+            .animation(AppConstants.Animations.smoothTransition, value: viewModel.fullscreenBannerIsPresented)
     }
 }
 

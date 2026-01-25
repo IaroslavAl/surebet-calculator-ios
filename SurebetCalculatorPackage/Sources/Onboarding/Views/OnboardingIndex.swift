@@ -16,7 +16,7 @@ struct OnboardingIndex: View {
                     .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.pageIndicator(index))
             }
         }
-        .animation(.default, value: viewModel.currentPage)
+        .animation(OnboardingConstants.Animations.quickInteraction, value: viewModel.currentPage)
         .padding(padding)
         .fixedSize()
     }

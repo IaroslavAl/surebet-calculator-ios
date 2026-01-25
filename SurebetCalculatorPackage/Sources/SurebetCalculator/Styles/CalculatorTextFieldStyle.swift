@@ -17,8 +17,8 @@ struct CalculatorTextFieldStyle: TextFieldStyle {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .stroke(strokeColor, lineWidth: strokeLineWidth)
             }
-            .animation(.default, value: isValid)
-            .animation(.default, value: isEnabled)
+            .animation(AppConstants.Animations.quickInteraction, value: isValid)
+            .animation(AppConstants.Animations.quickInteraction, value: isEnabled)
     }
 }
 

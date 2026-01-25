@@ -51,4 +51,24 @@ enum OnboardingConstants {
             Device.isIPad ? .largeTitle : .title
         }
     }
+
+    // MARK: - Animations
+
+    /// Система анимаций для онбординга
+    enum Animations {
+        /// Плавная анимация для переходов между страницами
+        static var smoothTransition: Animation {
+            .easeInOut(duration: 0.3)
+        }
+
+        /// Быстрая анимация для интерактивных элементов
+        static var quickInteraction: Animation {
+            .easeInOut(duration: 0.2)
+        }
+
+        /// Плавный переход справа
+        static var moveFromTrailing: AnyTransition {
+            .move(edge: .trailing).combined(with: .opacity)
+        }
+    }
 }

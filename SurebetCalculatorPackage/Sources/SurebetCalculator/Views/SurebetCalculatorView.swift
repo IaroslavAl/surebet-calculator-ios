@@ -20,7 +20,7 @@ struct SurebetCalculatorView: View {
             .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
             .font(AppConstants.Typography.body)
             .environmentObject(viewModel)
-            .animation(.default, value: viewModel.selectedNumberOfRows)
+            .animation(AppConstants.Animations.smoothTransition, value: viewModel.selectedNumberOfRows)
             .focused($isFocused)
             .onTapGesture {
                 isFocused = false
@@ -72,7 +72,7 @@ private extension SurebetCalculatorView {
     }
 
     func scrollToEnd(proxy: ScrollViewProxy) {
-        withAnimation {
+        withAnimation(AppConstants.Animations.smoothTransition) {
             proxy.scrollTo("EndOfView", anchor: .bottom)
         }
     }
@@ -103,31 +103,45 @@ private extension SurebetCalculatorView {
     }
 
     var addButton: some View {
-        Image(systemName: "plus.circle")
-            .foregroundStyle(viewModel.selectedNumberOfRows == .ten ? AppColors.inactiveButton : AppColors.activeButton)
-            .font(AppConstants.Typography.button)
-            .disabled(viewModel.selectedNumberOfRows == .ten)
-            .padding(AppConstants.Padding.small)
-            .contentShape(.rect)
-            .onTapGesture {
+        Button(action: {
+            withAnimation(AppConstants.Animations.quickInteraction) {
                 viewModel.send(.addRow)
-                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
             }
-            .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.addRowButton)
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }, label: {
+            Image(systemName: "plus.circle")
+                .foregroundStyle(
+                    viewModel.selectedNumberOfRows == .ten
+                        ? AppColors.inactiveButton
+                        : AppColors.activeButton
+                )
+                .font(AppConstants.Typography.button)
+        })
+        .disabled(viewModel.selectedNumberOfRows == .ten)
+        .padding(AppConstants.Padding.small)
+        .buttonStyle(ScaleButtonStyle())
+        .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.addRowButton)
     }
 
     var removeButton: some View {
-        Image(systemName: "minus.circle")
-            .foregroundStyle(viewModel.selectedNumberOfRows == .two ? AppColors.inactiveButton : AppColors.primaryRed)
-            .font(AppConstants.Typography.button)
-            .disabled(viewModel.selectedNumberOfRows == .two)
-            .padding(AppConstants.Padding.small)
-            .contentShape(.rect)
-            .onTapGesture {
+        Button(action: {
+            withAnimation(AppConstants.Animations.quickInteraction) {
                 viewModel.send(.removeRow)
-                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
             }
-            .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.removeRowButton)
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }, label: {
+            Image(systemName: "minus.circle")
+                .foregroundStyle(
+                    viewModel.selectedNumberOfRows == .two
+                        ? AppColors.inactiveButton
+                        : AppColors.primaryRed
+                )
+                .font(AppConstants.Typography.button)
+        })
+        .disabled(viewModel.selectedNumberOfRows == .two)
+        .padding(AppConstants.Padding.small)
+        .buttonStyle(ScaleButtonStyle())
+        .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.removeRowButton)
     }
 }
 

@@ -16,8 +16,8 @@ struct OnboardingTabView: View {
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
-        .animation(.default, value: viewModel.currentPage)
-        .transition(.move(edge: .trailing))
+        .animation(OnboardingConstants.Animations.smoothTransition, value: viewModel.currentPage)
+        .transition(OnboardingConstants.Animations.moveFromTrailing)
         .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.tabView)
     }
 }

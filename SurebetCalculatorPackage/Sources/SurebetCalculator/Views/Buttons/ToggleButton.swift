@@ -11,7 +11,8 @@ struct ToggleButton: View {
 
     var body: some View {
         Button(action: actionWithImpactFeedback, label: label)
-            .animation(.easeInOut(duration: animationDuration), value: isON)
+            .buttonStyle(ScaleButtonStyle())
+            .animation(AppConstants.Animations.quickInteraction, value: isON)
             .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
@@ -36,8 +37,7 @@ private extension ToggleButton {
     var horizontalPadding: CGFloat {
         isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small
     }
-    var transition: AnyTransition { .opacity.combined(with: .scale) }
-    var animationDuration: Double { 0.25 }
+    var transition: AnyTransition { AppConstants.Animations.scaleWithOpacity }
 
     func label() -> some View {
         if isON {
@@ -56,8 +56,10 @@ private extension ToggleButton {
     }
 
     func actionWithImpactFeedback() {
-        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
-        viewModel.send(.selectRow(row))
+        withAnimation(AppConstants.Animations.quickInteraction) {
+            viewModel.send(.selectRow(row))
+        }
+        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
         impactFeedback.impactOccurred()
     }
 

@@ -2,6 +2,7 @@ import AnalyticsManager
 import Banner
 import Foundation
 import ReviewHandler
+import SurebetCalculator
 import SwiftUI
 
 /// ViewModel для управления состоянием и бизнес-логикой RootView
@@ -60,7 +61,7 @@ final class RootViewModel: ObservableObject {
 
     /// Показывает onboarding view с анимацией
     func showOnboardingView() {
-        withAnimation {
+        withAnimation(AppConstants.Animations.smoothTransition) {
             isAnimation = true
         }
     }
