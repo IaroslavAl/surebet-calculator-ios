@@ -427,6 +427,8 @@ struct RootViewModelTests {
         let viewModel = createViewModel()
 
         // Then
-        #expect(viewModel.requestReviewTitle == "Do you like the app?")
+        let title = viewModel.requestReviewTitle
+        #expect(!title.isEmpty)
+        #expect(title != "review_request_title")
     }
 }

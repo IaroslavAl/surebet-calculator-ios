@@ -16,7 +16,7 @@ struct OnboardingIndex: View {
                     .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.pageIndicator(index))
             }
         }
-        .animation(.default, value: viewModel.currentPage)
+        .animation(OnboardingConstants.Animations.quickInteraction, value: viewModel.currentPage)
         .padding(padding)
         .fixedSize()
     }
@@ -37,7 +37,7 @@ private extension OnboardingIndex {
     }
 
     func color(_ index: Int) -> Color {
-        Color(uiColor: index == viewModel.currentPage ? .darkGray : .lightGray)
+        index == viewModel.currentPage ? OnboardingColors.activeIndicator : OnboardingColors.inactiveIndicator
     }
 }
 

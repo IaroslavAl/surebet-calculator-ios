@@ -24,15 +24,16 @@ struct RowView: View {
 // MARK: - Private Computed Properties
 
 private extension RowView {
-    var coefficientText: String { String(localized: "Coefficient") }
-    var betSizeText: String { String(localized: "Bet size") }
-    var incomeText: String { String(localized: "Income") }
+    var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized }
+    var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized }
+    var incomeText: String { SurebetCalculatorLocalizationKey.income.localized }
     var spacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
 
     var betSize: some View {
         VStack(spacing: spacing) {
             if id == 0 {
                 Text(betSizeText)
+                    .font(AppConstants.Typography.label)
             }
             TextFieldView(
                 placeholder: betSizeText,
@@ -45,6 +46,7 @@ private extension RowView {
         VStack(spacing: spacing) {
             if id == 0 {
                 Text(coefficientText)
+                    .font(AppConstants.Typography.label)
             }
             TextFieldView(
                 placeholder: coefficientText,
@@ -57,6 +59,7 @@ private extension RowView {
         VStack(spacing: spacing) {
             if id == 0 {
                 Text(incomeText)
+                    .font(AppConstants.Typography.label)
             }
             TextView(
                 text: viewModel.rows[id].income,

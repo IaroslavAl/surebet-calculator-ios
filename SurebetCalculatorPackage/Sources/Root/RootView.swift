@@ -13,7 +13,6 @@ struct RootView: View {
 
     var body: some View {
         mainContent
-            .preferredColorScheme(.dark)
             .modifier(LifecycleModifier(viewModel: viewModel))
             .modifier(BannerTaskModifier())
             .modifier(ReviewAlertModifier(viewModel: viewModel))
@@ -46,7 +45,7 @@ private extension RootView {
     var onboardingView: some View {
         if viewModel.shouldShowOnboardingWithAnimation {
             Onboarding.view(onboardingIsShown: onboardingBinding)
-                .transition(.move(edge: .bottom))
+                .transition(AppConstants.Animations.moveFromBottom)
         }
     }
 
@@ -89,10 +88,10 @@ private struct ReviewAlertModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .alert(viewModel.requestReviewTitle, isPresented: $viewModel.alertIsPresented) {
-                Button(String(localized: "No")) {
+                Button(RootLocalizationKey.reviewButtonNo.localized) {
                     viewModel.handleReviewNo()
                 }
-                Button(String(localized: "Yes")) {
+                Button(RootLocalizationKey.reviewButtonYes.localized) {
                     Task {
                         await viewModel.handleReviewYes()
                     }
@@ -109,7 +108,7 @@ private struct FullscreenBannerOverlayModifier: ViewModifier {
             .overlay {
                 if viewModel.fullscreenBannerIsPresented {
                     Banner.fullscreenBannerView(isPresented: $viewModel.fullscreenBannerIsPresented)
-                        .transition(.move(edge: .bottom))
+                        .transition(AppConstants.Animations.moveFromBottom)
                 }
             }
     }
@@ -120,8 +119,8 @@ private struct AnimationModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .animation(.default, value: viewModel.isOnboardingShown)
-            .animation(.easeInOut, value: viewModel.fullscreenBannerIsPresented)
+            .animation(AppConstants.Animations.smoothTransition, value: viewModel.isOnboardingShown)
+            .animation(AppConstants.Animations.smoothTransition, value: viewModel.fullscreenBannerIsPresented)
     }
 }
 

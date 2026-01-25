@@ -11,8 +11,8 @@ struct OnboardingCloseButton: View {
         Button(action: action) {
             label
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityLabel(String(localized: "Close onboarding"))
+        .frame(maxWidth: isIPad ? nil : .infinity, alignment: .leading)
+        .accessibilityLabel(OnboardingLocalizationKey.closeOnboarding.localized)
         .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.closeButton)
     }
 }
@@ -28,10 +28,8 @@ private extension OnboardingCloseButton {
 
     var label: some View {
         Image(systemName: imageName)
-            .font(.title)
-            .foregroundColor(
-                Color(uiColor: .darkGray)
-            )
+            .font(OnboardingConstants.Typography.icon)
+            .foregroundColor(OnboardingColors.closeButton)
     }
 }
 

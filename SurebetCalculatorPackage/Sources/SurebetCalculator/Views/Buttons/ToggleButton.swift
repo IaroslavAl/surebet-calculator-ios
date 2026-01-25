@@ -11,7 +11,8 @@ struct ToggleButton: View {
 
     var body: some View {
         Button(action: actionWithImpactFeedback, label: label)
-            .animation(.easeInOut(duration: animationDuration), value: isON)
+            .buttonStyle(.scale)
+            .animation(AppConstants.Animations.quickInteraction, value: isON)
             .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
@@ -30,31 +31,35 @@ private extension ToggleButton {
             return false
         }
     }
-    var height: CGFloat { isIPad ? 60 : 40 }
-    var horizontalPadding: CGFloat { isIPad ? 12 : 8 }
-    var transition: AnyTransition { .opacity.combined(with: .scale) }
-    var animationDuration: Double { 0.25 }
+    var height: CGFloat {
+        isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact
+    }
+    var horizontalPadding: CGFloat {
+        isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small
+    }
+    var transition: AnyTransition { AppConstants.Animations.scaleWithOpacity }
 
     func label() -> some View {
         if isON {
             Image(systemName: "soccerball")
                 .frame(minWidth: 0, minHeight: height, maxHeight: height)
-                .foregroundColor(.green)
+                .foregroundColor(AppColors.primaryGreen)
                 .padding(.horizontal, horizontalPadding)
                 .transition(transition)
         } else {
             Image(systemName: "circle")
                 .frame(minWidth: 0, minHeight: height, maxHeight: height)
-                .foregroundColor(.red)
+                .foregroundColor(AppColors.primaryRed)
                 .padding(.horizontal, horizontalPadding)
                 .transition(transition)
         }
     }
 
     func actionWithImpactFeedback() {
-        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
-        viewModel.send(.selectRow(row))
-        impactFeedback.impactOccurred()
+        withAnimation(AppConstants.Animations.quickInteraction) {
+            viewModel.send(.selectRow(row))
+        }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 
     var accessibilityIdentifier: String {

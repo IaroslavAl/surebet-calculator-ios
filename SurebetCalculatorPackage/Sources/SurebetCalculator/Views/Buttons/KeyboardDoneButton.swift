@@ -18,7 +18,7 @@ struct KeyboardDoneButton: View {
 // MARK: - Private Computed Properties
 
 private extension KeyboardDoneButton {
-    var text: String { String(localized: "Done") }
+    var text: String { SurebetCalculatorLocalizationKey.done.localized }
 }
 
 #Preview {

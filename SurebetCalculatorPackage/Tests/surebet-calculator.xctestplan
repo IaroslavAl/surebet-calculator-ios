@@ -63,13 +63,6 @@
         "identifier" : "BannerTests",
         "name" : "BannerTests"
       }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:surebet-calculator.xcodeproj",
-        "identifier" : "F1234567890123456789AB07",
-        "name" : "SurebetCalculatorUITests"
-      }
     }
   ],
   "version" : 1

@@ -1,24 +1,24 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Do you like the app?" : {
+    "review_request_title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Do you like the app?"
+            "value" : "Do you enjoy using the app?"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Вам нравится приложение?"
+            "value" : "Нравится приложение?"
           }
         }
       }
     },
-    "No" : {
+    "review_button_no" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -35,7 +35,7 @@
         }
       }
     },
-    "Yes" : {
+    "review_button_yes" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {

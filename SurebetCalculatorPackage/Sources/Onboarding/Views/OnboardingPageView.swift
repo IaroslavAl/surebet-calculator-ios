@@ -13,15 +13,25 @@ struct OnboardingPageView: View {
                 .resizable()
                 .scaledToFit()
                 .padding(.vertical)
-                .accessibilityLabel(String(localized: "Image"))
+                .padding(.horizontal, imagePadding)
+                .accessibilityLabel(OnboardingLocalizationKey.image.localized)
             Spacer()
             Text(page.description)
-                .font(.title)
+                .font(OnboardingConstants.Typography.title)
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
                 .minimumScaleFactor(OnboardingConstants.minimumTextScaleFactor)
             Spacer()
         }
+        .padding(.horizontal, contentPadding)
+    }
+
+    var contentPadding: CGFloat {
+        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingSmall
+    }
+
+    var imagePadding: CGFloat {
+        isIPad ? OnboardingConstants.paddingExtraExtraLarge : .zero
     }
 }
 

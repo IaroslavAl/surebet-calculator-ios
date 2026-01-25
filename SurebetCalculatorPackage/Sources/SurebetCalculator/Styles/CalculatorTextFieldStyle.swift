@@ -17,19 +17,23 @@ struct CalculatorTextFieldStyle: TextFieldStyle {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .stroke(strokeColor, lineWidth: strokeLineWidth)
             }
-            .animation(.default, value: isValid)
-            .animation(.default, value: isEnabled)
+            .animation(AppConstants.Animations.quickInteraction, value: isValid)
+            .animation(AppConstants.Animations.quickInteraction, value: isEnabled)
     }
 }
 
 private extension CalculatorTextFieldStyle {
-    var padding: CGFloat { 8 }
-    var frameHeight: CGFloat { Device.isIPadUnsafe ? 60 : 40 }
-    var cornerRadius: CGFloat { Device.isIPadUnsafe ? 15 : 10 }
+    var padding: CGFloat { AppConstants.Padding.small }
+    var frameHeight: CGFloat {
+        Device.isIPadUnsafe ? AppConstants.Heights.regular : AppConstants.Heights.compact
+    }
+    var cornerRadius: CGFloat {
+        Device.isIPadUnsafe ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
+    }
     var strokeLineWidth: CGFloat { Device.isIPadUnsafe ? 1.5 : 1 }
-    var strokeColor: Color { isEnabled ? .green : .clear }
+    var strokeColor: Color { isEnabled ? AppColors.primaryGreen : .clear }
     var backgroundColor: Color {
-        isValid ? Color(uiColor: .secondarySystemFill) : .red.opacity(0.3)
+        isValid ? AppColors.textFieldBackground : AppColors.errorBackground
     }
 }
 

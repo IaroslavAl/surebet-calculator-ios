@@ -14,11 +14,12 @@ struct SurebetCalculatorView: View {
 
     var body: some View {
         scrollableContent
+            .frame(maxWidth: .infinity)
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: toolbar)
             .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
-            .font(font)
+            .font(AppConstants.Typography.body)
             .environmentObject(viewModel)
             .animation(.default, value: viewModel.selectedNumberOfRows)
             .focused($isFocused)
@@ -104,28 +105,36 @@ private extension SurebetCalculatorView {
 
     var addButton: some View {
         Image(systemName: "plus.circle")
-            .foregroundStyle(viewModel.selectedNumberOfRows == .ten ? .gray : .green)
-            .font(buttonFont)
+            .foregroundStyle(
+                viewModel.selectedNumberOfRows == .ten
+                    ? AppColors.inactiveButton
+                    : AppColors.activeButton
+            )
+            .font(AppConstants.Typography.button)
             .disabled(viewModel.selectedNumberOfRows == .ten)
             .padding(AppConstants.Padding.small)
             .contentShape(.rect)
             .onTapGesture {
                 viewModel.send(.addRow)
-                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             }
             .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.addRowButton)
     }
 
     var removeButton: some View {
         Image(systemName: "minus.circle")
-            .foregroundStyle(viewModel.selectedNumberOfRows == .two ? .gray : .red)
-            .font(buttonFont)
+            .foregroundStyle(
+                viewModel.selectedNumberOfRows == .two
+                    ? AppColors.inactiveButton
+                    : AppColors.primaryRed
+            )
+            .font(AppConstants.Typography.button)
             .disabled(viewModel.selectedNumberOfRows == .two)
             .padding(AppConstants.Padding.small)
             .contentShape(.rect)
             .onTapGesture {
                 viewModel.send(.removeRow)
-                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             }
             .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.removeRowButton)
     }
@@ -134,12 +143,10 @@ private extension SurebetCalculatorView {
 // MARK: - Private Computed Properties
 
 private extension SurebetCalculatorView {
-    var navigationTitle: String { String(localized: "Surebet calculator") }
+    var navigationTitle: String { SurebetCalculatorLocalizationKey.navigationTitle.localized }
     var spacing: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
     var rowsSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var font: Font { isIPad ? .title : .body }
-    var buttonFont: Font { isIPad ? .largeTitle : .title }
+    var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.small : AppConstants.Padding.small }
 }
 
 #Preview {

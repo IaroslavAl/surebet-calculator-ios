@@ -23,12 +23,12 @@ private extension OnboardingButton {
         let firstPage = OnboardingConstants.firstPageIndex
         let lastPage = viewModel.pages.index(before: viewModel.pages.endIndex)
         if viewModel.currentPage == firstPage {
-            return String(localized: "More details")
+            return OnboardingLocalizationKey.moreDetails.localized
         }
         if viewModel.currentPage == lastPage {
-            return String(localized: "Close")
+            return OnboardingLocalizationKey.close.localized
         }
-        return String(localized: "Next")
+        return OnboardingLocalizationKey.next.localized
     }
     var cornerRadius: CGFloat {
         isIPad ? OnboardingConstants.cornerRadiusExtraLarge : OnboardingConstants.cornerRadiusMedium
@@ -40,13 +40,17 @@ private extension OnboardingButton {
 
     var label: some View {
         Text(text)
-            .foregroundColor(.white)
+            .foregroundColor(OnboardingColors.buttonText)
             .bold()
             .frame(maxWidth: .infinity)
-            .padding()
-            .background(.green)
+            .padding(padding)
+            .background(OnboardingColors.buttonBackground)
             .cornerRadius(cornerRadius)
-            .animation(.none, value: viewModel.currentPage)
+            .animation(OnboardingConstants.Animations.quickInteraction, value: viewModel.currentPage)
+    }
+
+    var padding: CGFloat {
+        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingMedium
     }
 }
 

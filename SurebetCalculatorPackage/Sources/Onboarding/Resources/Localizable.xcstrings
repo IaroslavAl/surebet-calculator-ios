@@ -1,24 +1,24 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Calculate by inputting the total bet amount and coefficients for all outcomes." : {
+    "onboarding_page_1_description" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Calculate by inputting the total bet amount and coefficients for all outcomes."
+            "value" : "Enter the total bet amount and coefficients for all outcomes."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Рассчитайте, введя общую сумму ставки и коэффициенты для всех исходов."
+            "value" : "Введите общую сумму ставки и коэффициенты для всех исходов."
           }
         }
       }
     },
-    "Close" : {
+    "onboarding_close" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -35,7 +35,7 @@
         }
       }
     },
-    "Close onboarding" : {
+    "onboarding_close_onboarding" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -52,24 +52,24 @@
         }
       }
     },
-    "Enter the bet amount and coefficients for all outcomes after deactivating all switches." : {
+    "onboarding_page_3_description" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter the bet amount and coefficients for all outcomes after deactivating all switches."
+            "value" : "Enter the bet amount and coefficients for all outcomes. Turn off all switches first."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Введите сумму ставки и коэффициенты для всех исходов после деактивации всех переключателей."
+            "value" : "Введите сумму ставки и коэффициенты для всех исходов. Сначала отключите все переключатели."
           }
         }
       }
     },
-    "Image" : {
+    "onboarding_image" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -86,24 +86,24 @@
         }
       }
     },
-    "Input the bet size for a single outcome and coefficients for all outcomes to calculate." : {
+    "onboarding_page_2_description" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input the bet size for a single outcome and coefficients for all outcomes to calculate."
+            "value" : "Enter the bet size for one outcome and coefficients for all outcomes."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Введите размер ставки для одного исхода и коэффициенты для всех исходов для расчёта."
+            "value" : "Введите размер ставки для одного исхода и коэффициенты для всех исходов."
           }
         }
       }
     },
-    "More details" : {
+    "onboarding_more_details" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -120,7 +120,7 @@
         }
       }
     },
-    "Next" : {
+    "onboarding_next" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
