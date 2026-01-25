@@ -357,13 +357,14 @@ struct RootViewModelTests {
 
         // Then
         #expect(viewModel.alertIsPresented == false)
-        #expect(mockAnalytics.logCallCount == 1)
-        #expect(mockAnalytics.lastEventName == "RequestReview")
+        #expect(mockAnalytics.logEventCallCount == 1)
+        #expect(mockAnalytics.lastEvent == .reviewResponse(enjoyingApp: false))
+        #expect(mockAnalytics.lastEventName == "review_response")
         if let params = mockAnalytics.lastParameters,
-           case .bool(let value) = params["enjoying_calculator"] {
+           case .bool(let value) = params["enjoying_app"] {
             #expect(value == false)
         } else {
-            Issue.record("enjoying_calculator should be bool(false)")
+            Issue.record("enjoying_app should be bool(false)")
         }
     }
 
@@ -388,13 +389,14 @@ struct RootViewModelTests {
         // Then
         #expect(viewModel.alertIsPresented == false)
         #expect(mockReview.requestReviewCallCount == 1)
-        #expect(mockAnalytics.logCallCount == 1)
-        #expect(mockAnalytics.lastEventName == "RequestReview")
+        #expect(mockAnalytics.logEventCallCount == 1)
+        #expect(mockAnalytics.lastEvent == .reviewResponse(enjoyingApp: true))
+        #expect(mockAnalytics.lastEventName == "review_response")
         if let params = mockAnalytics.lastParameters,
-           case .bool(let value) = params["enjoying_calculator"] {
+           case .bool(let value) = params["enjoying_app"] {
             #expect(value == true)
         } else {
-            Issue.record("enjoying_calculator should be bool(true)")
+            Issue.record("enjoying_app should be bool(true)")
         }
     }
 
