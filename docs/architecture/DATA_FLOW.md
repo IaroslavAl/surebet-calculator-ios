@@ -123,26 +123,43 @@ func isBannerFullyCached() -> Bool {
 
 ## Analytics Flow
 
+### Типобезопасные события
+
+Все события аналитики определены в `AnalyticsEvent` enum:
+
 ```swift
-// Типобезопасные параметры
-analyticsService.log(
-    name: "RequestReview",
-    parameters: ["enjoying_calculator": .bool(true)]
-)
+// Использование типобезопасного события
+analyticsService.log(event: .reviewResponse(enjoyingApp: true))
+analyticsService.log(event: .bannerClicked(bannerId: "123", bannerType: .fullscreen))
+analyticsService.log(event: .calculatorRowAdded(rowCount: 3))
 ```
 
-**Каталог событий:**
+### Каталог событий
 
-| Событие | Где | Параметры |
-|---------|-----|-----------|
-| `RequestReview` | RootViewModel | `enjoying_calculator: Bool` |
-| `OpenedBanner(\(id))` | FullscreenBannerView | — |
-| `ClosedBanner(\(id))` | FullscreenBannerView | — |
+| Категория | Событие | Где | Параметры |
+|-----------|---------|-----|-----------|
+| **Onboarding** | `onboarding_started` | OnboardingViewModel | — |
+| | `onboarding_page_viewed` | OnboardingViewModel | `page_index: Int`, `page_title: String` |
+| | `onboarding_completed` | OnboardingViewModel | `pages_viewed: Int` |
+| | `onboarding_skipped` | OnboardingViewModel | `last_page_index: Int` |
+| **Calculator** | `calculator_row_added` | SurebetCalculatorViewModel | `row_count: Int` |
+| | `calculator_row_removed` | SurebetCalculatorViewModel | `row_count: Int` |
+| | `calculator_cleared` | SurebetCalculatorViewModel | — |
+| | `calculation_performed` | SurebetCalculatorViewModel | `row_count: Int`, `profit_percentage: Double` |
+| **Banner** | `banner_viewed` | BannerView, FullscreenBannerView | `banner_id: String`, `banner_type: String` |
+| | `banner_clicked` | BannerView, FullscreenBannerView | `banner_id: String`, `banner_type: String` |
+| | `banner_closed` | BannerView, FullscreenBannerView | `banner_id: String`, `banner_type: String` |
+| **Review** | `review_prompt_shown` | RootViewModel | — |
+| | `review_response` | RootViewModel | `enjoying_app: Bool` |
+| **App** | `app_opened` | RootViewModel | `session_number: Int` |
 
-**Правила:**
-- DI через init, не статические методы
-- `#if !DEBUG` — только в Release
-- `AnalyticsParameterValue` enum для типобезопасности
+### Правила
+
+- **DI через init:** Всегда используй `AnalyticsService` протокол через DI, не статические методы
+- **Типобезопасность:** Используй `AnalyticsEvent` enum вместо строковых названий
+- **Параметры:** Все параметры типобезопасны через `AnalyticsParameterValue`
+- **Release only:** `#if !DEBUG` — события логируются только в Release сборке
+- **Названия:** События в snake_case для AppMetrica (автоматически из enum)
 
 ---
 
