@@ -28,7 +28,7 @@ private extension OnboardingCloseButton {
 
     var label: some View {
         Image(systemName: imageName)
-            .font(.title)
+            .font(OnboardingConstants.Typography.icon)
             .foregroundColor(OnboardingColors.closeButton)
     }
 }

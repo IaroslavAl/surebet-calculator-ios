@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// Константы для модуля Onboarding
 enum OnboardingConstants {
@@ -27,4 +28,27 @@ enum OnboardingConstants {
 
     /// Очень большой радиус скругления (18pt)
     static let cornerRadiusExtraLarge: CGFloat = 18
+
+    // MARK: - Typography
+
+    /// Система типографики для онбординга
+    enum Typography {
+        /// Шрифт для заголовков страниц (title для iPhone, largeTitle для iPad)
+        @MainActor
+        static var title: Font {
+            Device.isIPad ? .largeTitle : .title
+        }
+
+        /// Шрифт для кнопок (title для iPhone, largeTitle для iPad)
+        @MainActor
+        static var button: Font {
+            Device.isIPad ? .largeTitle : .title
+        }
+
+        /// Шрифт для иконок (title для iPhone, largeTitle для iPad)
+        @MainActor
+        static var icon: Font {
+            Device.isIPad ? .largeTitle : .title
+        }
+    }
 }

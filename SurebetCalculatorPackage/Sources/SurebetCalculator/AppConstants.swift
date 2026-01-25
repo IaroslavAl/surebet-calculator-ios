@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// Константы приложения, сгруппированные по категориям
 enum AppConstants {
@@ -58,6 +59,41 @@ enum AppConstants {
 
         /// Задержка для debounce аналитики расчёта (1 секунда)
         static let calculationAnalytics: UInt64 = NSEC_PER_SEC * 1
+    }
+
+    // MARK: - Typography
+
+    /// Система типографики приложения
+    enum Typography {
+        /// Основной шрифт для контента (body для iPhone, title для iPad)
+        @MainActor
+        static var body: Font {
+            Device.isIPad ? .title : .body
+        }
+
+        /// Шрифт для заголовков страниц (title для iPhone, largeTitle для iPad)
+        @MainActor
+        static var title: Font {
+            Device.isIPad ? .largeTitle : .title
+        }
+
+        /// Шрифт для кнопок и иконок (title для iPhone, largeTitle для iPad)
+        @MainActor
+        static var button: Font {
+            Device.isIPad ? .largeTitle : .title
+        }
+
+        /// Шрифт для описаний и подписей (body для iPhone, title2 для iPad)
+        @MainActor
+        static var description: Font {
+            Device.isIPad ? .title2 : .body
+        }
+
+        /// Шрифт для меток (caption для iPhone, body для iPad)
+        @MainActor
+        static var label: Font {
+            Device.isIPad ? .body : .caption
+        }
     }
 
     // MARK: - Other

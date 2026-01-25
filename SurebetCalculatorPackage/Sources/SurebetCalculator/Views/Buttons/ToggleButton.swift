@@ -30,8 +30,12 @@ private extension ToggleButton {
             return false
         }
     }
-    var height: CGFloat { isIPad ? 60 : 40 }
-    var horizontalPadding: CGFloat { isIPad ? 12 : 8 }
+    var height: CGFloat {
+        isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact
+    }
+    var horizontalPadding: CGFloat {
+        isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small
+    }
     var transition: AnyTransition { .opacity.combined(with: .scale) }
     var animationDuration: Double { 0.25 }
 

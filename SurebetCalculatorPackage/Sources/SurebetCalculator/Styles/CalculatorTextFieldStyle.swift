@@ -23,9 +23,13 @@ struct CalculatorTextFieldStyle: TextFieldStyle {
 }
 
 private extension CalculatorTextFieldStyle {
-    var padding: CGFloat { 8 }
-    var frameHeight: CGFloat { Device.isIPadUnsafe ? 60 : 40 }
-    var cornerRadius: CGFloat { Device.isIPadUnsafe ? 15 : 10 }
+    var padding: CGFloat { AppConstants.Padding.small }
+    var frameHeight: CGFloat {
+        Device.isIPadUnsafe ? AppConstants.Heights.regular : AppConstants.Heights.compact
+    }
+    var cornerRadius: CGFloat {
+        Device.isIPadUnsafe ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
+    }
     var strokeLineWidth: CGFloat { Device.isIPadUnsafe ? 1.5 : 1 }
     var strokeColor: Color { isEnabled ? AppColors.primaryGreen : .clear }
     var backgroundColor: Color {

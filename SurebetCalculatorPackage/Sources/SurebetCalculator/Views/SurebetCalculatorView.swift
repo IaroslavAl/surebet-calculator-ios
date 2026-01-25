@@ -18,7 +18,7 @@ struct SurebetCalculatorView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: toolbar)
             .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
-            .font(font)
+            .font(AppConstants.Typography.body)
             .environmentObject(viewModel)
             .animation(.default, value: viewModel.selectedNumberOfRows)
             .focused($isFocused)
@@ -105,7 +105,7 @@ private extension SurebetCalculatorView {
     var addButton: some View {
         Image(systemName: "plus.circle")
             .foregroundStyle(viewModel.selectedNumberOfRows == .ten ? AppColors.inactiveButton : AppColors.activeButton)
-            .font(buttonFont)
+            .font(AppConstants.Typography.button)
             .disabled(viewModel.selectedNumberOfRows == .ten)
             .padding(AppConstants.Padding.small)
             .contentShape(.rect)
@@ -119,7 +119,7 @@ private extension SurebetCalculatorView {
     var removeButton: some View {
         Image(systemName: "minus.circle")
             .foregroundStyle(viewModel.selectedNumberOfRows == .two ? AppColors.inactiveButton : AppColors.primaryRed)
-            .font(buttonFont)
+            .font(AppConstants.Typography.button)
             .disabled(viewModel.selectedNumberOfRows == .two)
             .padding(AppConstants.Padding.small)
             .contentShape(.rect)
@@ -138,8 +138,6 @@ private extension SurebetCalculatorView {
     var spacing: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
     var rowsSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
     var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var font: Font { isIPad ? .title : .body }
-    var buttonFont: Font { isIPad ? .largeTitle : .title }
 }
 
 #Preview {

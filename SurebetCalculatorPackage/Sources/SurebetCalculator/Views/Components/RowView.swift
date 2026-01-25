@@ -33,6 +33,7 @@ private extension RowView {
         VStack(spacing: spacing) {
             if id == 0 {
                 Text(betSizeText)
+                    .font(AppConstants.Typography.label)
             }
             TextFieldView(
                 placeholder: betSizeText,
@@ -45,6 +46,7 @@ private extension RowView {
         VStack(spacing: spacing) {
             if id == 0 {
                 Text(coefficientText)
+                    .font(AppConstants.Typography.label)
             }
             TextFieldView(
                 placeholder: coefficientText,
@@ -57,6 +59,7 @@ private extension RowView {
         VStack(spacing: spacing) {
             if id == 0 {
                 Text(incomeText)
+                    .font(AppConstants.Typography.label)
             }
             TextView(
                 text: viewModel.rows[id].income,

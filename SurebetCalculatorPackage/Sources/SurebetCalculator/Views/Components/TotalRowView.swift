@@ -29,6 +29,7 @@ private extension TotalRowView {
     var totalBetSizeColumn: some View {
         VStack(spacing: spacing) {
             Text(betSizeLabel)
+                .font(AppConstants.Typography.label)
             TextFieldView(
                 placeholder: placeholder,
                 focusableField: .totalBetSize
@@ -39,6 +40,7 @@ private extension TotalRowView {
     var profitPercentageColumn: some View {
         VStack(spacing: spacing) {
             Text(profitPercentageLabel)
+                .font(AppConstants.Typography.label)
             TextView(
                 text: viewModel.total.profitPercentage,
                 isPercent: true,

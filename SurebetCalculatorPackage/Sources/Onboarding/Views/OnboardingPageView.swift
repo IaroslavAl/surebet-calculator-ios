@@ -16,7 +16,7 @@ struct OnboardingPageView: View {
                 .accessibilityLabel(OnboardingLocalizationKey.image.localized)
             Spacer()
             Text(page.description)
-                .font(.title)
+                .font(OnboardingConstants.Typography.title)
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
                 .minimumScaleFactor(OnboardingConstants.minimumTextScaleFactor)
