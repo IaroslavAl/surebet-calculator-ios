@@ -36,6 +36,9 @@ struct FullscreenBannerView: View {
             Color.black.opacity(0.75)
             bannerImage
         }
+        .onAppear {
+            logBannerViewed()
+        }
     }
 }
 
@@ -73,17 +76,23 @@ private extension FullscreenBannerView {
 
     func handleCloseTap() {
         if let banner = service.getBannerFromDefaults() {
-            analyticsService.log(name: "ClosedBanner(\(banner.id)", parameters: nil)
+            analyticsService.log(event: .bannerClosed(bannerId: banner.id, bannerType: .fullscreen))
         }
         isPresented = false
     }
 
     func handleBannerTap() {
         if let banner = service.getBannerFromDefaults() {
-            analyticsService.log(name: "OpenedBanner(\(banner.id)", parameters: nil)
+            analyticsService.log(event: .bannerClicked(bannerId: banner.id, bannerType: .fullscreen))
             openURL(banner.actionURL)
         } else {
             isPresented = false
+        }
+    }
+
+    func logBannerViewed() {
+        if let banner = service.getBannerFromDefaults() {
+            analyticsService.log(event: .bannerViewed(bannerId: banner.id, bannerType: .fullscreen))
         }
     }
 
