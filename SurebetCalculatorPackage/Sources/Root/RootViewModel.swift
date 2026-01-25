@@ -55,6 +55,7 @@ final class RootViewModel: ObservableObject {
     /// Обработка появления экрана
     func onAppear() {
         numberOfOpenings += 1
+        analyticsService.log(event: .appOpened(sessionNumber: numberOfOpenings))
     }
 
     /// Показывает onboarding view с анимацией
@@ -84,6 +85,7 @@ final class RootViewModel: ObservableObject {
             if !requestReviewWasShown, numberOfOpenings >= 2, onboardingIsShown {
                 alertIsPresented = true
                 requestReviewWasShown = true
+                analyticsService.log(event: .reviewPromptShown)
             }
         }
 #endif
@@ -92,14 +94,14 @@ final class RootViewModel: ObservableObject {
     /// Обработка ответа "Нет" на запрос отзыва
     func handleReviewNo() {
         alertIsPresented = false
-        analyticsService.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(false)])
+        analyticsService.log(event: .reviewResponse(enjoyingApp: false))
     }
 
     /// Обработка ответа "Да" на запрос отзыва
     func handleReviewYes() async {
         alertIsPresented = false
         await reviewService.requestReview()
-        analyticsService.log(name: "RequestReview", parameters: ["enjoying_calculator": .bool(true)])
+        analyticsService.log(event: .reviewResponse(enjoyingApp: true))
     }
 
     /// Обновляет состояние onboarding после его показа
