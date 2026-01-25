@@ -36,25 +36,41 @@ public struct AnalyticsManager: AnalyticsService, Sendable {
 
     // MARK: - Public Methods
 
+    /// Логирование типобезопасного события
+    /// - Parameter event: Событие для логирования
+    public func log(event: AnalyticsEvent) {
+        log(name: event.name, parameters: event.parameters)
+    }
+
     /// Логирование события с типобезопасными параметрами
     /// - Parameters:
     ///   - name: Название события
     ///   - parameters: Словарь параметров с типобезопасными значениями
+    /// - Note: Deprecated. Используйте `log(event:)` для типобезопасного логирования.
     public func log(name: String, parameters: [String: AnalyticsParameterValue]?) {
-    #if !DEBUG
+        #if !DEBUG
         let appMetricaParameters = parameters?.reduce(into: [AnyHashable: Any]()) { result, pair in
             result[pair.key] = pair.value.anyValue
         }
         AppMetrica.reportEvent(name: name, parameters: appMetricaParameters)
-    #endif
+        #endif
     }
 
     /// Статический метод для обратной совместимости
     /// - Parameters:
     ///   - name: Название события
     ///   - parameters: Словарь параметров с типобезопасными значениями
+    /// - Note: Deprecated. Используйте экземпляр AnalyticsManager и метод `log(event:)`.
     public static func log(name: String, parameters: [String: AnalyticsParameterValue]? = nil) {
         let manager = AnalyticsManager()
         manager.log(name: name, parameters: parameters)
+    }
+
+    /// Статический метод для типобезопасного логирования
+    /// - Parameter event: Событие для логирования
+    /// - Note: Deprecated. Используйте экземпляр AnalyticsManager и метод `log(event:)`.
+    public static func log(event: AnalyticsEvent) {
+        let manager = AnalyticsManager()
+        manager.log(event: event)
     }
 }
