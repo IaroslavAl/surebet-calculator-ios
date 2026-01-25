@@ -1,7 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Enter the total bet amount and coefficients for all outcomes." : {
+    "onboarding_page_1_description" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -18,7 +18,7 @@
         }
       }
     },
-    "Close" : {
+    "onboarding_close" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -35,7 +35,7 @@
         }
       }
     },
-    "Close onboarding" : {
+    "onboarding_close_onboarding" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -52,7 +52,7 @@
         }
       }
     },
-    "Enter the bet amount and coefficients for all outcomes. Turn off all switches first." : {
+    "onboarding_page_3_description" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -69,7 +69,7 @@
         }
       }
     },
-    "Image" : {
+    "onboarding_image" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -86,7 +86,7 @@
         }
       }
     },
-    "Enter the bet size for one outcome and coefficients for all outcomes." : {
+    "onboarding_page_2_description" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -103,7 +103,7 @@
         }
       }
     },
-    "More details" : {
+    "onboarding_more_details" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -120,7 +120,7 @@
         }
       }
     },
-    "Next" : {
+    "onboarding_next" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {

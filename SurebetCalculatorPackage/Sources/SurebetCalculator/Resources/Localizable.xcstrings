@@ -1,7 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Bet size" : {
+    "calculator_bet_size" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -18,7 +18,7 @@
         }
       }
     },
-    "Clear" : {
+    "calculator_clear" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -35,7 +35,7 @@
         }
       }
     },
-    "Clear all" : {
+    "calculator_clear_all" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -52,7 +52,7 @@
         }
       }
     },
-    "Coefficient" : {
+    "calculator_coefficient" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -69,7 +69,7 @@
         }
       }
     },
-    "Done" : {
+    "calculator_done" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -86,7 +86,7 @@
         }
       }
     },
-    "Income" : {
+    "calculator_income" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -103,7 +103,7 @@
         }
       }
     },
-    "Profit percentage" : {
+    "calculator_profit_percentage" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -120,7 +120,7 @@
         }
       }
     },
-    "Surebet calculator" : {
+    "calculator_navigation_title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -137,7 +137,7 @@
         }
       }
     },
-    "Total bet size" : {
+    "calculator_total_bet_size" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {

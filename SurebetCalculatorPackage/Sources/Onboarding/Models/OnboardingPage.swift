@@ -20,15 +20,12 @@ private extension OnboardingPage {
     static var image2: String { Device.isIPadUnsafe ? "iPad2" : "iPhone2" }
     static var image3: String { Device.isIPadUnsafe ? "iPad3" : "iPhone3" }
     static var description1: String {
-        String(localized: "Enter the total bet amount and coefficients for all outcomes.", bundle: .module)
+        OnboardingLocalizationKey.page1Description.localized
     }
     static var description2: String {
-        String(localized: "Enter the bet size for one outcome and coefficients for all outcomes.", bundle: .module)
+        OnboardingLocalizationKey.page2Description.localized
     }
     static var description3: String {
-        String(
-            localized: "Enter the bet amount and coefficients for all outcomes. Turn off all switches first.",
-            bundle: .module
-        )
+        OnboardingLocalizationKey.page3Description.localized
     }
 }

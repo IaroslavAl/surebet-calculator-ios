@@ -55,6 +55,10 @@
 	</array>
 	<key>CFBundleShortVersionString</key>
 	<string>1.7.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

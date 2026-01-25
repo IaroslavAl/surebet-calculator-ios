@@ -89,10 +89,10 @@ private struct ReviewAlertModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .alert(viewModel.requestReviewTitle, isPresented: $viewModel.alertIsPresented) {
-                Button(String(localized: "review_button_no", bundle: .module)) {
+                Button(RootLocalizationKey.reviewButtonNo.localized) {
                     viewModel.handleReviewNo()
                 }
-                Button(String(localized: "review_button_yes", bundle: .module)) {
+                Button(RootLocalizationKey.reviewButtonYes.localized) {
                     Task {
                         await viewModel.handleReviewYes()
                     }
