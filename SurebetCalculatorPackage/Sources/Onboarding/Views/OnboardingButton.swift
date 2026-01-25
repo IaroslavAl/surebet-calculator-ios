@@ -23,12 +23,12 @@ private extension OnboardingButton {
         let firstPage = OnboardingConstants.firstPageIndex
         let lastPage = viewModel.pages.index(before: viewModel.pages.endIndex)
         if viewModel.currentPage == firstPage {
-            return String(localized: "More details")
+            return String(localized: "More details", bundle: .module)
         }
         if viewModel.currentPage == lastPage {
-            return String(localized: "Close")
+            return String(localized: "Close", bundle: .module)
         }
-        return String(localized: "Next")
+        return String(localized: "Next", bundle: .module)
     }
     var cornerRadius: CGFloat {
         isIPad ? OnboardingConstants.cornerRadiusExtraLarge : OnboardingConstants.cornerRadiusMedium

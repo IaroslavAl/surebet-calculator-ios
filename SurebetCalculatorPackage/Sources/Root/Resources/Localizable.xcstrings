@@ -7,13 +7,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Do you like the app?"
+            "value" : "Do you enjoy using the app?"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Вам нравится приложение?"
+            "value" : "Нравится приложение?"
           }
         }
       }

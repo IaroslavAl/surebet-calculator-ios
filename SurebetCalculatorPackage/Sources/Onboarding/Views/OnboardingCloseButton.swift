@@ -12,7 +12,7 @@ struct OnboardingCloseButton: View {
             label
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityLabel(String(localized: "Close onboarding"))
+        .accessibilityLabel(String(localized: "Close onboarding", bundle: .module))
         .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.closeButton)
     }
 }
