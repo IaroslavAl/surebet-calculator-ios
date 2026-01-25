@@ -4,7 +4,7 @@ import Foundation
 // MARK: - Analytics Parameter Value
 
 /// Типобезопасное значение параметра аналитики
-public enum AnalyticsParameterValue: Sendable {
+public enum AnalyticsParameterValue: Sendable, Equatable {
     case string(String)
     case int(Int)
     case double(Double)
