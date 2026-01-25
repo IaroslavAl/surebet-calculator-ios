@@ -1,3 +1,4 @@
+import AnalyticsManager
 import Foundation
 
 @MainActor
@@ -11,6 +12,10 @@ final class SurebetCalculatorViewModel: ObservableObject {
     @Published private(set) var focus: FocusableField?
 
     private let calculationService: CalculationService
+    private let analyticsService: AnalyticsService
+
+    /// Задача для debounce аналитики расчёта
+    private var calculationAnalyticsTask: Task<Void, Never>?
 
     // MARK: - Initialization
 
@@ -20,7 +25,8 @@ final class SurebetCalculatorViewModel: ObservableObject {
         selectedNumberOfRows: NumberOfRows = .two,
         selectedRow: RowType? = .total,
         focus: FocusableField? = nil,
-        calculationService: CalculationService = DefaultCalculationService()
+        calculationService: CalculationService = DefaultCalculationService(),
+        analyticsService: AnalyticsService = AnalyticsManager()
     ) {
         self.total = total
         self.rows = rows
@@ -28,6 +34,7 @@ final class SurebetCalculatorViewModel: ObservableObject {
         self.selectedRow = selectedRow
         self.focus = focus
         self.calculationService = calculationService
+        self.analyticsService = analyticsService
     }
 
     // MARK: - Public Methods
@@ -115,6 +122,7 @@ private extension SurebetCalculatorViewModel {
     func addRow() {
         if selectedNumberOfRows != .ten {
             selectedNumberOfRows = .init(rawValue: selectedNumberOfRows.rawValue + 1) ?? .two
+            analyticsService.log(event: .calculatorRowAdded(rowCount: selectedNumberOfRows.rawValue))
         }
     }
 
@@ -127,6 +135,7 @@ private extension SurebetCalculatorViewModel {
             }
             clear(indexesOfUndisplayedRows)
             calculate()
+            analyticsService.log(event: .calculatorRowRemoved(rowCount: selectedNumberOfRows.rawValue))
         }
     }
 
@@ -164,6 +173,7 @@ private extension SurebetCalculatorViewModel {
     func clearAll() {
         clearTotal()
         clear(rows.indices)
+        analyticsService.log(event: .calculatorCleared)
     }
 
     func hideKeyboard() {
@@ -240,5 +250,29 @@ private extension SurebetCalculatorViewModel {
         )
         total = updatedTotal ?? total
         rows = updatedRows ?? rows
+
+        logCalculationPerformedDebounced()
+    }
+
+    // MARK: - Analytics
+
+    /// Логирует событие расчёта с debounce, чтобы не спамить при каждом нажатии клавиши
+    func logCalculationPerformedDebounced() {
+        calculationAnalyticsTask?.cancel()
+        calculationAnalyticsTask = Task {
+            try? await Task.sleep(nanoseconds: AppConstants.Delays.calculationAnalytics)
+            guard !Task.isCancelled else { return }
+
+            let profitPercentage = total.profitPercentage
+                .replacingOccurrences(of: "%", with: "")
+                .formatToDouble() ?? 0
+
+            analyticsService.log(
+                event: .calculationPerformed(
+                    rowCount: selectedNumberOfRows.rawValue,
+                    profitPercentage: profitPercentage
+                )
+            )
+        }
     }
 }
