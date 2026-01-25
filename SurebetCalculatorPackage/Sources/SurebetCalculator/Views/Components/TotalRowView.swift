@@ -21,9 +21,9 @@ struct TotalRowView: View {
 // MARK: - Private Computed Properties
 
 private extension TotalRowView {
-    var betSizeLabel: String { String(localized: "Total bet size") }
-    var profitPercentageLabel: String { String(localized: "Profit percentage") }
-    var placeholder: String { String(localized: "Total bet size") }
+    var betSizeLabel: String { String(localized: "Total bet size", bundle: .module) }
+    var profitPercentageLabel: String { String(localized: "Profit percentage", bundle: .module) }
+    var placeholder: String { String(localized: "Total bet size", bundle: .module) }
     var spacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
 
     var totalBetSizeColumn: some View {

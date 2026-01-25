@@ -11,7 +11,7 @@ struct KeyboardClearButton: View {
         Button {
             viewModel.send(.clearFocusableField)
         } label: {
-            Text(String(localized: "Clear"))
+            Text(String(localized: "Clear", bundle: .module))
                 .foregroundColor(.red)
         }
         .accessibilityIdentifier(AccessibilityIdentifiers.Keyboard.clearButton)

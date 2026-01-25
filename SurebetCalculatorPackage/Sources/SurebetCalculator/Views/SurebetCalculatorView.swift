@@ -134,7 +134,7 @@ private extension SurebetCalculatorView {
 // MARK: - Private Computed Properties
 
 private extension SurebetCalculatorView {
-    var navigationTitle: String { String(localized: "Surebet calculator") }
+    var navigationTitle: String { String(localized: "Surebet calculator", bundle: .module) }
     var spacing: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
     var rowsSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
     var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }

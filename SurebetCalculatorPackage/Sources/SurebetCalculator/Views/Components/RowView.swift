@@ -24,9 +24,9 @@ struct RowView: View {
 // MARK: - Private Computed Properties
 
 private extension RowView {
-    var coefficientText: String { String(localized: "Coefficient") }
-    var betSizeText: String { String(localized: "Bet size") }
-    var incomeText: String { String(localized: "Income") }
+    var coefficientText: String { String(localized: "Coefficient", bundle: .module) }
+    var betSizeText: String { String(localized: "Bet size", bundle: .module) }
+    var incomeText: String { String(localized: "Income", bundle: .module) }
     var spacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
 
     var betSize: some View {
