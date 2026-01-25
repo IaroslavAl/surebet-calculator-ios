@@ -264,27 +264,6 @@ struct AnalyticsManagerTests {
         }
     }
 
-    // MARK: - AnalyticsManager Static Method Tests
-
-    /// Тест статического метода AnalyticsManager.log()
-    @Test
-    func staticLogWhenCalled() {
-        // Given
-        let eventName = "static_test_event"
-        let parameters: [String: AnalyticsParameterValue] = [
-            "test_key": .string("test_value")
-        ]
-
-        // When
-        AnalyticsManager.log(name: eventName, parameters: parameters)
-
-        // Then
-        // В DEBUG режиме метод не должен вызывать AppMetrica
-        // Проверяем, что метод выполняется без ошибок
-        // Реальная проверка вызова AppMetrica невозможна в DEBUG режиме
-        // из-за #if !DEBUG в реализации
-    }
-
     // MARK: - Multiple Calls Tests
 
     /// Тест множественных вызовов log

@@ -47,6 +47,7 @@ public struct AnalyticsManager: AnalyticsService, Sendable {
     ///   - name: Название события
     ///   - parameters: Словарь параметров с типобезопасными значениями
     /// - Note: Deprecated. Используйте `log(event:)` для типобезопасного логирования.
+    ///   Оставлен для внутреннего использования и обратной совместимости с тестами.
     public func log(name: String, parameters: [String: AnalyticsParameterValue]?) {
         #if !DEBUG
         let appMetricaParameters = parameters?.reduce(into: [AnyHashable: Any]()) { result, pair in
@@ -54,23 +55,5 @@ public struct AnalyticsManager: AnalyticsService, Sendable {
         }
         AppMetrica.reportEvent(name: name, parameters: appMetricaParameters)
         #endif
-    }
-
-    /// Статический метод для обратной совместимости
-    /// - Parameters:
-    ///   - name: Название события
-    ///   - parameters: Словарь параметров с типобезопасными значениями
-    /// - Note: Deprecated. Используйте экземпляр AnalyticsManager и метод `log(event:)`.
-    public static func log(name: String, parameters: [String: AnalyticsParameterValue]? = nil) {
-        let manager = AnalyticsManager()
-        manager.log(name: name, parameters: parameters)
-    }
-
-    /// Статический метод для типобезопасного логирования
-    /// - Parameter event: Событие для логирования
-    /// - Note: Deprecated. Используйте экземпляр AnalyticsManager и метод `log(event:)`.
-    public static func log(event: AnalyticsEvent) {
-        let manager = AnalyticsManager()
-        manager.log(event: event)
     }
 }
