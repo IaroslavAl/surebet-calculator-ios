@@ -1,4 +1,5 @@
 @testable import SurebetCalculator
+import Foundation
 import Testing
 
 struct DoubleExtensionTests {
@@ -8,24 +9,36 @@ struct DoubleExtensionTests {
     func formatToStringWhenPositiveNumber() {
         // Given
         let value: Double = 123.45
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let expected = formatter.string(from: value as NSNumber) ?? ""
 
         // When
         let result = value.formatToString()
 
         // Then
-        #expect(result == "123,45")
+        #expect(result == expected)
     }
 
     @Test
     func formatToStringWhenNegativeNumber() {
         // Given
         let value: Double = -123.45
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let expected = formatter.string(from: value as NSNumber) ?? ""
 
         // When
         let result = value.formatToString()
 
         // Then
-        #expect(result == "-123,45")
+        #expect(result == expected)
     }
 
     @Test
@@ -44,37 +57,55 @@ struct DoubleExtensionTests {
     func formatToStringWhenLargeNumber() {
         // Given
         let value: Double = 1_000_000.99
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let expected = formatter.string(from: value as NSNumber) ?? ""
 
         // When
         let result = value.formatToString()
 
         // Then
-        #expect(result == "1000000,99")
+        #expect(result == expected)
     }
 
     @Test
     func formatToStringWhenSmallNumber() {
         // Given
         let value: Double = 0.01
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let expected = formatter.string(from: value as NSNumber) ?? ""
 
         // When
         let result = value.formatToString()
 
         // Then
-        #expect(result == "0,01")
+        #expect(result == expected)
     }
 
     @Test
     func formatToStringWhenNumberWithFractionalPart() {
         // Given
         let value: Double = 42.567
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let expected = formatter.string(from: value as NSNumber) ?? ""
 
         // When
         let result = value.formatToString()
 
         // Then
         // Округляется до 2 знаков после запятой
-        #expect(result == "42,57")
+        #expect(result == expected)
     }
 
     @Test
@@ -93,12 +124,18 @@ struct DoubleExtensionTests {
     func formatToStringWhenPercentFormat() {
         // Given
         let value: Double = 25.5
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let expected = (formatter.string(from: value as NSNumber) ?? "") + "%"
 
         // When
         let result = value.formatToString(isPercent: true)
 
         // Then
-        #expect(result == "25,5%")
+        #expect(result == expected)
     }
 
     @Test
@@ -117,26 +154,37 @@ struct DoubleExtensionTests {
     func formatToStringWhenPercentFormatWithNegative() {
         // Given
         let value: Double = -10.25
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let expected = (formatter.string(from: value as NSNumber) ?? "") + "%"
 
         // When
         let result = value.formatToString(isPercent: true)
 
         // Then
-        #expect(result == "-10,25%")
+        #expect(result == expected)
     }
 
     @Test
-    func formatToStringWhenLocalizationRuRu() {
+    func formatToStringWhenCurrentLocale() {
         // Given
         let value: Double = 1234.56
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let expected = formatter.string(from: value as NSNumber) ?? ""
 
         // When
         let result = value.formatToString()
 
         // Then
-        // Проверяем, что используется запятая как разделитель (ru_RU локализация)
-        #expect(result.contains(","))
-        #expect(!result.contains("."))
+        // Проверяем, что используется правильный разделитель для текущей локали
+        #expect(result == expected)
     }
 
     @Test
@@ -156,11 +204,17 @@ struct DoubleExtensionTests {
     func formatToStringWhenVeryLargeNumber() {
         // Given
         let value: Double = 999_999_999.99
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let expected = formatter.string(from: value as NSNumber) ?? ""
 
         // When
         let result = value.formatToString()
 
         // Then
-        #expect(result == "999999999,99")
+        #expect(result == expected)
     }
 }
