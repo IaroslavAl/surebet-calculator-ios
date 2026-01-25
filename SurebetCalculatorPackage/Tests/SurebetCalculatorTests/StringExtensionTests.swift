@@ -30,17 +30,10 @@ struct StringExtensionTests {
         let result = string.formatToDouble()
 
         // Then
-        // Если текущая локаль использует точку как разделитель, парсинг пройдёт успешно
-        // Если текущая локаль использует запятую, парсинг вернёт nil
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale.current
-        let usesPoint = formatter.decimalSeparator == "."
-        if usesPoint {
-            #expect(result == 123.45)
-        } else {
-            #expect(result == nil)
-        }
+        // Нормализация должна работать: если локаль использует запятую,
+        // точка будет заменена на запятую, и парсинг пройдёт успешно
+        // Это позволяет корректно обрабатывать ввод из .decimalPad
+        #expect(result == 123.45)
     }
 
     @Test
@@ -127,6 +120,38 @@ struct StringExtensionTests {
 
         // Then
         #expect(result == 1234.56)
+    }
+
+    @Test
+    func formatToDoubleWhenPointFromDecimalPadWithCommaLocale() {
+        // Given
+        // Симулируем ситуацию: локаль использует запятую, но .decimalPad ввёл точку
+        // Это реальная проблема iOS: .decimalPad всегда показывает точку
+        let stringWithPoint = "123.45"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        let currentSeparator = formatter.decimalSeparator
+
+        // When
+        let result = stringWithPoint.formatToDouble()
+
+        // Then
+        // Нормализация должна работать: точка заменяется на разделитель текущей локали
+        // Поэтому парсинг должен пройти успешно независимо от локали
+        #expect(result == 123.45)
+        
+        // Дополнительная проверка: если локаль использует запятую,
+        // то нормализация должна была заменить точку на запятую
+        if currentSeparator == "," {
+            // Проверяем, что нормализация работает
+            let normalized = stringWithPoint.replacingOccurrences(of: ".", with: ",")
+            let formatter2 = NumberFormatter()
+            formatter2.numberStyle = .decimal
+            formatter2.locale = Locale.current
+            let parsed = formatter2.number(from: normalized)
+            #expect(parsed?.doubleValue == 123.45)
+        }
     }
 
     // MARK: - isValidDouble() Tests
