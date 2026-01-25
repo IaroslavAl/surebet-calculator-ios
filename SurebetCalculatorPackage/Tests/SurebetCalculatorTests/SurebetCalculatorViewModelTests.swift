@@ -1,9 +1,34 @@
 @testable import AnalyticsManager
 @testable import SurebetCalculator
+import Foundation
 import Testing
 
 @MainActor
 struct SurebetCalculatorViewModelTests {
+    // MARK: - Helpers
+
+    /// Форматирует число в строку с учётом текущей локали (для тестов).
+    private func formatNumber(_ value: Double, isPercent: Bool = false) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let formatted = formatter.string(from: value as NSNumber) ?? ""
+        return isPercent ? formatted + "%" : formatted
+    }
+
+    /// Форматирует коэффициент для ввода в тестах.
+    private func formatCoefficient(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: value as NSNumber) ?? ""
+    }
+
+    // MARK: - Tests
+
     @Test
     func selectRow() {
         // Given
@@ -290,8 +315,8 @@ struct SurebetCalculatorViewModelTests {
         // Given
         let viewModel = SurebetCalculatorViewModel(
             rows: [
-                .init(id: 0, coefficient: "2,22"),
-                .init(id: 1, coefficient: "3,33"),
+                .init(id: 0, coefficient: formatCoefficient(2.22)),
+                .init(id: 1, coefficient: formatCoefficient(3.33)),
                 .init(id: 2),
                 .init(id: 3)
             ],
@@ -306,25 +331,25 @@ struct SurebetCalculatorViewModelTests {
             viewModel.total == TotalRow(
                 isON: true,
                 betSize: "777",
-                profitPercentage: "33,2%"
+                profitPercentage: formatNumber(33.2, isPercent: true)
             )
         )
         #expect(
             viewModel.rows[0] == Row(
                 id: 0,
                 isON: false,
-                betSize: "466,2",
-                coefficient: "2,22",
-                income: "257,96"
+                betSize: formatNumber(466.2),
+                coefficient: formatNumber(2.22),
+                income: formatNumber(257.96)
             )
         )
         #expect(
             viewModel.rows[1] == Row(
                 id: 1,
                 isON: false,
-                betSize: "310,8",
-                coefficient: "3,33",
-                income: "257,96"
+                betSize: formatNumber(310.8),
+                coefficient: formatNumber(3.33),
+                income: formatNumber(257.96)
             )
         )
         #expect(viewModel.rows[2] == Row(id: 2))
@@ -337,9 +362,9 @@ struct SurebetCalculatorViewModelTests {
         let viewModel = SurebetCalculatorViewModel(
             total: .init(isON: false),
             rows: [
-                .init(id: 0, isON: true, coefficient: "2,22"),
-                .init(id: 1, coefficient: "3,33"),
-                .init(id: 2, coefficient: "4,44"),
+                .init(id: 0, isON: true, coefficient: formatCoefficient(2.22)),
+                .init(id: 1, coefficient: formatCoefficient(3.33)),
+                .init(id: 2, coefficient: formatCoefficient(4.44)),
                 .init(id: 3)
             ],
             selectedNumberOfRows: .three,
@@ -353,8 +378,8 @@ struct SurebetCalculatorViewModelTests {
         #expect(
             viewModel.total == TotalRow(
                 isON: false,
-                betSize: "1683,5",
-                profitPercentage: "2,46%"
+                betSize: formatNumber(1683.5),
+                profitPercentage: formatNumber(2.46, isPercent: true)
             )
         )
         #expect(
@@ -362,8 +387,8 @@ struct SurebetCalculatorViewModelTests {
                 id: 0,
                 isON: true,
                 betSize: "777",
-                coefficient: "2,22",
-                income: "41,44"
+                coefficient: formatNumber(2.22),
+                income: formatNumber(41.44)
             )
         )
         #expect(
@@ -371,17 +396,17 @@ struct SurebetCalculatorViewModelTests {
                 id: 1,
                 isON: false,
                 betSize: "518",
-                coefficient: "3,33",
-                income: "41,44"
+                coefficient: formatNumber(3.33),
+                income: formatNumber(41.44)
             )
         )
         #expect(
             viewModel.rows[2] == Row(
                 id: 2,
                 isON: false,
-                betSize: "388,5",
-                coefficient: "4,44",
-                income: "41,44"
+                betSize: formatNumber(388.5),
+                coefficient: formatNumber(4.44),
+                income: formatNumber(41.44)
             )
         )
         #expect(viewModel.rows[3] == Row(id: 3))
@@ -393,10 +418,10 @@ struct SurebetCalculatorViewModelTests {
         let viewModel = SurebetCalculatorViewModel(
             total: .init(isON: false),
             rows: [
-                .init(id: 0, betSize: "444", coefficient: "2,22"),
-                .init(id: 1, betSize: "555", coefficient: "3,33"),
-                .init(id: 2, betSize: "666", coefficient: "4,44"),
-                .init(id: 3, coefficient: "5,55")
+                .init(id: 0, betSize: "444", coefficient: formatCoefficient(2.22)),
+                .init(id: 1, betSize: "555", coefficient: formatCoefficient(3.33)),
+                .init(id: 2, betSize: "666", coefficient: formatCoefficient(4.44)),
+                .init(id: 3, coefficient: formatCoefficient(5.55))
             ],
             selectedNumberOfRows: .four,
             selectedRow: .none
@@ -406,19 +431,47 @@ struct SurebetCalculatorViewModelTests {
         viewModel.send(.setTextFieldText(.rowBetSize(3), "777"))
 
         // Then
-        let expectedTotal = TotalRow(isON: false, betSize: "2442", profitPercentage: "-13,51%")
+        let expectedTotal = TotalRow(
+            isON: false,
+            betSize: "2442",
+            profitPercentage: formatNumber(-13.51, isPercent: true)
+        )
         #expect(viewModel.total == expectedTotal)
 
-        let expectedRow0 = Row(id: 0, isON: false, betSize: "444", coefficient: "2,22", income: "-1456,32")
+        let expectedRow0 = Row(
+            id: 0,
+            isON: false,
+            betSize: "444",
+            coefficient: formatNumber(2.22),
+            income: formatNumber(-1456.32)
+        )
         #expect(viewModel.rows[0] == expectedRow0)
 
-        let expectedRow1 = Row(id: 1, isON: false, betSize: "555", coefficient: "3,33", income: "-593,85")
+        let expectedRow1 = Row(
+            id: 1,
+            isON: false,
+            betSize: "555",
+            coefficient: formatNumber(3.33),
+            income: formatNumber(-593.85)
+        )
         #expect(viewModel.rows[1] == expectedRow1)
 
-        let expectedRow2 = Row(id: 2, isON: false, betSize: "666", coefficient: "4,44", income: "515,04")
+        let expectedRow2 = Row(
+            id: 2,
+            isON: false,
+            betSize: "666",
+            coefficient: formatNumber(4.44),
+            income: formatNumber(515.04)
+        )
         #expect(viewModel.rows[2] == expectedRow2)
 
-        let expectedRow3 = Row(id: 3, isON: false, betSize: "777", coefficient: "5,55", income: "1870,35")
+        let expectedRow3 = Row(
+            id: 3,
+            isON: false,
+            betSize: "777",
+            coefficient: formatNumber(5.55),
+            income: formatNumber(1870.35)
+        )
         #expect(viewModel.rows[3] == expectedRow3)
     }
 
@@ -427,8 +480,8 @@ struct SurebetCalculatorViewModelTests {
         // Given
         let viewModel = SurebetCalculatorViewModel(
             rows: [
-                .init(id: 0, coefficient: "2,22"),
-                .init(id: 1, coefficient: "3,33"),
+                .init(id: 0, coefficient: formatCoefficient(2.22)),
+                .init(id: 1, coefficient: formatCoefficient(3.33)),
                 .init(id: 2),
                 .init(id: 3)
             ]
@@ -445,7 +498,7 @@ struct SurebetCalculatorViewModelTests {
         // Given
         let viewModel = SurebetCalculatorViewModel(
             rows: [
-                .init(id: 0, coefficient: "2,22"),
+                .init(id: 0, coefficient: formatCoefficient(2.22)),
                 .init(id: 1),
                 .init(id: 2),
                 .init(id: 3)
@@ -655,7 +708,7 @@ struct SurebetCalculatorViewModelTests {
             rows: [
                 .init(id: 0),
                 .init(id: 1),
-                .init(id: 2, betSize: "777", coefficient: "2,22"),
+                .init(id: 2, betSize: "777", coefficient: formatCoefficient(2.22)),
                 .init(id: 3)
             ],
             selectedNumberOfRows: .three

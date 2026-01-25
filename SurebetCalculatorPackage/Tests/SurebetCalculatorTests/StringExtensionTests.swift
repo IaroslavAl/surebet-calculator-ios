@@ -1,13 +1,18 @@
 @testable import SurebetCalculator
+import Foundation
 import Testing
 
 struct StringExtensionTests {
     // MARK: - formatToDouble() Tests
 
     @Test
-    func formatToDoubleWhenValidNumberWithComma() {
+    func formatToDoubleWhenValidNumberWithDecimalSeparator() {
         // Given
-        let string = "123,45"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        let testValue = 123.45
+        let string = formatter.string(from: testValue as NSNumber) ?? ""
 
         // When
         let result = string.formatToDouble()
@@ -25,9 +30,10 @@ struct StringExtensionTests {
         let result = string.formatToDouble()
 
         // Then
-        // NumberFormatter с ru_RU локализацией использует запятую как разделитель
-        // Точка не распарсится корректно, результат будет nil
-        #expect(result == nil)
+        // Нормализация должна работать: если локаль использует запятую,
+        // точка будет заменена на запятую, и парсинг пройдёт успешно
+        // Это обеспечивает поддержку обоих вариантов ввода (точка и запятая)
+        #expect(result == 123.45)
     }
 
     @Test
@@ -57,7 +63,12 @@ struct StringExtensionTests {
     @Test
     func formatToDoubleWhenNumberWithSpaces() {
         // Given
-        let string = "1 234,56"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        formatter.groupingSeparator = " "
+        let testValue = 1234.56
+        let string = formatter.string(from: testValue as NSNumber) ?? ""
 
         // When
         let result = string.formatToDouble()
@@ -70,7 +81,11 @@ struct StringExtensionTests {
     @Test
     func formatToDoubleWhenNegativeNumber() {
         // Given
-        let string = "-123,45"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        let testValue = -123.45
+        let string = formatter.string(from: testValue as NSNumber) ?? ""
 
         // When
         let result = string.formatToDouble()
@@ -92,9 +107,13 @@ struct StringExtensionTests {
     }
 
     @Test
-    func formatToDoubleWhenLocalizationRuRu() {
+    func formatToDoubleWhenCurrentLocale() {
         // Given
-        let string = "1234,56"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        let testValue = 1234.56
+        let string = formatter.string(from: testValue as NSNumber) ?? ""
 
         // When
         let result = string.formatToDouble()
@@ -103,12 +122,48 @@ struct StringExtensionTests {
         #expect(result == 1234.56)
     }
 
+    @Test
+    func formatToDoubleWhenPointFromDecimalPadWithCommaLocale() {
+        // Given
+        // Симулируем ситуацию: локаль использует запятую, но пользователь ввёл точку
+        // Нормализация должна обработать это корректно
+        let stringWithPoint = "123.45"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        let currentSeparator = formatter.decimalSeparator
+
+        // When
+        let result = stringWithPoint.formatToDouble()
+
+        // Then
+        // Нормализация должна работать: точка заменяется на разделитель текущей локали
+        // Поэтому парсинг должен пройти успешно независимо от локали
+        #expect(result == 123.45)
+
+        // Дополнительная проверка: если локаль использует запятую,
+        // то нормализация должна была заменить точку на запятую
+        if currentSeparator == "," {
+            // Проверяем, что нормализация работает
+            let normalized = stringWithPoint.replacingOccurrences(of: ".", with: ",")
+            let formatter2 = NumberFormatter()
+            formatter2.numberStyle = .decimal
+            formatter2.locale = Locale.current
+            let parsed = formatter2.number(from: normalized)
+            #expect(parsed?.doubleValue == 123.45)
+        }
+    }
+
     // MARK: - isValidDouble() Tests
 
     @Test
     func isValidDoubleWhenValidNumber() {
         // Given
-        let string = "123,45"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        let testValue = 123.45
+        let string = formatter.string(from: testValue as NSNumber) ?? ""
 
         // When
         let result = string.isValidDouble()
@@ -146,7 +201,11 @@ struct StringExtensionTests {
     @Test
     func isValidDoubleWhenNegativeNumber() {
         // Given
-        let string = "-123,45"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        let testValue = -123.45
+        let string = formatter.string(from: testValue as NSNumber) ?? ""
 
         // When
         let result = string.isValidDouble()
@@ -174,7 +233,11 @@ struct StringExtensionTests {
     @Test
     func isNumberNotNegativeWhenPositiveNumber() {
         // Given
-        let string = "123,45"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        let testValue = 123.45
+        let string = formatter.string(from: testValue as NSNumber) ?? ""
 
         // When
         let result = string.isNumberNotNegative()
@@ -198,7 +261,11 @@ struct StringExtensionTests {
     @Test
     func isNumberNotNegativeWhenNegativeNumber() {
         // Given
-        let string = "-123,45"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        let testValue = -123.45
+        let string = formatter.string(from: testValue as NSNumber) ?? ""
 
         // When
         let result = string.isNumberNotNegative()
@@ -236,7 +303,11 @@ struct StringExtensionTests {
     @Test
     func isNumberNotNegativeWhenLargePositiveNumber() {
         // Given
-        let string = "999999,99"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        let testValue = 999999.99
+        let string = formatter.string(from: testValue as NSNumber) ?? ""
 
         // When
         let result = string.isNumberNotNegative()

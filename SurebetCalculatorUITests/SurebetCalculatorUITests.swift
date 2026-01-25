@@ -155,11 +155,11 @@ final class SurebetCalculatorUITests: XCTestCase {
         XCTAssertTrue(row0Coefficient.waitForExistence(timeout: 5))
 
         row0Coefficient.tap()
-        row0Coefficient.typeText("2,1")
+        row0Coefficient.typeText(formatNumberForInput(2.1))
 
         let row1Coefficient = app.textFields[Identifiers.Row.coefficientTextField(1)]
         row1Coefficient.tap()
-        row1Coefficient.typeText("2,1")
+        row1Coefficient.typeText(formatNumberForInput(2.1))
 
         // Вводим общую ставку
         let totalBetSize = app.textFields[Identifiers.TotalRow.betSizeTextField]
@@ -186,7 +186,7 @@ final class SurebetCalculatorUITests: XCTestCase {
         XCTAssertTrue(row0Coefficient.waitForExistence(timeout: 5))
 
         row0Coefficient.tap()
-        row0Coefficient.typeText("2,5")
+        row0Coefficient.typeText(formatNumberForInput(2.5))
 
         let totalBetSize = app.textFields[Identifiers.TotalRow.betSizeTextField]
         totalBetSize.tap()
@@ -374,6 +374,15 @@ final class SurebetCalculatorUITests: XCTestCase {
         if doneButton.waitForExistence(timeout: 1) {
             doneButton.tap()
         }
+    }
+
+    /// Форматирует число в строку для ввода в текстовое поле с учётом текущей локали.
+    private func formatNumberForInput(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: value as NSNumber) ?? ""
     }
 }
 

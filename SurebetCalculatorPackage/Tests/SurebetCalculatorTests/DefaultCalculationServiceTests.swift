@@ -1,4 +1,5 @@
 @testable import SurebetCalculator
+import Foundation
 import Testing
 
 /// Тесты для DefaultCalculationService
@@ -108,7 +109,13 @@ struct DefaultCalculationServiceTests {
         // Проверяем, что результат не nil и содержит корректные данные
         #expect(result.total != nil)
         #expect(result.rows != nil)
-        #expect(result.total?.betSize == "833,33")
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let expectedBetSize = formatter.string(from: 833.33 as NSNumber) ?? ""
+        #expect(result.total?.betSize == expectedBetSize)
         #expect(result.total?.profitPercentage == "20%")
         #expect(result.rows?.count == 2)
     }

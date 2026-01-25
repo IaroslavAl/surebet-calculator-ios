@@ -1,8 +1,21 @@
 @testable import SurebetCalculator
+import Foundation
 import Testing
 
 // swiftlint:disable file_length
 struct CalculatorTests {
+    // MARK: - Helpers
+
+    /// Форматирует число в строку с учётом текущей локали (для тестов).
+    private func formatNumber(_ value: Double, isPercent: Bool = false) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .none
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.locale = Locale.current
+        let formatted = formatter.string(from: value as NSNumber) ?? ""
+        return isPercent ? formatted + "%" : formatted
+    }
     @Test
     func totalCalculation() {
         // Given
@@ -45,11 +58,11 @@ struct CalculatorTests {
         let result = calculator.calculate()
 
         // Then
-        #expect(result.total?.betSize == "833,33")
+        #expect(result.total?.betSize == formatNumber(833.33))
         #expect(result.total?.profitPercentage == "20%")
-        #expect(result.rows?[0].income == "166,67")
-        #expect(result.rows?[1].income == "166,67")
-        #expect(result.rows?[1].betSize == "333,33")
+        #expect(result.rows?[0].income == formatNumber(166.67))
+        #expect(result.rows?[1].income == formatNumber(166.67))
+        #expect(result.rows?[1].betSize == formatNumber(333.33))
     }
 
     @Test
@@ -111,7 +124,7 @@ struct CalculatorTests {
         let result = calculator.calculate()
 
         // Then
-        #expect(result.total?.profitPercentage == "33,33%")
+        #expect(result.total?.profitPercentage == formatNumber(33.33, isPercent: true))
         #expect(result.rows?[0].income == "-400")
         #expect(result.rows?[1].income == "1800")
     }
@@ -135,13 +148,13 @@ struct CalculatorTests {
 
         // Then
         #expect(result.total?.betSize == "1000")
-        #expect(result.total?.profitPercentage == "-7,69%")
-        #expect(result.rows?[0].income == "-76,92")
-        #expect(result.rows?[0].betSize == "461,54")
-        #expect(result.rows?[1].income == "-76,92")
-        #expect(result.rows?[1].betSize == "307,69")
-        #expect(result.rows?[2].income == "-76,92")
-        #expect(result.rows?[2].betSize == "230,77")
+        #expect(result.total?.profitPercentage == formatNumber(-7.69, isPercent: true))
+        #expect(result.rows?[0].income == formatNumber(-76.92))
+        #expect(result.rows?[0].betSize == formatNumber(461.54))
+        #expect(result.rows?[1].income == formatNumber(-76.92))
+        #expect(result.rows?[1].betSize == formatNumber(307.69))
+        #expect(result.rows?[2].income == formatNumber(-76.92))
+        #expect(result.rows?[2].betSize == formatNumber(230.77))
     }
 
     @Test
@@ -164,15 +177,15 @@ struct CalculatorTests {
 
         // Then
         #expect(result.total?.betSize == "1000")
-        #expect(result.total?.profitPercentage == "-22,08%")
-        #expect(result.rows?[0].income == "-220,78")
-        #expect(result.rows?[0].betSize == "389,61")
-        #expect(result.rows?[1].income == "-220,78")
-        #expect(result.rows?[1].betSize == "259,74")
-        #expect(result.rows?[2].income == "-220,78")
-        #expect(result.rows?[2].betSize == "194,81")
-        #expect(result.rows?[3].income == "-220,78")
-        #expect(result.rows?[3].betSize == "155,84")
+        #expect(result.total?.profitPercentage == formatNumber(-22.08, isPercent: true))
+        #expect(result.rows?[0].income == formatNumber(-220.78))
+        #expect(result.rows?[0].betSize == formatNumber(389.61))
+        #expect(result.rows?[1].income == formatNumber(-220.78))
+        #expect(result.rows?[1].betSize == formatNumber(259.74))
+        #expect(result.rows?[2].income == formatNumber(-220.78))
+        #expect(result.rows?[2].betSize == formatNumber(194.81))
+        #expect(result.rows?[3].income == formatNumber(-220.78))
+        #expect(result.rows?[3].betSize == formatNumber(155.84))
     }
 
     // MARK: - Edge Cases
@@ -266,11 +279,17 @@ struct CalculatorTests {
     @Test
     func calculateWhenVerySmallCoefficient() {
         // Given
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        formatter.maximumFractionDigits = 2
+        let coefficient1 = formatter.string(from: 0.01 as NSNumber) ?? "0.01"
+        let coefficient2 = formatter.string(from: 0.02 as NSNumber) ?? "0.02"
         let calculator = Calculator(
             total: TotalRow(betSize: "1000", profitPercentage: ""),
             rows: [
-                Row(id: 0, betSize: "", coefficient: "0,01", income: ""),
-                Row(id: 1, betSize: "", coefficient: "0,02", income: "")
+                Row(id: 0, betSize: "", coefficient: coefficient1, income: ""),
+                Row(id: 1, betSize: "", coefficient: coefficient2, income: "")
             ],
             selectedRow: .total,
             displayedRowIndexes: 0..<2
@@ -332,8 +351,13 @@ struct CalculatorTests {
     @Test
     func calculateWhenVerySmallBetSize() {
         // Given
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        formatter.maximumFractionDigits = 2
+        let betSize = formatter.string(from: 0.01 as NSNumber) ?? "0.01"
         let calculator = Calculator(
-            total: TotalRow(betSize: "0,01", profitPercentage: ""),
+            total: TotalRow(betSize: betSize, profitPercentage: ""),
             rows: [
                 Row(id: 0, betSize: "", coefficient: "2", income: ""),
                 Row(id: 1, betSize: "", coefficient: "3", income: "")
@@ -411,11 +435,16 @@ struct CalculatorTests {
         // Given
         // Создаем ситуацию, где surebetValue может быть очень маленьким
         // но не нулевым, чтобы проверить защиту от деления на ноль
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale.current
+        formatter.maximumFractionDigits = 4
+        let coefficient = formatter.string(from: 1.0001 as NSNumber) ?? "1.0001"
         let calculator = Calculator(
             total: TotalRow(betSize: "1000", profitPercentage: ""),
             rows: [
-                Row(id: 0, betSize: "", coefficient: "1,0001", income: ""),
-                Row(id: 1, betSize: "", coefficient: "1,0001", income: "")
+                Row(id: 0, betSize: "", coefficient: coefficient, income: ""),
+                Row(id: 1, betSize: "", coefficient: coefficient, income: "")
             ],
             selectedRow: .total,
             displayedRowIndexes: 0..<2
