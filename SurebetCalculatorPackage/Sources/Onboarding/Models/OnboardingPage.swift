@@ -26,6 +26,9 @@ private extension OnboardingPage {
         String(localized: "Enter the bet size for one outcome and coefficients for all outcomes.", bundle: .module)
     }
     static var description3: String {
-        String(localized: "Enter the bet amount and coefficients for all outcomes. Turn off all switches first.", bundle: .module)
+        String(
+            localized: "Enter the bet amount and coefficients for all outcomes. Turn off all switches first.",
+            bundle: .module
+        )
     }
 }

@@ -1,7 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Do you enjoy using the app?" : {
+    "review_request_title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -18,7 +18,7 @@
         }
       }
     },
-    "No" : {
+    "review_button_no" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -35,7 +35,7 @@
         }
       }
     },
-    "Yes" : {
+    "review_button_yes" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {

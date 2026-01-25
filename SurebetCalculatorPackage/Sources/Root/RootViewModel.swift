@@ -49,7 +49,7 @@ final class RootViewModel: ObservableObject {
 
     /// Заголовок для запроса отзыва
     var requestReviewTitle: String {
-        String(localized: "Do you enjoy using the app?", bundle: .module)
+        String(localized: "review_request_title", bundle: .module)
     }
 
     /// Обработка появления экрана
