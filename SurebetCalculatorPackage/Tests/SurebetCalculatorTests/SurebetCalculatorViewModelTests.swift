@@ -199,7 +199,7 @@ struct SurebetCalculatorViewModelTests {
 
         // Then
         #expect(viewModel.rows[0].betSize == text)
-        #expect(viewModel.total.betSize == "777")
+        #expect(viewModel.total.betSize == "")
     }
 
     @Test
@@ -682,6 +682,67 @@ struct SurebetCalculatorViewModelTests {
         #expect(viewModel.selectedNumberOfRows == .five)
     }
 
+    @Test
+    func addRowResetsDerivedValuesWhenSelectedRowIsNone() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel(selectedRow: .none)
+
+        // When
+        viewModel.send(.setTextFieldText(.rowCoefficient(0), "2"))
+        viewModel.send(.setTextFieldText(.rowCoefficient(1), "3"))
+        viewModel.send(.setTextFieldText(.rowBetSize(0), "100"))
+        viewModel.send(.setTextFieldText(.rowBetSize(1), "200"))
+        viewModel.send(.addRow)
+
+        // Then
+        #expect(viewModel.total.betSize == "")
+        #expect(viewModel.total.profitPercentage == "0%")
+        #expect(viewModel.rows[0].betSize == "100")
+        #expect(viewModel.rows[0].income == "0")
+        #expect(viewModel.rows[1].betSize == "200")
+        #expect(viewModel.rows[1].income == "0")
+    }
+
+    @Test
+    func addRowResetsDerivedValuesWhenSelectedRowIsTotal() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel()
+
+        // When
+        viewModel.send(.setTextFieldText(.rowCoefficient(0), "2"))
+        viewModel.send(.setTextFieldText(.rowCoefficient(1), "3"))
+        viewModel.send(.setTextFieldText(.totalBetSize, "1000"))
+        viewModel.send(.addRow)
+
+        // Then
+        #expect(viewModel.total.betSize == "1000")
+        #expect(viewModel.total.profitPercentage == "0%")
+        #expect(viewModel.rows[0].betSize == "")
+        #expect(viewModel.rows[0].income == "0")
+        #expect(viewModel.rows[1].betSize == "")
+        #expect(viewModel.rows[1].income == "0")
+    }
+
+    @Test
+    func addRowResetsDerivedValuesWhenSelectedRowIsSpecificRow() {
+        // Given
+        let viewModel = SurebetCalculatorViewModel()
+
+        // When
+        viewModel.send(.setTextFieldText(.rowCoefficient(0), "2"))
+        viewModel.send(.setTextFieldText(.rowCoefficient(1), "3"))
+        viewModel.send(.setTextFieldText(.rowBetSize(0), "500"))
+        viewModel.send(.addRow)
+
+        // Then
+        #expect(viewModel.total.betSize == "")
+        #expect(viewModel.total.profitPercentage == "0%")
+        #expect(viewModel.rows[0].betSize == "500")
+        #expect(viewModel.rows[0].income == "0")
+        #expect(viewModel.rows[1].betSize == "")
+        #expect(viewModel.rows[1].income == "0")
+    }
+
     // MARK: - removeRow Tests
 
     @Test
@@ -733,8 +794,10 @@ struct SurebetCalculatorViewModelTests {
 
         // Then
         // Строка должна быть снята с выбора, так как она теперь вне отображаемого диапазона
-        // Примечание: deselectCurrentRow() только снимает isON, но не меняет selectedRow
+        // Выбор должен переключиться на total
         #expect(!viewModel.rows[id].isON)
+        #expect(viewModel.total.isON)
+        #expect(viewModel.selectedRow == .total)
         #expect(viewModel.selectedNumberOfRows == .two)
     }
 
@@ -935,7 +998,7 @@ struct SurebetCalculatorViewModelTests {
         // Then
         // Проверяем, что @Published свойства обновились корректно
         await MainActor.run {
-            #expect(viewModel.total.betSize == "1000")
+            #expect(viewModel.total.betSize == "")
             #expect(viewModel.selectedRow == .row(0))
             #expect(viewModel.rows[0].isON)
         }

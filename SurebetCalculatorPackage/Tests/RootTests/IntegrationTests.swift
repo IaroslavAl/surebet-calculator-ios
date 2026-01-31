@@ -60,18 +60,21 @@ struct IntegrationTests {
     @Test
     func dataFlowThroughCalculationService() {
         // Given
-        let calculatorViewModel = SurebetCalculatorViewModel()
+        let calculatorViewModel = SurebetCalculatorViewModel(selectedRow: .none)
 
         // When
-        calculatorViewModel.send(.setTextFieldText(.totalBetSize, "1000"))
         calculatorViewModel.send(.setTextFieldText(.rowCoefficient(0), "2.5"))
+        calculatorViewModel.send(.setTextFieldText(.rowCoefficient(1), "2.0"))
         calculatorViewModel.send(.setTextFieldText(.rowBetSize(0), "500"))
+        calculatorViewModel.send(.setTextFieldText(.rowBetSize(1), "500"))
 
         // Then
         // Проверяем, что данные передались через CalculationService
         #expect(calculatorViewModel.total.betSize == "1000")
         #expect(calculatorViewModel.rows[0].coefficient == "2.5")
         #expect(calculatorViewModel.rows[0].betSize == "500")
+        #expect(calculatorViewModel.rows[1].coefficient == "2.0")
+        #expect(calculatorViewModel.rows[1].betSize == "500")
     }
 
     /// Тест обновления UI при изменении состояния
