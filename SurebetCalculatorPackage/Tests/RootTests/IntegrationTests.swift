@@ -7,6 +7,7 @@ import Testing
 
 /// Интеграционные тесты для проверки взаимодействия модулей
 @MainActor
+@Suite(.serialized)
 struct IntegrationTests {
     // MARK: - Helper Methods
 
@@ -18,6 +19,21 @@ struct IntegrationTests {
         defaults.removeObject(forKey: "numberOfOpenings")
     }
 
+    func createRootViewModel(
+        analyticsService: AnalyticsService? = nil,
+        reviewService: ReviewService? = nil
+    ) -> RootViewModel {
+        RootViewModel(
+            analyticsService: analyticsService ?? MockAnalyticsService(),
+            reviewService: reviewService ?? MockReviewService(),
+            delay: ImmediateDelay()
+        )
+    }
+
+    func awaitAsyncTasks() async {
+        await Task.yield()
+    }
+
     // MARK: - Root -> Calculator Flow
 
     /// Тест полного flow: RootViewModel -> SurebetCalculatorViewModel -> CalculationService
@@ -25,7 +41,7 @@ struct IntegrationTests {
     func rootToCalculatorFlowWhenInitialized() {
         // Given
         clearTestUserDefaults()
-        let rootViewModel = RootViewModel()
+        let rootViewModel = createRootViewModel()
 
         // When
         // Инициализация завершена
@@ -78,7 +94,7 @@ struct IntegrationTests {
         // Given & When
         clearTestUserDefaults()
         // Оба ViewModel должны инициализироваться на MainActor
-        let rootViewModel = RootViewModel()
+        let rootViewModel = createRootViewModel()
         let calculatorViewModel = SurebetCalculatorViewModel()
 
         // Then
@@ -88,7 +104,7 @@ struct IntegrationTests {
 
         // Проверяем, что можем выполнить действия на MainActor
         await MainActor.run {
-            rootViewModel.onAppear()
+            rootViewModel.send(.onAppear)
             calculatorViewModel.send(.addRow)
         }
 
@@ -101,8 +117,8 @@ struct IntegrationTests {
     func fullFlowFromRootToCalculation() {
         // Given
         clearTestUserDefaults()
-        let rootViewModel = RootViewModel()
-        rootViewModel.updateOnboardingShown(true)
+        let rootViewModel = createRootViewModel()
+        rootViewModel.send(.updateOnboardingShown(true))
         let calculatorViewModel = SurebetCalculatorViewModel()
 
         // When
@@ -129,10 +145,10 @@ struct IntegrationTests {
         // Given
         clearTestUserDefaults()
         let mockAnalytics = MockAnalyticsService()
-        let rootViewModel = RootViewModel(analyticsService: mockAnalytics)
+        let rootViewModel = createRootViewModel(analyticsService: mockAnalytics)
 
         // When
-        rootViewModel.handleReviewNo()
+        rootViewModel.send(.handleReviewNo)
 
         // Then
         #expect(mockAnalytics.logEventCallCount == 1)
@@ -152,10 +168,11 @@ struct IntegrationTests {
         // Given
         clearTestUserDefaults()
         let mockAnalytics = MockAnalyticsService()
-        let rootViewModel = RootViewModel(analyticsService: mockAnalytics)
+        let rootViewModel = createRootViewModel(analyticsService: mockAnalytics)
 
         // When
-        await rootViewModel.handleReviewYes()
+        rootViewModel.send(.handleReviewYes)
+        await awaitAsyncTasks()
 
         // Then
         #expect(mockAnalytics.logEventCallCount == 1)
@@ -175,24 +192,25 @@ struct IntegrationTests {
         // Given
         clearTestUserDefaults()
         let mockReview = MockReviewService()
-        let rootViewModel = RootViewModel(reviewService: mockReview)
+        let rootViewModel = createRootViewModel(reviewService: mockReview)
 
         // Устанавливаем начальные условия
-        rootViewModel.updateOnboardingShown(true)
+        rootViewModel.send(.updateOnboardingShown(true))
         UserDefaults.standard.set(true, forKey: "1.7.0") // requestReviewWasShown = true
 
         // When
         // Симулируем 3 запуска приложения
-        rootViewModel.onAppear() // 1
-        rootViewModel.onAppear() // 2
-        rootViewModel.onAppear() // 3
+        rootViewModel.send(.onAppear) // 1
+        rootViewModel.send(.onAppear) // 2
+        rootViewModel.send(.onAppear) // 3
 
         // Then
         // Проверяем, что fullscreenBannerIsAvailable == true (numberOfOpenings % 3 == 0)
         #expect(rootViewModel.fullscreenBannerIsAvailable == true)
 
         // Проверяем, что при вызове handleReviewYes ReviewService вызывается
-        await rootViewModel.handleReviewYes()
+        rootViewModel.send(.handleReviewYes)
+        await awaitAsyncTasks()
         #expect(mockReview.requestReviewCallCount == 1)
     }
 
@@ -202,10 +220,11 @@ struct IntegrationTests {
         // Given
         clearTestUserDefaults()
         let mockReview = MockReviewService()
-        let rootViewModel = RootViewModel(reviewService: mockReview)
+        let rootViewModel = createRootViewModel(reviewService: mockReview)
 
         // When
-        await rootViewModel.handleReviewYes()
+        rootViewModel.send(.handleReviewYes)
+        await awaitAsyncTasks()
 
         // Then
         #expect(mockReview.requestReviewCallCount == 1)

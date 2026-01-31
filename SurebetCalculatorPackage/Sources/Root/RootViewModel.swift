@@ -10,8 +10,8 @@ import SwiftUI
 final class RootViewModel: ObservableObject {
     // MARK: - Properties
 
-    @Published var alertIsPresented = false
-    @Published var fullscreenBannerIsPresented = false
+    @Published private(set) var alertIsPresented = false
+    @Published private(set) var fullscreenBannerIsPresented = false
     @Published private(set) var isAnimation = false
 
     @AppStorage("onboardingIsShown") private var onboardingIsShown = false
@@ -20,18 +20,61 @@ final class RootViewModel: ObservableObject {
 
     private let analyticsService: AnalyticsService
     private let reviewService: ReviewService
+    private let delay: Delay
+
+    private var bannerFetchTask: Task<Void, Never>?
 
     // MARK: - Initialization
 
     init(
         analyticsService: AnalyticsService = AnalyticsManager(),
-        reviewService: ReviewService = ReviewHandler()
+        reviewService: ReviewService = ReviewHandler(),
+        delay: Delay = SystemDelay()
     ) {
         self.analyticsService = analyticsService
         self.reviewService = reviewService
+        self.delay = delay
     }
 
     // MARK: - Public Methods
+
+    enum Action {
+        case onAppear
+        case showOnboardingView
+        case showRequestReview
+        case showFullscreenBanner
+        case fetchBanner
+        case handleReviewNo
+        case handleReviewYes
+        case updateOnboardingShown(Bool)
+        case setAlertPresented(Bool)
+        case setFullscreenBannerPresented(Bool)
+    }
+
+    func send(_ action: Action) {
+        switch action {
+        case .onAppear:
+            handleOnAppear()
+        case .showOnboardingView:
+            enableOnboardingAnimation()
+        case .showRequestReview:
+            requestReviewIfNeeded()
+        case .showFullscreenBanner:
+            showFullscreenBannerIfAvailable()
+        case .fetchBanner:
+            fetchBannerIfNeeded()
+        case .handleReviewNo:
+            handleReviewNoInternal()
+        case .handleReviewYes:
+            Task { await handleReviewYesInternal() }
+        case let .updateOnboardingShown(value):
+            updateOnboardingShownInternal(value)
+        case let .setAlertPresented(isPresented):
+            alertIsPresented = isPresented
+        case let .setFullscreenBannerPresented(isPresented):
+            fullscreenBannerIsPresented = isPresented
+        }
+    }
 
     /// Проверяет, нужно ли показать onboarding
     var shouldShowOnboarding: Bool {
@@ -53,36 +96,34 @@ final class RootViewModel: ObservableObject {
         RootLocalizationKey.reviewRequestTitle.localized
     }
 
-    /// Обработка появления экрана
-    func onAppear() {
+    /// Проверяет, доступен ли fullscreen баннер для показа
+    var fullscreenBannerIsAvailable: Bool {
+        onboardingIsShown && requestReviewWasShown && numberOfOpenings.isMultiple(of: 3)
+    }
+}
+
+// MARK: - Private Methods
+
+private extension RootViewModel {
+    func handleOnAppear() {
         numberOfOpenings += 1
         analyticsService.log(event: .appOpened(sessionNumber: numberOfOpenings))
     }
 
-    /// Показывает onboarding view с анимацией
-    func showOnboardingView() {
-        withAnimation(AppConstants.Animations.smoothTransition) {
-            isAnimation = true
-        }
+    func enableOnboardingAnimation() {
+        isAnimation = true
     }
 
-    /// Проверяет и показывает fullscreen баннер, если доступен
-    func showFullscreenBanner() {
+    func showFullscreenBannerIfAvailable() {
         if fullscreenBannerIsAvailable, Banner.isBannerFullyCached {
             fullscreenBannerIsPresented = true
         }
     }
 
-    /// Проверяет, доступен ли fullscreen баннер для показа
-    var fullscreenBannerIsAvailable: Bool {
-        onboardingIsShown && requestReviewWasShown && numberOfOpenings.isMultiple(of: 3)
-    }
-
-    /// Проверяет и показывает запрос отзыва, если условия выполнены
-    func showRequestReview() {
+    func requestReviewIfNeeded() {
 #if !DEBUG
         Task {
-            try await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest)
+            await delay.sleep(nanoseconds: AppConstants.Delays.reviewRequest)
             if !requestReviewWasShown, numberOfOpenings >= 2, onboardingIsShown {
                 alertIsPresented = true
                 requestReviewWasShown = true
@@ -92,21 +133,28 @@ final class RootViewModel: ObservableObject {
 #endif
     }
 
-    /// Обработка ответа "Нет" на запрос отзыва
-    func handleReviewNo() {
+    func handleReviewNoInternal() {
         alertIsPresented = false
         analyticsService.log(event: .reviewResponse(enjoyingApp: false))
     }
 
-    /// Обработка ответа "Да" на запрос отзыва
-    func handleReviewYes() async {
+    func handleReviewYesInternal() async {
         alertIsPresented = false
         await reviewService.requestReview()
         analyticsService.log(event: .reviewResponse(enjoyingApp: true))
     }
 
-    /// Обновляет состояние onboarding после его показа
-    func updateOnboardingShown(_ value: Bool) {
+    func updateOnboardingShownInternal(_ value: Bool) {
         onboardingIsShown = value
+    }
+
+    func fetchBannerIfNeeded() {
+        guard bannerFetchTask == nil else { return }
+        bannerFetchTask = Task { [weak self] in
+            try? await Banner.fetchBanner()
+            await MainActor.run {
+                self?.bannerFetchTask = nil
+            }
+        }
     }
 }

@@ -1,4 +1,3 @@
-@testable import AnalyticsManager
 @testable import Onboarding
 import Testing
 
@@ -124,33 +123,28 @@ struct OnboardingViewModelTests {
     @Test
     func analyticsWhenOnboardingStarted() {
         // Given
-        let mockAnalytics = MockAnalyticsService()
+        let mockAnalytics = MockOnboardingAnalytics()
 
         // When
-        _ = OnboardingViewModel(analyticsService: mockAnalytics)
+        _ = OnboardingViewModel(analytics: mockAnalytics)
 
         // Then
-        #expect(mockAnalytics.logEventCallCount >= 1)
-        #expect(mockAnalytics.logEventCalls.contains { event in
-            if case .onboardingStarted = event {
-                return true
-            }
-            return false
-        })
+        #expect(mockAnalytics.eventCallCount >= 1)
+        #expect(mockAnalytics.events.contains(.onboardingStarted))
     }
 
     /// Тест события onboarding_page_viewed при инициализации
     @Test
     func analyticsWhenOnboardingPageViewedOnInit() {
         // Given
-        let mockAnalytics = MockAnalyticsService()
+        let mockAnalytics = MockOnboardingAnalytics()
 
         // When
-        _ = OnboardingViewModel(analyticsService: mockAnalytics)
+        _ = OnboardingViewModel(analytics: mockAnalytics)
 
         // Then
-        #expect(mockAnalytics.logEventCallCount >= 2) // onboardingStarted + onboardingPageViewed
-        #expect(mockAnalytics.logEventCalls.contains { event in
+        #expect(mockAnalytics.eventCallCount >= 2) // onboardingStarted + onboardingPageViewed
+        #expect(mockAnalytics.events.contains { event in
             if case .onboardingPageViewed(let pageIndex, _) = event {
                 return pageIndex == 0
             }
@@ -162,16 +156,16 @@ struct OnboardingViewModelTests {
     @Test
     func analyticsWhenOnboardingPageViewedOnPageChange() {
         // Given
-        let mockAnalytics = MockAnalyticsService()
-        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
-        let initialCallCount = mockAnalytics.logEventCallCount
+        let mockAnalytics = MockOnboardingAnalytics()
+        let viewModel = OnboardingViewModel(analytics: mockAnalytics)
+        let initialCallCount = mockAnalytics.eventCallCount
 
         // When
         viewModel.send(.setCurrentPage(1))
 
         // Then
-        #expect(mockAnalytics.logEventCallCount > initialCallCount)
-        #expect(mockAnalytics.logEventCalls.contains { event in
+        #expect(mockAnalytics.eventCallCount > initialCallCount)
+        #expect(mockAnalytics.events.contains { event in
             if case .onboardingPageViewed(let pageIndex, _) = event {
                 return pageIndex == 1
             }
@@ -183,14 +177,14 @@ struct OnboardingViewModelTests {
     @Test
     func analyticsWhenOnboardingPageViewedParameters() {
         // Given
-        let mockAnalytics = MockAnalyticsService()
-        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        let mockAnalytics = MockOnboardingAnalytics()
+        let viewModel = OnboardingViewModel(analytics: mockAnalytics)
 
         // When
         viewModel.send(.setCurrentPage(1))
 
         // Then
-        let pageViewedEvents = mockAnalytics.logEventCalls.compactMap { event -> (Int, String)? in
+        let pageViewedEvents = mockAnalytics.events.compactMap { event -> (Int, String)? in
             if case .onboardingPageViewed(let pageIndex, let pageTitle) = event {
                 return (pageIndex, pageTitle)
             }
@@ -206,17 +200,17 @@ struct OnboardingViewModelTests {
     @Test
     func analyticsWhenOnboardingCompletedOnDismiss() {
         // Given
-        let mockAnalytics = MockAnalyticsService()
-        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        let mockAnalytics = MockOnboardingAnalytics()
+        let viewModel = OnboardingViewModel(analytics: mockAnalytics)
         viewModel.send(.setCurrentPage(2))
-        let initialCallCount = mockAnalytics.logEventCallCount
+        let initialCallCount = mockAnalytics.eventCallCount
 
         // When
         viewModel.send(.dismiss)
 
         // Then
-        #expect(mockAnalytics.logEventCallCount > initialCallCount)
-        #expect(mockAnalytics.logEventCalls.contains { event in
+        #expect(mockAnalytics.eventCallCount > initialCallCount)
+        #expect(mockAnalytics.events.contains { event in
             if case .onboardingCompleted(let pagesViewed) = event {
                 return pagesViewed == 3 // currentPage + 1
             }
@@ -228,17 +222,17 @@ struct OnboardingViewModelTests {
     @Test
     func analyticsWhenOnboardingCompletedOnOutOfRange() {
         // Given
-        let mockAnalytics = MockAnalyticsService()
-        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        let mockAnalytics = MockOnboardingAnalytics()
+        let viewModel = OnboardingViewModel(analytics: mockAnalytics)
         viewModel.send(.setCurrentPage(1))
-        let initialCallCount = mockAnalytics.logEventCallCount
+        let initialCallCount = mockAnalytics.eventCallCount
 
         // When
         viewModel.send(.setCurrentPage(100))
 
         // Then
-        #expect(mockAnalytics.logEventCallCount > initialCallCount)
-        #expect(mockAnalytics.logEventCalls.contains { event in
+        #expect(mockAnalytics.eventCallCount > initialCallCount)
+        #expect(mockAnalytics.events.contains { event in
             if case .onboardingCompleted(let pagesViewed) = event {
                 return pagesViewed == 2 // currentPage (1) + 1
             }
@@ -250,17 +244,17 @@ struct OnboardingViewModelTests {
     @Test
     func analyticsWhenOnboardingSkipped() {
         // Given
-        let mockAnalytics = MockAnalyticsService()
-        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        let mockAnalytics = MockOnboardingAnalytics()
+        let viewModel = OnboardingViewModel(analytics: mockAnalytics)
         viewModel.send(.setCurrentPage(2))
-        let initialCallCount = mockAnalytics.logEventCallCount
+        let initialCallCount = mockAnalytics.eventCallCount
 
         // When
         viewModel.send(.skip)
 
         // Then
-        #expect(mockAnalytics.logEventCallCount > initialCallCount)
-        #expect(mockAnalytics.logEventCalls.contains { event in
+        #expect(mockAnalytics.eventCallCount > initialCallCount)
+        #expect(mockAnalytics.events.contains { event in
             if case .onboardingSkipped(let lastPageIndex) = event {
                 return lastPageIndex == 2
             }
@@ -272,8 +266,8 @@ struct OnboardingViewModelTests {
     @Test
     func analyticsWhenOnboardingCompletedParameters() {
         // Given
-        let mockAnalytics = MockAnalyticsService()
-        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        let mockAnalytics = MockOnboardingAnalytics()
+        let viewModel = OnboardingViewModel(analytics: mockAnalytics)
         // Используем валидный индекс страницы
         let validPageIndex = min(2, viewModel.pages.count - 1)
         viewModel.send(.setCurrentPage(validPageIndex))
@@ -283,7 +277,7 @@ struct OnboardingViewModelTests {
 
         // Then
         // Проверяем последнее событие onboardingCompleted
-        let lastCompletedEvent = mockAnalytics.logEventCalls.reversed().first { event in
+        let lastCompletedEvent = mockAnalytics.events.reversed().first { event in
             if case .onboardingCompleted = event {
                 return true
             }
@@ -299,15 +293,15 @@ struct OnboardingViewModelTests {
     @Test
     func analyticsWhenOnboardingSkippedParameters() {
         // Given
-        let mockAnalytics = MockAnalyticsService()
-        let viewModel = OnboardingViewModel(analyticsService: mockAnalytics)
+        let mockAnalytics = MockOnboardingAnalytics()
+        let viewModel = OnboardingViewModel(analytics: mockAnalytics)
         viewModel.send(.setCurrentPage(1))
 
         // When
         viewModel.send(.skip)
 
         // Then
-        let skippedEvents = mockAnalytics.logEventCalls.compactMap { event -> Int? in
+        let skippedEvents = mockAnalytics.events.compactMap { event -> Int? in
             if case .onboardingSkipped(let lastPageIndex) = event {
                 return lastPageIndex
             }

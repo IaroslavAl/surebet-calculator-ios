@@ -1,29 +1,24 @@
-import AnalyticsManager
 import SDWebImageSwiftUI
 import SwiftUI
 
 struct BannerView: View {
     // MARK: - Properties
 
-    private let analyticsService: AnalyticsService
-
-    @State
-    private var isPresented: Bool = true
+    @StateObject private var viewModel: BannerViewModel
 
     // MARK: - Initialization
 
-    @MainActor
-    init(analyticsService: AnalyticsService = AnalyticsManager()) {
-        self.analyticsService = analyticsService
+    init(viewModel: BannerViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
 
     // MARK: - Body
 
     var body: some View {
-        if isPresented {
+        if viewModel.state.isPresented {
             bannerContent
                 .onAppear {
-                    logBannerViewed()
+                    viewModel.send(.onAppear)
                 }
         }
     }
@@ -38,7 +33,7 @@ private extension BannerView {
             .scaledToFit()
             .cornerRadius(cornerRadius)
             .onTapGesture {
-                handleBannerTap()
+                viewModel.send(.tapBanner)
             }
             .overlay(alignment: .topTrailing) {
                 closeButton
@@ -56,40 +51,14 @@ private extension BannerView {
             .padding(BannerConstants.inlineCloseButtonPadding)
             .contentShape(.rect)
             .onTapGesture {
-                handleCloseTap()
+                viewModel.send(.tapClose)
             }
-    }
-
-    func handleBannerTap() {
-        openURL(BannerConstants.inlineBannerAffiliateURL)
-        analyticsService.log(
-            event: .bannerClicked(bannerId: BannerConstants.inlineBannerId, bannerType: .inline)
-        )
-    }
-
-    func handleCloseTap() {
-        isPresented = false
-        analyticsService.log(
-            event: .bannerClosed(bannerId: BannerConstants.inlineBannerId, bannerType: .inline)
-        )
-    }
-
-    func logBannerViewed() {
-        analyticsService.log(
-            event: .bannerViewed(bannerId: BannerConstants.inlineBannerId, bannerType: .inline)
-        )
     }
 
     var cornerRadius: CGFloat {
         isIPad
             ? BannerConstants.inlineBannerCornerRadiusiPad
             : BannerConstants.inlineBannerCornerRadiusiPhone
-    }
-
-    func openURL(_ url: String) {
-        if let url = URL(string: url) {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-        }
     }
 
     var imageURL: String {
@@ -100,5 +69,5 @@ private extension BannerView {
 }
 
 #Preview {
-    BannerView()
+    BannerView(viewModel: BannerViewModel())
 }

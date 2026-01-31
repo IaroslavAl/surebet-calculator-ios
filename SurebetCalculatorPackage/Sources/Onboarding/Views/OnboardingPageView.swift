@@ -37,9 +37,9 @@ struct OnboardingPageView: View {
 
 #Preview {
     OnboardingPageView(
-        page: .init(
+        page: OnboardingPage.createPages().first ?? .init(
             image: "onboarding1",
-            description: "description"
+            description: OnboardingLocalizationKey.page1Description.localized
         )
     )
 }

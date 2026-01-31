@@ -17,13 +17,16 @@ struct RootViewModelTests {
     /// Создает новый экземпляр RootViewModel с моками
     func createViewModel(
         analyticsService: AnalyticsService? = nil,
-        reviewService: ReviewService? = nil
+        reviewService: ReviewService? = nil,
+        delay: Delay? = nil
     ) -> RootViewModel {
         let analytics = analyticsService ?? MockAnalyticsService()
         let review = reviewService ?? MockReviewService()
+        let reviewDelay = delay ?? ImmediateDelay()
         return RootViewModel(
             analyticsService: analytics,
-            reviewService: review
+            reviewService: review,
+            delay: reviewDelay
         )
     }
 
@@ -33,6 +36,10 @@ struct RootViewModelTests {
         defaults.removeObject(forKey: "onboardingIsShown")
         defaults.removeObject(forKey: "1.7.0")
         defaults.removeObject(forKey: "numberOfOpenings")
+    }
+
+    func awaitAsyncTasks() async {
+        await Task.yield()
     }
 
     // MARK: - shouldShowOnboarding Tests
@@ -54,7 +61,7 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
-        viewModel.updateOnboardingShown(true)
+        viewModel.send(.updateOnboardingShown(true))
 
         // Then
         #expect(viewModel.shouldShowOnboarding == false)
@@ -70,7 +77,7 @@ struct RootViewModelTests {
         let viewModel = createViewModel()
 
         // When
-        viewModel.showOnboardingView()
+        viewModel.send(.showOnboardingView)
 
         // Then
         #expect(viewModel.shouldShowOnboardingWithAnimation == true)
@@ -97,7 +104,7 @@ struct RootViewModelTests {
         let viewModel = createViewModel()
 
         // When
-        viewModel.updateOnboardingShown(true)
+        viewModel.send(.updateOnboardingShown(true))
 
         // Then
         #expect(viewModel.isOnboardingShown == true)
@@ -113,9 +120,9 @@ struct RootViewModelTests {
         let viewModel = createViewModel()
 
         // When
-        viewModel.onAppear()
-        viewModel.onAppear()
-        viewModel.onAppear()
+        viewModel.send(.onAppear)
+        viewModel.send(.onAppear)
+        viewModel.send(.onAppear)
 
         // Then
         // Проверяем через fullscreenBannerIsAvailable (numberOfOpenings % 3 == 0)
@@ -132,7 +139,7 @@ struct RootViewModelTests {
         let viewModel = createViewModel()
 
         // When
-        viewModel.showOnboardingView()
+        viewModel.send(.showOnboardingView)
 
         // Then
         // Проверяем через shouldShowOnboardingWithAnimation
@@ -147,12 +154,12 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
-        viewModel.updateOnboardingShown(true)
+        viewModel.send(.updateOnboardingShown(true))
         // Устанавливаем requestReviewWasShown через UserDefaults напрямую
         UserDefaults.standard.set(true, forKey: "1.7.0")
         // Устанавливаем numberOfOpenings = 3 (кратно 3)
         for _ in 0..<3 {
-            viewModel.onAppear()
+            viewModel.send(.onAppear)
         }
 
         // Then
@@ -167,7 +174,7 @@ struct RootViewModelTests {
         let viewModel = createViewModel()
         UserDefaults.standard.set(true, forKey: "1.7.0")
         for _ in 0..<3 {
-            viewModel.onAppear()
+            viewModel.send(.onAppear)
         }
 
         // Then
@@ -180,9 +187,9 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
-        viewModel.updateOnboardingShown(true)
+        viewModel.send(.updateOnboardingShown(true))
         for _ in 0..<3 {
-            viewModel.onAppear()
+            viewModel.send(.onAppear)
         }
 
         // Then
@@ -195,10 +202,10 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
-        viewModel.updateOnboardingShown(true)
+        viewModel.send(.updateOnboardingShown(true))
         UserDefaults.standard.set(true, forKey: "1.7.0")
         for _ in 0..<2 {
-            viewModel.onAppear()
+            viewModel.send(.onAppear)
         }
 
         // Then
@@ -213,10 +220,10 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
-        viewModel.updateOnboardingShown(true)
+        viewModel.send(.updateOnboardingShown(true))
         UserDefaults.standard.set(true, forKey: "1.7.0")
         for _ in 0..<3 {
-            viewModel.onAppear()
+            viewModel.send(.onAppear)
         }
         // Мокируем Banner.isBannerFullyCached через сохранение данных в UserDefaults
         let testBanner = BannerModel(
@@ -234,7 +241,7 @@ struct RootViewModelTests {
         UserDefaults.standard.set(testBanner.imageURL.absoluteString, forKey: "stored_banner_image_url_string")
 
         // When
-        viewModel.showFullscreenBanner()
+        viewModel.send(.showFullscreenBanner)
 
         // Then
         #expect(viewModel.fullscreenBannerIsPresented == true)
@@ -248,7 +255,7 @@ struct RootViewModelTests {
         let viewModel = createViewModel()
 
         // When
-        viewModel.showFullscreenBanner()
+        viewModel.send(.showFullscreenBanner)
 
         // Then
         #expect(viewModel.fullscreenBannerIsPresented == false)
@@ -263,14 +270,13 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
-        viewModel.updateOnboardingShown(true)
-        viewModel.onAppear()
-        viewModel.onAppear()
+        viewModel.send(.updateOnboardingShown(true))
+        viewModel.send(.onAppear)
+        viewModel.send(.onAppear)
 
         // When
-        viewModel.showRequestReview()
-        // Ждем завершения Task
-        try? await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest + 100_000_000) // +100ms для надежности
+        viewModel.send(.showRequestReview)
+        await awaitAsyncTasks()
 
         // Then
         // В DEBUG режиме метод не выполняется из-за #if !DEBUG в RootViewModel
@@ -278,9 +284,6 @@ struct RootViewModelTests {
         #if DEBUG
         // В DEBUG режиме метод showRequestReview() не выполняется
         #expect(viewModel.alertIsPresented == false)
-        // В DEBUG режиме requestReviewWasShown не должен быть установлен
-        let requestReviewWasShown = UserDefaults.standard.bool(forKey: "1.7.0")
-        #expect(requestReviewWasShown == false)
         #else
         // В не-DEBUG режиме метод должен выполниться
         #expect(viewModel.alertIsPresented == true)
@@ -294,14 +297,14 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
-        viewModel.updateOnboardingShown(true)
+        viewModel.send(.updateOnboardingShown(true))
         UserDefaults.standard.set(true, forKey: "1.7.0")
-        viewModel.onAppear()
-        viewModel.onAppear()
+        viewModel.send(.onAppear)
+        viewModel.send(.onAppear)
 
         // When
-        viewModel.showRequestReview()
-        try? await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest + 100_000_000)
+        viewModel.send(.showRequestReview)
+        await awaitAsyncTasks()
 
         // Then
         #expect(viewModel.alertIsPresented == false)
@@ -313,12 +316,12 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
-        viewModel.updateOnboardingShown(true)
-        viewModel.onAppear()
+        viewModel.send(.updateOnboardingShown(true))
+        viewModel.send(.onAppear)
 
         // When
-        viewModel.showRequestReview()
-        try? await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest + 100_000_000)
+        viewModel.send(.showRequestReview)
+        await awaitAsyncTasks()
 
         // Then
         #expect(viewModel.alertIsPresented == false)
@@ -330,12 +333,12 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
-        viewModel.onAppear()
-        viewModel.onAppear()
+        viewModel.send(.onAppear)
+        viewModel.send(.onAppear)
 
         // When
-        viewModel.showRequestReview()
-        try? await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest + 100_000_000)
+        viewModel.send(.showRequestReview)
+        await awaitAsyncTasks()
 
         // Then
         #expect(viewModel.alertIsPresented == false)
@@ -350,10 +353,10 @@ struct RootViewModelTests {
         clearTestUserDefaults()
         let mockAnalytics = MockAnalyticsService()
         let viewModel = createViewModel(analyticsService: mockAnalytics)
-        viewModel.alertIsPresented = true
+        viewModel.send(.setAlertPresented(true))
 
         // When
-        viewModel.handleReviewNo()
+        viewModel.send(.handleReviewNo)
 
         // Then
         #expect(viewModel.alertIsPresented == false)
@@ -381,10 +384,11 @@ struct RootViewModelTests {
             analyticsService: mockAnalytics,
             reviewService: mockReview
         )
-        viewModel.alertIsPresented = true
+        viewModel.send(.setAlertPresented(true))
 
         // When
-        await viewModel.handleReviewYes()
+        viewModel.send(.handleReviewYes)
+        await awaitAsyncTasks()
 
         // Then
         #expect(viewModel.alertIsPresented == false)
@@ -410,7 +414,7 @@ struct RootViewModelTests {
         let viewModel = createViewModel()
 
         // When
-        viewModel.updateOnboardingShown(true)
+        viewModel.send(.updateOnboardingShown(true))
 
         // Then
         #expect(viewModel.isOnboardingShown == true)

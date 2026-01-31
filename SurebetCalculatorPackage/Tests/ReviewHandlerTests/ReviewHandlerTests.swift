@@ -11,57 +11,48 @@ struct ReviewHandlerTests {
     @Test
     func requestReviewWhenCalled() async {
         // Given
-        let handler = ReviewHandler()
-        let startTime = Date()
+        let delay = MockDelay()
+        let handler = ReviewHandler(delay: delay)
 
         // When
         await handler.requestReview()
 
         // Then
-        let endTime = Date()
-        let duration = endTime.timeIntervalSince(startTime)
-
-        // Проверяем, что прошло примерно 1 секунда (с допуском на погрешность)
-        #expect(duration >= 0.9) // Минимум 0.9 секунды
-        #expect(duration <= 1.5) // Максимум 1.5 секунды (с учетом погрешности)
+        #expect(delay.sleepCallCount == 1)
+        #expect(delay.lastNanoseconds == ReviewConstants.reviewRequestDelay)
     }
 
     /// Тест множественных вызовов requestReview
     @Test
     func requestReviewWhenMultipleCalls() async {
         // Given
-        let handler = ReviewHandler()
-        let startTime = Date()
+        let delay = MockDelay()
+        let handler = ReviewHandler(delay: delay)
 
         // When
         await handler.requestReview()
         await handler.requestReview()
 
         // Then
-        let endTime = Date()
-        let duration = endTime.timeIntervalSince(startTime)
-
-        // Должно быть примерно 2 секунды (с допуском)
-        #expect(duration >= 1.8) // Минимум 1.8 секунды
-        #expect(duration <= 3.0) // Максимум 3 секунды (с учетом погрешности)
+        #expect(delay.sleepCallCount == 2)
+        #expect(delay.lastNanoseconds == ReviewConstants.reviewRequestDelay)
     }
 
     /// Тест статического метода ReviewHandler.requestReview()
     @Test
     func staticRequestReviewWhenCalled() async {
         // Given
-        let startTime = Date()
+        let delay = MockDelay()
+        let previousDelay = ReviewHandler.defaultDelay
+        ReviewHandler.defaultDelay = delay
+        defer { ReviewHandler.defaultDelay = previousDelay }
 
         // When
         await ReviewHandler.requestReview()
 
         // Then
-        let endTime = Date()
-        let duration = endTime.timeIntervalSince(startTime)
-
-        // Проверяем, что прошло примерно 1 секунда
-        #expect(duration >= 0.9)
-        #expect(duration <= 1.5)
+        #expect(delay.sleepCallCount == 1)
+        #expect(delay.lastNanoseconds == ReviewConstants.reviewRequestDelay)
     }
 
     // MARK: - MockReviewService Tests
@@ -79,35 +70,6 @@ struct ReviewHandlerTests {
         #expect(mockService.requestReviewCallCount == 1)
         #expect(mockService.lastRequestReviewStartTime != nil)
         #expect(mockService.lastRequestReviewEndTime != nil)
-    }
-
-    /// Тест MockReviewService - проверка задержки
-    @Test
-    func mockRequestReviewWhenDelayIsCorrect() async {
-        // Given
-        let mockService = MockReviewService()
-        let startTime = Date()
-
-        // When
-        await mockService.requestReview()
-
-        // Then
-        let endTime = Date()
-        let duration = endTime.timeIntervalSince(startTime)
-
-        // Проверяем задержку
-        #expect(duration >= 0.9)
-        #expect(duration <= 1.5)
-
-        // Проверяем, что времена установлены
-        if let start = mockService.lastRequestReviewStartTime,
-           let end = mockService.lastRequestReviewEndTime {
-            let mockDuration = end.timeIntervalSince(start)
-            #expect(mockDuration >= 0.9)
-            #expect(mockDuration <= 1.5)
-        } else {
-            Issue.record("Request review times should be set")
-        }
     }
 
     /// Тест MockReviewService - множественные вызовы

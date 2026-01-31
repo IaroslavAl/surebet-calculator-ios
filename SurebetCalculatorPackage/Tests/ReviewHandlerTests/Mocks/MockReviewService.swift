@@ -25,9 +25,6 @@ final class MockReviewService: ReviewService, @unchecked Sendable {
         requestReviewCallCount += 1
         lastRequestReviewStartTime = Date()
 
-        // Имитируем задержку в 1 секунду
-        try? await Task.sleep(nanoseconds: ReviewConstants.reviewRequestDelay)
-
         lastRequestReviewTime = Date()
         lastRequestReviewEndTime = Date()
     }

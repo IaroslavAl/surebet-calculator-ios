@@ -7,14 +7,27 @@ import SwiftUI
 struct RootView: View {
     // MARK: - Properties
 
-    @StateObject private var viewModel = RootViewModel()
+    @StateObject private var viewModel: RootViewModel
+    private let onboardingAnalytics: OnboardingAnalytics
+    private let calculatorAnalytics: CalculatorAnalytics
+
+    // MARK: - Initialization
+
+    init(
+        viewModel: RootViewModel,
+        onboardingAnalytics: OnboardingAnalytics,
+        calculatorAnalytics: CalculatorAnalytics
+    ) {
+        self._viewModel = StateObject(wrappedValue: viewModel)
+        self.onboardingAnalytics = onboardingAnalytics
+        self.calculatorAnalytics = calculatorAnalytics
+    }
 
     // MARK: - Body
 
     var body: some View {
         mainContent
             .modifier(LifecycleModifier(viewModel: viewModel))
-            .modifier(BannerTaskModifier())
             .modifier(ReviewAlertModifier(viewModel: viewModel))
             .modifier(FullscreenBannerOverlayModifier(viewModel: viewModel))
             .modifier(AnimationModifier(viewModel: viewModel))
@@ -36,7 +49,7 @@ private extension RootView {
 
     var calculatorView: some View {
         NavigationView {
-            SurebetCalculator.view()
+            SurebetCalculator.view(analytics: calculatorAnalytics)
         }
         .navigationViewStyle(.stack)
     }
@@ -44,7 +57,10 @@ private extension RootView {
     @ViewBuilder
     var onboardingView: some View {
         if viewModel.shouldShowOnboardingWithAnimation {
-            Onboarding.view(onboardingIsShown: onboardingBinding)
+            Onboarding.view(
+                onboardingIsShown: onboardingBinding,
+                analytics: onboardingAnalytics
+            )
                 .transition(AppConstants.Animations.moveFromBottom)
         }
     }
@@ -52,7 +68,7 @@ private extension RootView {
     var onboardingBinding: Binding<Bool> {
         Binding(
             get: { viewModel.isOnboardingShown },
-            set: { viewModel.updateOnboardingShown($0) }
+            set: { viewModel.send(.updateOnboardingShown($0)) }
         )
     }
 }
@@ -65,36 +81,42 @@ private struct LifecycleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onAppear {
-                viewModel.onAppear()
+                viewModel.send(.onAppear)
             }
-            .onAppear(perform: viewModel.showOnboardingView)
-            .onAppear(perform: viewModel.showRequestReview)
-            .onAppear(perform: viewModel.showFullscreenBanner)
-    }
-}
-
-private struct BannerTaskModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .task {
-                try? await Banner.fetchBanner()
+            .onAppear {
+                withAnimation(AppConstants.Animations.smoothTransition) {
+                    viewModel.send(.showOnboardingView)
+                }
+            }
+            .onAppear {
+                viewModel.send(.showRequestReview)
+            }
+            .onAppear {
+                viewModel.send(.showFullscreenBanner)
+            }
+            .onAppear {
+                viewModel.send(.fetchBanner)
             }
     }
 }
 
 private struct ReviewAlertModifier: ViewModifier {
     @ObservedObject var viewModel: RootViewModel
+    private var alertIsPresentedBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.alertIsPresented },
+            set: { viewModel.send(.setAlertPresented($0)) }
+        )
+    }
 
     func body(content: Content) -> some View {
         content
-            .alert(viewModel.requestReviewTitle, isPresented: $viewModel.alertIsPresented) {
+            .alert(viewModel.requestReviewTitle, isPresented: alertIsPresentedBinding) {
                 Button(RootLocalizationKey.reviewButtonNo.localized) {
-                    viewModel.handleReviewNo()
+                    viewModel.send(.handleReviewNo)
                 }
                 Button(RootLocalizationKey.reviewButtonYes.localized) {
-                    Task {
-                        await viewModel.handleReviewYes()
-                    }
+                    viewModel.send(.handleReviewYes)
                 }
             }
     }
@@ -102,12 +124,18 @@ private struct ReviewAlertModifier: ViewModifier {
 
 private struct FullscreenBannerOverlayModifier: ViewModifier {
     @ObservedObject var viewModel: RootViewModel
+    private var fullscreenBannerBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.fullscreenBannerIsPresented },
+            set: { viewModel.send(.setFullscreenBannerPresented($0)) }
+        )
+    }
 
     func body(content: Content) -> some View {
         content
             .overlay {
                 if viewModel.fullscreenBannerIsPresented {
-                    Banner.fullscreenBannerView(isPresented: $viewModel.fullscreenBannerIsPresented)
+                    Banner.fullscreenBannerView(isPresented: fullscreenBannerBinding)
                         .transition(AppConstants.Animations.moveFromBottom)
                 }
             }
@@ -127,5 +155,9 @@ private struct AnimationModifier: ViewModifier {
 // MARK: - Preview
 
 #Preview {
-    RootView()
+    RootView(
+        viewModel: RootViewModel(),
+        onboardingAnalytics: NoopOnboardingAnalytics(),
+        calculatorAnalytics: NoopCalculatorAnalytics()
+    )
 }

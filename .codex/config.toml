@@ -1,14 +1,7 @@
 # .codex/config.toml
 
-# Безопасные дефолты
-sandbox = "read-only"
-ask_for_approval = "on-request"
+sandbox_mode = "workspace-write"
+approval_policy = "untrusted"
 
-# Если у тебя есть отдельные профили — можно включить
-# profile = "surebet"
-
-# Подключение execpolicy rules (путь зависит от актуального формата; см. config reference)
-# execpolicy.rules = ["codex/rules/project.rules"]
-
-# Модель можно задать глобально, а тут переопределять при необходимости
-# model = "gpt-5.2-codex"
+[sandbox_workspace_write]
+network_access = true

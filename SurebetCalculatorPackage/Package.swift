@@ -61,9 +61,7 @@ let package = Package(
         ),
         .target(
             name: "Onboarding",
-            dependencies: [
-                "AnalyticsManager",
-            ],
+            dependencies: [],
             resources: [.process("Resources")],
             plugins: [
                 .plugin(
@@ -105,7 +103,6 @@ let package = Package(
         .target(
             name: "SurebetCalculator",
             dependencies: [
-                "AnalyticsManager",
                 "Banner",
             ],
             resources: [.process("Resources")],
@@ -120,7 +117,6 @@ let package = Package(
             name: "OnboardingTests",
             dependencies: [
                 "Onboarding",
-                "AnalyticsManager",
             ],
             plugins: [
                 .plugin(
@@ -133,7 +129,6 @@ let package = Package(
             name: "SurebetCalculatorTests",
             dependencies: [
                 "SurebetCalculator",
-                "AnalyticsManager",
             ],
             plugins: [
                 .plugin(

@@ -110,3 +110,5 @@ iOSInjectionProject/
 
 # Project specific
 surebet-calculator.xcodeproj/xcshareddata/xcschemes/surebet-calculator.xcscheme
+
+.codex/config.toml

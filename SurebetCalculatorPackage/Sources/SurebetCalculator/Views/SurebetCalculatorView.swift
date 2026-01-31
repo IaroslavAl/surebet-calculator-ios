@@ -5,10 +5,16 @@ struct SurebetCalculatorView: View {
     // MARK: - Properties
 
     @StateObject
-    private var viewModel = SurebetCalculatorViewModel()
+    private var viewModel: SurebetCalculatorViewModel
 
     @FocusState
     private var isFocused
+
+    // MARK: - Initialization
+
+    init(viewModel: SurebetCalculatorViewModel) {
+        self._viewModel = StateObject(wrappedValue: viewModel)
+    }
 
     // MARK: - Body
 
@@ -150,5 +156,5 @@ private extension SurebetCalculatorView {
 }
 
 #Preview {
-    SurebetCalculatorView()
+    SurebetCalculatorView(viewModel: SurebetCalculatorViewModel())
 }

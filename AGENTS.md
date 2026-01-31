@@ -31,6 +31,7 @@
 - Framework: Swift Testing (import Testing)
 - Если VM @MainActor — тесты тоже @MainActor
 - Shared state (UserDefaults) — @Suite(.serialized)
+- Запрещено использовать Thread.sleep/Task.sleep в тестах
 - MockURLProtocol: потокобезопасный registry по full URL, без глобального handler
 
 ## Документация
