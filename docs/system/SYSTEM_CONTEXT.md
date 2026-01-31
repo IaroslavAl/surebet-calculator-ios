@@ -4,6 +4,14 @@
 
 ---
 
+## Правила чтения документации
+
+- Этот файл — краткий обзор. Детальные правила живут в `docs/*`.
+- Если есть противоречие, приоритет: `docs/rules/*` и `docs/architecture/*` → `docs/system/SYSTEM_CONTEXT.md`.
+- Версии зависимостей — только в `SurebetCalculatorPackage/Package.swift`.
+
+---
+
 ## Quick Facts
 
 | | |
@@ -92,16 +100,6 @@ init(
 
 ---
 
-## External Dependencies
-
-| Библиотека | Назначение |
-|------------|------------|
-| AppMetrica SDK 5.11+ | Аналитика |
-| SDWebImageSwiftUI 3.1+ | Загрузка изображений |
-| SwiftLint 0.59+ | Линтер |
-
----
-
 ## Key Files
 
 | Что | Где |
@@ -114,10 +112,16 @@ init(
 
 ---
 
+## Dependencies
+
+- **Версии:** `SurebetCalculatorPackage/Package.swift`
+- **Список и назначение:** [architecture/MODULES.md](architecture/MODULES.md)
+
+---
+
 ## Coding Standards (Summary)
 
 - **@Published** — всегда `private(set)`
-- **Binding** — через `Binding(get:set:)`, не `$viewModel.prop`
 - **Локализация** — `String(localized:)`, никакого хардкода
 - **Git** — `feat: описание на русском` (Conventional Commits)
 
@@ -160,6 +164,7 @@ xcodebuild -project surebet-calculator.xcodeproj \
 # Тесты
 xcodebuild test -project surebet-calculator.xcodeproj \
     -scheme surebet-calculator \
+    -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9' \
     -testPlan surebet-calculator
 ```
 

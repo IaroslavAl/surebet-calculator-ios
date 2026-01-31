@@ -16,7 +16,12 @@ View (SwiftUI) → ViewModel (@MainActor, ObservableObject) → Service (Protoco
 |------|-----------------|-------------------|
 | **View** | UI-рендеринг, передача действий | `@StateObject`, `@EnvironmentObject` |
 | **ViewModel** | Состояние, бизнес-логика | `@Published private(set)`, `@AppStorage` |
-| **Service** | Чистая логика без состояния | Protocol + struct, `Sendable` |
+| **Service** | Логика + side-effects | Protocol + `Sendable` (value type preferred) |
+
+### Политика сервисов (value type vs class)
+- **Struct/value type** — чистые вычисления без shared mutable state, предсказуемая логика.
+- **Class** — допустимы для SDK/UI/side-effects/кэша/долгоживущих хэндлеров и идентичности объекта.
+- **Изоляция состояния** — actor для разделяемого mutable состояния, очередь для legacy-кода, immutable snapshots для передачи данных между потоками.
 
 ---
 

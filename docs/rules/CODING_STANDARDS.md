@@ -6,7 +6,8 @@
 |---------|-----------|--------|
 | `@MainActor class` | ViewModel | `@MainActor final class RootViewModel: ObservableObject` |
 | `@MainActor protocol` | UI-сервисы | `@MainActor protocol ReviewService: Sendable` |
-| `Sendable struct` | Модели, сервисы | `struct Row: Equatable, Sendable` |
+| `Sendable struct` | Модели, pure services | `struct Row: Equatable, Sendable` |
+| `@MainActor class` / `actor` | Сервисы с UI/side-effects/кэшем | `@MainActor final class ReviewHandler: ReviewService` |
 | `@unchecked Sendable` | Struct с URLSession/UserDefaults | `struct Service: BannerService, @unchecked Sendable` |
 | `nonisolated(unsafe)` | Read-only системные свойства | `nonisolated(unsafe) static var isIPad` |
 
@@ -14,6 +15,7 @@
 - Все ViewModel — `@MainActor final class: ObservableObject`
 - Все модели данных — `Sendable`
 - Все сервисные протоколы — `Sendable`
+- Реализации сервисов: value type preferred; class допустимы при SDK/UI/side-effects/кэше (см. `docs/architecture/DATA_FLOW.md`)
 - `nonisolated(unsafe)` только для UIDevice workaround
 
 ---
@@ -96,10 +98,48 @@ Sources/ModuleName/
 
 | Правило | Пример |
 |---------|--------|
-| `private extension` вместо private методов | `private extension SomeView { }` |
+| `private extension` вместо private методов (production) | `private extension SomeView { }` |
 | Init с параметрами на отдельных строках | `init(\n  param1,\n  param2\n)` |
 | Enum для констант | `AppConstants.Padding.large` |
 | WORKAROUND комментарии | `// WORKAROUND: описание + ссылка` |
+
+---
+
+## Scope: Production vs Tests
+
+**Production (Sources):** приватная логика — через `private extension`.
+```swift
+final class FeatureViewModel {
+    func send(_ action: Action) { ... }
+}
+
+private extension FeatureViewModel {
+    func calculate() { ... }
+}
+```
+
+**Tests (Tests):** допускается `private func` для helper-методов.
+```swift
+@MainActor
+struct FeatureTests {
+    private func makeViewModel() -> FeatureViewModel { FeatureViewModel() }
+}
+```
+
+**Scope-правило:** `private extension` обязательно для `Sources/`, но не требуется для `Tests/`. В тестах предпочитаем простые `private func` helpers, чтобы не раздувать шаблон. См. `docs/testing/TESTING_STRATEGY.md`.
+
+---
+
+## Bindings
+
+- **Правило:** Binding из ViewModel — через `Binding(get:set:)`, не `$viewModel.prop`.
+
+```swift
+Binding(
+    get: { viewModel.isOnboardingShown },
+    set: { viewModel.updateOnboardingShown($0) }
+)
+```
 
 ---
 

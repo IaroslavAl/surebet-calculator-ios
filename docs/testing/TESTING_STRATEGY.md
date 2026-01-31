@@ -180,6 +180,14 @@ func clearTestUserDefaults() {
 
 ---
 
+## Scope: Tests
+
+- В тестах допускаются `private func` helper-методы внутри структуры.
+- В production-коде (Sources) приватная логика — через `private extension` (см. `docs/rules/CODING_STANDARDS.md`).
+- В тестах helpers должны быть короткими и не скрывать логику проверки.
+
+---
+
 ## Test File Template
 
 ```swift

@@ -1,0 +1,12 @@
+# codex/rules/project.rules
+
+# Всегда спрашивать перед потенциально опасными командами
+prefix_rule(pattern = ["rm"], decision = "prompt")
+prefix_rule(pattern = ["git", "push"], decision = "prompt")
+prefix_rule(pattern = ["git", "reset", "--hard"], decision = "prompt")
+prefix_rule(pattern = ["sudo"], decision = "block")
+
+# Разрешить базовые безопасные команды в workspace
+prefix_rule(pattern = ["git", "status"], decision = "allow")
+prefix_rule(pattern = ["git", "diff"], decision = "allow")
+prefix_rule(pattern = ["xcodebuild"], decision = "allow")
