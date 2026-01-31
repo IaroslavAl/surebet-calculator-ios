@@ -12,6 +12,7 @@ final class SurebetCalculatorViewModel: ObservableObject {
 
     private let calculationService: CalculationService
     private let analytics: CalculatorAnalytics
+    private let delay: CalculationAnalyticsDelay
 
     /// Задача для debounce аналитики расчёта
     private var calculationAnalyticsTask: Task<Void, Never>?
@@ -25,7 +26,8 @@ final class SurebetCalculatorViewModel: ObservableObject {
         selectedRow: RowType? = .total,
         focus: FocusableField? = nil,
         calculationService: CalculationService = DefaultCalculationService(),
-        analytics: CalculatorAnalytics = NoopCalculatorAnalytics()
+        analytics: CalculatorAnalytics = NoopCalculatorAnalytics(),
+        delay: CalculationAnalyticsDelay = SystemCalculationAnalyticsDelay()
     ) {
         self.total = total
         self.rows = rows
@@ -34,6 +36,7 @@ final class SurebetCalculatorViewModel: ObservableObject {
         self.focus = focus
         self.calculationService = calculationService
         self.analytics = analytics
+        self.delay = delay
     }
 
     // MARK: - Public Methods
@@ -259,7 +262,7 @@ private extension SurebetCalculatorViewModel {
     func logCalculationPerformedDebounced() {
         calculationAnalyticsTask?.cancel()
         calculationAnalyticsTask = Task {
-            try? await Task.sleep(nanoseconds: AppConstants.Delays.calculationAnalytics)
+            await delay.sleep(nanoseconds: AppConstants.Delays.calculationAnalytics)
             guard !Task.isCancelled else { return }
 
             let profitPercentage = total.profitPercentage

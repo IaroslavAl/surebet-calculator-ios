@@ -19,6 +19,21 @@ struct IntegrationTests {
         defaults.removeObject(forKey: "numberOfOpenings")
     }
 
+    func createRootViewModel(
+        analyticsService: AnalyticsService? = nil,
+        reviewService: ReviewService? = nil
+    ) -> RootViewModel {
+        RootViewModel(
+            analyticsService: analyticsService ?? MockAnalyticsService(),
+            reviewService: reviewService ?? MockReviewService(),
+            delay: ImmediateDelay()
+        )
+    }
+
+    func awaitAsyncTasks() async {
+        await Task.yield()
+    }
+
     // MARK: - Root -> Calculator Flow
 
     /// Тест полного flow: RootViewModel -> SurebetCalculatorViewModel -> CalculationService
@@ -26,7 +41,7 @@ struct IntegrationTests {
     func rootToCalculatorFlowWhenInitialized() {
         // Given
         clearTestUserDefaults()
-        let rootViewModel = RootViewModel()
+        let rootViewModel = createRootViewModel()
 
         // When
         // Инициализация завершена
@@ -79,7 +94,7 @@ struct IntegrationTests {
         // Given & When
         clearTestUserDefaults()
         // Оба ViewModel должны инициализироваться на MainActor
-        let rootViewModel = RootViewModel()
+        let rootViewModel = createRootViewModel()
         let calculatorViewModel = SurebetCalculatorViewModel()
 
         // Then
@@ -102,7 +117,7 @@ struct IntegrationTests {
     func fullFlowFromRootToCalculation() {
         // Given
         clearTestUserDefaults()
-        let rootViewModel = RootViewModel()
+        let rootViewModel = createRootViewModel()
         rootViewModel.send(.updateOnboardingShown(true))
         let calculatorViewModel = SurebetCalculatorViewModel()
 
@@ -130,7 +145,7 @@ struct IntegrationTests {
         // Given
         clearTestUserDefaults()
         let mockAnalytics = MockAnalyticsService()
-        let rootViewModel = RootViewModel(analyticsService: mockAnalytics)
+        let rootViewModel = createRootViewModel(analyticsService: mockAnalytics)
 
         // When
         rootViewModel.send(.handleReviewNo)
@@ -153,11 +168,11 @@ struct IntegrationTests {
         // Given
         clearTestUserDefaults()
         let mockAnalytics = MockAnalyticsService()
-        let rootViewModel = RootViewModel(analyticsService: mockAnalytics)
+        let rootViewModel = createRootViewModel(analyticsService: mockAnalytics)
 
         // When
         rootViewModel.send(.handleReviewYes)
-        try? await Task.sleep(nanoseconds: ReviewConstants.reviewRequestDelay + 100_000_000)
+        await awaitAsyncTasks()
 
         // Then
         #expect(mockAnalytics.logEventCallCount == 1)
@@ -177,7 +192,7 @@ struct IntegrationTests {
         // Given
         clearTestUserDefaults()
         let mockReview = MockReviewService()
-        let rootViewModel = RootViewModel(reviewService: mockReview)
+        let rootViewModel = createRootViewModel(reviewService: mockReview)
 
         // Устанавливаем начальные условия
         rootViewModel.send(.updateOnboardingShown(true))
@@ -195,7 +210,7 @@ struct IntegrationTests {
 
         // Проверяем, что при вызове handleReviewYes ReviewService вызывается
         rootViewModel.send(.handleReviewYes)
-        try? await Task.sleep(nanoseconds: ReviewConstants.reviewRequestDelay + 100_000_000)
+        await awaitAsyncTasks()
         #expect(mockReview.requestReviewCallCount == 1)
     }
 
@@ -205,11 +220,11 @@ struct IntegrationTests {
         // Given
         clearTestUserDefaults()
         let mockReview = MockReviewService()
-        let rootViewModel = RootViewModel(reviewService: mockReview)
+        let rootViewModel = createRootViewModel(reviewService: mockReview)
 
         // When
         rootViewModel.send(.handleReviewYes)
-        try? await Task.sleep(nanoseconds: ReviewConstants.reviewRequestDelay + 100_000_000)
+        await awaitAsyncTasks()
 
         // Then
         #expect(mockReview.requestReviewCallCount == 1)

@@ -17,13 +17,16 @@ struct RootViewModelTests {
     /// Создает новый экземпляр RootViewModel с моками
     func createViewModel(
         analyticsService: AnalyticsService? = nil,
-        reviewService: ReviewService? = nil
+        reviewService: ReviewService? = nil,
+        delay: Delay? = nil
     ) -> RootViewModel {
         let analytics = analyticsService ?? MockAnalyticsService()
         let review = reviewService ?? MockReviewService()
+        let reviewDelay = delay ?? ImmediateDelay()
         return RootViewModel(
             analyticsService: analytics,
-            reviewService: review
+            reviewService: review,
+            delay: reviewDelay
         )
     }
 
@@ -33,6 +36,10 @@ struct RootViewModelTests {
         defaults.removeObject(forKey: "onboardingIsShown")
         defaults.removeObject(forKey: "1.7.0")
         defaults.removeObject(forKey: "numberOfOpenings")
+    }
+
+    func awaitAsyncTasks() async {
+        await Task.yield()
     }
 
     // MARK: - shouldShowOnboarding Tests
@@ -269,8 +276,7 @@ struct RootViewModelTests {
 
         // When
         viewModel.send(.showRequestReview)
-        // Ждем завершения Task
-        try? await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest + 100_000_000) // +100ms для надежности
+        await awaitAsyncTasks()
 
         // Then
         // В DEBUG режиме метод не выполняется из-за #if !DEBUG в RootViewModel
@@ -298,7 +304,7 @@ struct RootViewModelTests {
 
         // When
         viewModel.send(.showRequestReview)
-        try? await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest + 100_000_000)
+        await awaitAsyncTasks()
 
         // Then
         #expect(viewModel.alertIsPresented == false)
@@ -315,7 +321,7 @@ struct RootViewModelTests {
 
         // When
         viewModel.send(.showRequestReview)
-        try? await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest + 100_000_000)
+        await awaitAsyncTasks()
 
         // Then
         #expect(viewModel.alertIsPresented == false)
@@ -332,7 +338,7 @@ struct RootViewModelTests {
 
         // When
         viewModel.send(.showRequestReview)
-        try? await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest + 100_000_000)
+        await awaitAsyncTasks()
 
         // Then
         #expect(viewModel.alertIsPresented == false)
@@ -382,7 +388,7 @@ struct RootViewModelTests {
 
         // When
         viewModel.send(.handleReviewYes)
-        try? await Task.sleep(nanoseconds: ReviewConstants.reviewRequestDelay + 100_000_000)
+        await awaitAsyncTasks()
 
         // Then
         #expect(viewModel.alertIsPresented == false)

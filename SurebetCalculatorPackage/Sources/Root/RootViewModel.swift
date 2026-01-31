@@ -20,6 +20,7 @@ final class RootViewModel: ObservableObject {
 
     private let analyticsService: AnalyticsService
     private let reviewService: ReviewService
+    private let delay: Delay
 
     private var bannerFetchTask: Task<Void, Never>?
 
@@ -27,10 +28,12 @@ final class RootViewModel: ObservableObject {
 
     init(
         analyticsService: AnalyticsService = AnalyticsManager(),
-        reviewService: ReviewService = ReviewHandler()
+        reviewService: ReviewService = ReviewHandler(),
+        delay: Delay = SystemDelay()
     ) {
         self.analyticsService = analyticsService
         self.reviewService = reviewService
+        self.delay = delay
     }
 
     // MARK: - Public Methods
@@ -120,7 +123,7 @@ private extension RootViewModel {
     func requestReviewIfNeeded() {
 #if !DEBUG
         Task {
-            try await Task.sleep(nanoseconds: AppConstants.Delays.reviewRequest)
+            await delay.sleep(nanoseconds: AppConstants.Delays.reviewRequest)
             if !requestReviewWasShown, numberOfOpenings >= 2, onboardingIsShown {
                 alertIsPresented = true
                 requestReviewWasShown = true

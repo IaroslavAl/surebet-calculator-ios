@@ -3,6 +3,45 @@ import Foundation
 import Testing
 
 @MainActor
+final class TestDelay: CalculationAnalyticsDelay, @unchecked Sendable {
+    // MARK: - Properties
+
+    private var continuations: [CheckedContinuation<Void, Never>] = []
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+    var sleepCallCount = 0
+    var lastNanoseconds: UInt64?
+
+    // MARK: - Delay
+
+    func sleep(nanoseconds: UInt64) async {
+        sleepCallCount += 1
+        lastNanoseconds = nanoseconds
+        if !waiters.isEmpty {
+            waiters.forEach { $0.resume() }
+            waiters.removeAll()
+        }
+        await withCheckedContinuation { continuation in
+            continuations.append(continuation)
+        }
+    }
+
+    func advance() async {
+        continuations.forEach { $0.resume() }
+        continuations.removeAll()
+        await Task.yield()
+    }
+
+    func waitForSleepCall() async {
+        if !continuations.isEmpty {
+            return
+        }
+        await withCheckedContinuation { continuation in
+            waiters.append(continuation)
+        }
+    }
+}
+
+@MainActor
 struct SurebetCalculatorViewModelTests {
     // MARK: - Helpers
 
@@ -1089,6 +1128,7 @@ struct SurebetCalculatorViewModelTests {
     func analyticsWhenCalculationPerformed() async {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
+        let delay = TestDelay()
         let viewModel = SurebetCalculatorViewModel(
             rows: [
                 .init(id: 0, coefficient: "2.0"),
@@ -1096,13 +1136,14 @@ struct SurebetCalculatorViewModelTests {
                 .init(id: 2),
                 .init(id: 3)
             ],
-            analytics: mockAnalytics
+            analytics: mockAnalytics,
+            delay: delay
         )
 
         // When
         viewModel.send(.setTextFieldText(.totalBetSize, "100"))
-        // Ждём debounce время + небольшой запас (1 секунда + 0.5 секунды запас)
-        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 секунды
+        await delay.waitForSleepCall()
+        await delay.advance()
 
         // Then
         #expect(mockAnalytics.eventCallCount >= 1)
@@ -1119,6 +1160,7 @@ struct SurebetCalculatorViewModelTests {
     func analyticsWhenCalculationPerformedParameters() async {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
+        let delay = TestDelay()
         let viewModel = SurebetCalculatorViewModel(
             rows: [
                 .init(id: 0, coefficient: "2.0"),
@@ -1126,13 +1168,14 @@ struct SurebetCalculatorViewModelTests {
                 .init(id: 2),
                 .init(id: 3)
             ],
-            analytics: mockAnalytics
+            analytics: mockAnalytics,
+            delay: delay
         )
 
         // When
         viewModel.send(.setTextFieldText(.totalBetSize, "100"))
-        // Ждём debounce время + небольшой запас (1 секунда + 0.5 секунды запас)
-        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 секунды
+        await delay.waitForSleepCall()
+        await delay.advance()
 
         // Then
         let calculationEvents = mockAnalytics.events.compactMap { event -> (Int, Double)? in
@@ -1153,6 +1196,7 @@ struct SurebetCalculatorViewModelTests {
     func analyticsWhenCalculationPerformedDebounce() async {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
+        let delay = TestDelay()
         let viewModel = SurebetCalculatorViewModel(
             rows: [
                 .init(id: 0, coefficient: "2.0"),
@@ -1160,7 +1204,8 @@ struct SurebetCalculatorViewModelTests {
                 .init(id: 2),
                 .init(id: 3)
             ],
-            analytics: mockAnalytics
+            analytics: mockAnalytics,
+            delay: delay
         )
 
         // When
@@ -1168,8 +1213,8 @@ struct SurebetCalculatorViewModelTests {
         viewModel.send(.setTextFieldText(.totalBetSize, "100"))
         viewModel.send(.setTextFieldText(.totalBetSize, "200"))
         viewModel.send(.setTextFieldText(.totalBetSize, "300"))
-        // Ждём debounce время + небольшой запас (1 секунда + 0.5 секунды запас)
-        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 секунды
+        await delay.waitForSleepCall()
+        await delay.advance()
 
         // Then
         // Должно быть только одно событие calculation_performed из-за debounce
