@@ -16,6 +16,8 @@
 - Единственная точка входа во ViewModel из View и тестов — `send(_:)`. Все остальные методы ViewModel должны быть `private`/`fileprivate` и вызываться только внутри ViewModel.
 - Для раннего выхода (early return) предпочитать `guard` (когда это повышает читаемость), избегать каскада `if { return }`.
 - View не создают ViewModel с зависимостями; сборка и DI выполняются в factory/entry-point или родительском модуле.
+- В unit/integration тестах запрещено использовать `Thread.sleep`/`Task.sleep`. Использовать ожидание состояния/вызовов (polling + timeout при необходимости) или DI времени (Delay/Clock) с immediate/fake реализацией.
+- В UI тестах запрещено использовать `Thread.sleep`. Использовать `waitForExistence(timeout:)` или `XCTNSPredicateExpectation`/`XCTWaiter`.
 - Все модели данных — `Sendable`
 - Все сервисные протоколы — `Sendable`
 - Реализации сервисов: value type preferred; class допустимы при SDK/UI/side-effects/кэше (см. `docs/architecture/DATA_FLOW.md`)
@@ -137,6 +139,7 @@ struct FeatureTests {
 
 - **Правило:** Binding из ViewModel — через `Binding(get:set:)`, не `$viewModel.prop`.
 - **Правило:** Не прокидывать Binding в ViewModel как `wrappedValue` + `set` из View; используйте Binding напрямую на уровне factory/entry-point или управляйте состоянием через `send(Action)`.
+- **Правило:** Для presentation state допускается адаптер уровня entry-point (например, `PresentationBinding`), чтобы ViewModel не зависела от SwiftUI.
 
 ```swift
 Binding(
