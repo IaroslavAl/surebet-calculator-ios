@@ -149,7 +149,6 @@ private extension RootViewModel {
     }
 
     func fetchBannerIfNeeded() {
-        guard !Banner.isBannerFullyCached else { return }
         guard bannerFetchTask == nil else { return }
         bannerFetchTask = Task { [weak self] in
             try? await Banner.fetchBanner()
