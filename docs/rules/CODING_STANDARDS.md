@@ -15,6 +15,7 @@
 - Все ViewModel — `@MainActor final class: ObservableObject`
 - Единственная точка входа во ViewModel из View и тестов — `send(_:)`. Все остальные методы ViewModel должны быть `private`/`fileprivate` и вызываться только внутри ViewModel.
 - Для раннего выхода (early return) предпочитать `guard` (когда это повышает читаемость), избегать каскада `if { return }`.
+- View не создают ViewModel с зависимостями; сборка и DI выполняются в factory/entry-point или родительском модуле.
 - Все модели данных — `Sendable`
 - Все сервисные протоколы — `Sendable`
 - Реализации сервисов: value type preferred; class допустимы при SDK/UI/side-effects/кэше (см. `docs/architecture/DATA_FLOW.md`)
@@ -135,6 +136,7 @@ struct FeatureTests {
 ## Bindings
 
 - **Правило:** Binding из ViewModel — через `Binding(get:set:)`, не `$viewModel.prop`.
+- **Правило:** Не прокидывать Binding в ViewModel как `wrappedValue` + `set` из View; используйте Binding напрямую на уровне factory/entry-point или управляйте состоянием через `send(Action)`.
 
 ```swift
 Binding(
