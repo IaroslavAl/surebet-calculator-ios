@@ -6,27 +6,16 @@
 //
 
 import SwiftUI
-import AnalyticsManager
 
 struct FullscreenBannerView: View {
     // MARK: - Properties
 
-    @Binding var isPresented: Bool
-
-    private let service: BannerService
-    private let analyticsService: AnalyticsService
+    @StateObject private var viewModel: FullscreenBannerViewModel
 
     // MARK: - Initialization
 
-    @MainActor
-    init(
-        isPresented: Binding<Bool>,
-        service: BannerService = Service(),
-        analyticsService: AnalyticsService = AnalyticsManager()
-    ) {
-        self._isPresented = isPresented
-        self.service = service
-        self.analyticsService = analyticsService
+    init(viewModel: FullscreenBannerViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
 
     // MARK: - Body
@@ -37,7 +26,7 @@ struct FullscreenBannerView: View {
             bannerImage
         }
         .onAppear {
-            logBannerViewed()
+            viewModel.send(.onAppear)
         }
     }
 }
@@ -47,7 +36,7 @@ struct FullscreenBannerView: View {
 private extension FullscreenBannerView {
     @ViewBuilder
     var bannerImage: some View {
-        if let imageData = service.getStoredBannerImageData(),
+        if let imageData = viewModel.state.bannerImageData,
            let uiImage = UIImage(data: imageData) {
             Image(uiImage: uiImage)
                 .resizable()
@@ -57,7 +46,7 @@ private extension FullscreenBannerView {
                     closeButton
                 }
                 .onTapGesture {
-                    handleBannerTap()
+                    viewModel.send(.tapBanner)
                 }
         }
     }
@@ -70,48 +59,21 @@ private extension FullscreenBannerView {
             .padding(BannerConstants.closeButtonPadding)
             .contentShape(.rect)
             .onTapGesture {
-                handleCloseTap()
+                viewModel.send(.tapClose)
             }
-    }
-
-    func handleCloseTap() {
-        if let banner = service.getBannerFromDefaults() {
-            analyticsService.log(event: .bannerClosed(bannerId: banner.id, bannerType: .fullscreen))
-        }
-        isPresented = false
-    }
-
-    func handleBannerTap() {
-        if let banner = service.getBannerFromDefaults() {
-            analyticsService.log(event: .bannerClicked(bannerId: banner.id, bannerType: .fullscreen))
-            openURL(banner.actionURL)
-        } else {
-            isPresented = false
-        }
-    }
-
-    func logBannerViewed() {
-        if let banner = service.getBannerFromDefaults() {
-            analyticsService.log(event: .bannerViewed(bannerId: banner.id, bannerType: .fullscreen))
-        }
     }
 
     var cornerRadius: CGFloat {
         isIPad ? BannerConstants.fullscreenBannerCornerRadiusiPad : BannerConstants.fullscreenBannerCornerRadiusiPhone
-    }
-    var url: String { BannerConstants.bannerFallbackURL }
-
-    func openURL(_ url: URL) {
-        UIApplication.shared.open(url, options: [:], completionHandler: nil)
-        Task {
-            try await Task.sleep(nanoseconds: BannerConstants.bannerCloseDelay)
-            isPresented = false
-        }
     }
 }
 
 // MARK: - Preview
 
 #Preview {
-    FullscreenBannerView(isPresented: .constant(true))
+    FullscreenBannerView(
+        viewModel: FullscreenBannerViewModel(
+            isPresented: PresentationBinding.constant(true)
+        )
+    )
 }
