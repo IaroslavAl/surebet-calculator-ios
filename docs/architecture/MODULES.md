@@ -208,11 +208,13 @@ analyticsService.log(name: "custom_event", parameters: ["key": .string("value")]
 
 ## External Dependencies
 
-| Библиотека | Версия | Модуль | Назначение |
-|------------|--------|--------|------------|
-| AppMetrica SDK | 5.11.0+ | AnalyticsManager, Root | Аналитика |
-| SDWebImageSwiftUI | 3.1.3+ | Banner | Загрузка изображений |
-| SwiftLint | 0.59.1+ | Все | Линтер (Build Tool Plugin) |
+**Единственный источник версий:** `SurebetCalculatorPackage/Package.swift`.
+
+| Библиотека | Модуль | Назначение |
+|------------|--------|------------|
+| AppMetrica SDK | AnalyticsManager, Root | Аналитика |
+| SDWebImageSwiftUI | Banner | Загрузка изображений |
+| SwiftLint | Все | Линтер (Build Tool Plugin) |
 
 ---
 

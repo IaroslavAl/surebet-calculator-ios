@@ -4,6 +4,14 @@
 
 ---
 
+## Правила чтения документации
+
+- Этот файл — краткий обзор. Детальные правила живут в `docs/*`.
+- Если есть противоречие, приоритет: `docs/rules/*` и `docs/architecture/*` → `docs/system/SYSTEM_CONTEXT.md`.
+- Версии зависимостей — только в `SurebetCalculatorPackage/Package.swift`.
+
+---
+
 ## Quick Facts
 
 | | |
@@ -43,7 +51,7 @@ Root ─┬─► SurebetCalculator ─► Banner
       └─► AnalyticsManager ─► AppMetricaCore
 ```
 
-**📖 Детали:** [architecture/MODULES.md](architecture/MODULES.md)
+**📖 Детали:** [architecture/MODULES.md](../architecture/MODULES.md)
 
 ---
 
@@ -75,7 +83,7 @@ init(
 )
 ```
 
-**📖 Детали:** [architecture/DATA_FLOW.md](architecture/DATA_FLOW.md)
+**📖 Детали:** [architecture/DATA_FLOW.md](../architecture/DATA_FLOW.md)
 
 ---
 
@@ -88,17 +96,7 @@ init(
 | Сервисы | `protocol: Sendable` |
 | UIDevice workaround | `nonisolated(unsafe)` |
 
-**📖 Детали:** [rules/CODING_STANDARDS.md](rules/CODING_STANDARDS.md)
-
----
-
-## External Dependencies
-
-| Библиотека | Назначение |
-|------------|------------|
-| AppMetrica SDK 5.11+ | Аналитика |
-| SDWebImageSwiftUI 3.1+ | Загрузка изображений |
-| SwiftLint 0.59+ | Линтер |
+**📖 Детали:** [rules/CODING_STANDARDS.md](../rules/CODING_STANDARDS.md)
 
 ---
 
@@ -114,14 +112,20 @@ init(
 
 ---
 
+## Dependencies
+
+- **Версии:** `SurebetCalculatorPackage/Package.swift`
+- **Список и назначение:** [architecture/MODULES.md](../architecture/MODULES.md)
+
+---
+
 ## Coding Standards (Summary)
 
 - **@Published** — всегда `private(set)`
-- **Binding** — через `Binding(get:set:)`, не `$viewModel.prop`
 - **Локализация** — `String(localized:)`, никакого хардкода
 - **Git** — `feat: описание на русском` (Conventional Commits)
 
-**📖 Детали:** [rules/CODING_STANDARDS.md](rules/CODING_STANDARDS.md)
+**📖 Детали:** [rules/CODING_STANDARDS.md](../rules/CODING_STANDARDS.md)
 
 ---
 
@@ -132,7 +136,7 @@ init(
 - **Shared state:** `@Suite(.serialized)` для UserDefaults
 - **Mocks:** Hand-written, `@unchecked Sendable`
 
-**📖 Детали:** [testing/TESTING_STRATEGY.md](testing/TESTING_STRATEGY.md)
+**📖 Детали:** [testing/TESTING_STRATEGY.md](../testing/TESTING_STRATEGY.md)
 
 ---
 
@@ -140,11 +144,11 @@ init(
 
 | Файл | Содержимое |
 |------|------------|
-| **[rules/CODING_STANDARDS.md](rules/CODING_STANDARDS.md)** | Swift 6, naming, Git, локализация |
-| **[rules/PROJECT_LESSONS.md](rules/PROJECT_LESSONS.md)** | База знаний об ошибках |
-| **[architecture/DATA_FLOW.md](architecture/DATA_FLOW.md)** | MVVM, DI, State, Analytics, Navigation |
-| **[architecture/MODULES.md](architecture/MODULES.md)** | Описание модулей и API |
-| **[testing/TESTING_STRATEGY.md](testing/TESTING_STRATEGY.md)** | Тесты, моки, паттерны |
+| **[rules/CODING_STANDARDS.md](../rules/CODING_STANDARDS.md)** | Swift 6, naming, Git, локализация |
+| **[rules/PROJECT_LESSONS.md](../rules/PROJECT_LESSONS.md)** | База знаний об ошибках |
+| **[architecture/DATA_FLOW.md](../architecture/DATA_FLOW.md)** | MVVM, DI, State, Analytics, Navigation |
+| **[architecture/MODULES.md](../architecture/MODULES.md)** | Описание модулей и API |
+| **[testing/TESTING_STRATEGY.md](../testing/TESTING_STRATEGY.md)** | Тесты, моки, паттерны |
 
 ---
 
@@ -160,6 +164,7 @@ xcodebuild -project surebet-calculator.xcodeproj \
 # Тесты
 xcodebuild test -project surebet-calculator.xcodeproj \
     -scheme surebet-calculator \
+    -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9' \
     -testPlan surebet-calculator
 ```
 
