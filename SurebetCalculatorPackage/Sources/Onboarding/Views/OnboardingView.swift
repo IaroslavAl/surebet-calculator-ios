@@ -4,8 +4,15 @@ import SwiftUI
 struct OnboardingView: View {
     // MARK: - Properties
 
-    @StateObject private var viewModel = OnboardingViewModel()
+    @StateObject private var viewModel: OnboardingViewModel
     @Binding var onboardingIsShown: Bool
+
+    // MARK: - Initialization
+
+    init(onboardingIsShown: Binding<Bool>, viewModel: OnboardingViewModel) {
+        self._onboardingIsShown = onboardingIsShown
+        self._viewModel = StateObject(wrappedValue: viewModel)
+    }
 
     // MARK: - Body
 
@@ -42,5 +49,8 @@ private extension OnboardingView {
 }
 
 #Preview {
-    OnboardingView(onboardingIsShown: .constant(false))
+    OnboardingView(
+        onboardingIsShown: .constant(false),
+        viewModel: OnboardingViewModel()
+    )
 }

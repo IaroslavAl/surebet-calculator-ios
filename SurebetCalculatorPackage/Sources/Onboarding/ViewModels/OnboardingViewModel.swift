@@ -1,4 +1,3 @@
-import AnalyticsManager
 import Foundation
 
 @MainActor
@@ -9,15 +8,15 @@ final class OnboardingViewModel: ObservableObject {
     @Published private(set) var onboardingIsShown: Bool
     let pages: [OnboardingPage]
 
-    private let analyticsService: AnalyticsService
+    private let analytics: OnboardingAnalytics
 
     // MARK: - Initialization
 
-    init(analyticsService: AnalyticsService = AnalyticsManager()) {
+    init(analytics: OnboardingAnalytics = NoopOnboardingAnalytics()) {
         self.currentPage = 0
         self.onboardingIsShown = false
         self.pages = OnboardingPage.createPages()
-        self.analyticsService = analyticsService
+        self.analytics = analytics
 
         logOnboardingStarted()
         logPageViewed(index: 0)
@@ -60,24 +59,24 @@ private extension OnboardingViewModel {
     }
 
     func skip() {
-        analyticsService.log(event: .onboardingSkipped(lastPageIndex: currentPage))
+        analytics.onboardingSkipped(lastPageIndex: currentPage)
         onboardingIsShown = true
     }
 
     func completeOnboarding() {
-        analyticsService.log(event: .onboardingCompleted(pagesViewed: currentPage + 1))
+        analytics.onboardingCompleted(pagesViewed: currentPage + 1)
         onboardingIsShown = true
     }
 
     // MARK: - Analytics
 
     func logOnboardingStarted() {
-        analyticsService.log(event: .onboardingStarted)
+        analytics.onboardingStarted()
     }
 
     func logPageViewed(index: Int) {
         guard pages.indices.contains(index) else { return }
         let page = pages[index]
-        analyticsService.log(event: .onboardingPageViewed(pageIndex: index, pageTitle: page.image))
+        analytics.onboardingPageViewed(pageIndex: index, pageTitle: page.image)
     }
 }

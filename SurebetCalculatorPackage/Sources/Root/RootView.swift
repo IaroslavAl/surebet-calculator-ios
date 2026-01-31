@@ -7,7 +7,21 @@ import SwiftUI
 struct RootView: View {
     // MARK: - Properties
 
-    @StateObject private var viewModel = RootViewModel()
+    @StateObject private var viewModel: RootViewModel
+    private let onboardingAnalytics: OnboardingAnalytics
+    private let calculatorAnalytics: CalculatorAnalytics
+
+    // MARK: - Initialization
+
+    init(
+        viewModel: RootViewModel,
+        onboardingAnalytics: OnboardingAnalytics,
+        calculatorAnalytics: CalculatorAnalytics
+    ) {
+        self._viewModel = StateObject(wrappedValue: viewModel)
+        self.onboardingAnalytics = onboardingAnalytics
+        self.calculatorAnalytics = calculatorAnalytics
+    }
 
     // MARK: - Body
 
@@ -35,7 +49,7 @@ private extension RootView {
 
     var calculatorView: some View {
         NavigationView {
-            SurebetCalculator.view()
+            SurebetCalculator.view(analytics: calculatorAnalytics)
         }
         .navigationViewStyle(.stack)
     }
@@ -43,7 +57,10 @@ private extension RootView {
     @ViewBuilder
     var onboardingView: some View {
         if viewModel.shouldShowOnboardingWithAnimation {
-            Onboarding.view(onboardingIsShown: onboardingBinding)
+            Onboarding.view(
+                onboardingIsShown: onboardingBinding,
+                analytics: onboardingAnalytics
+            )
                 .transition(AppConstants.Animations.moveFromBottom)
         }
     }
@@ -138,5 +155,9 @@ private struct AnimationModifier: ViewModifier {
 // MARK: - Preview
 
 #Preview {
-    RootView()
+    RootView(
+        viewModel: RootViewModel(),
+        onboardingAnalytics: NoopOnboardingAnalytics(),
+        calculatorAnalytics: NoopCalculatorAnalytics()
+    )
 }
