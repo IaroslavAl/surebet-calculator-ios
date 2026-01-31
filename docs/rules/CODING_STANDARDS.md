@@ -13,6 +13,7 @@
 
 **Правила:**
 - Все ViewModel — `@MainActor final class: ObservableObject`
+- Единственная точка входа во ViewModel из View и тестов — `send(_:)`. Все остальные методы ViewModel должны быть `private`/`fileprivate` и вызываться только внутри ViewModel.
 - Все модели данных — `Sendable`
 - Все сервисные протоколы — `Sendable`
 - Реализации сервисов: value type preferred; class допустимы при SDK/UI/side-effects/кэше (см. `docs/architecture/DATA_FLOW.md`)

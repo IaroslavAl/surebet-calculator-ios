@@ -88,7 +88,7 @@ struct IntegrationTests {
 
         // Проверяем, что можем выполнить действия на MainActor
         await MainActor.run {
-            rootViewModel.onAppear()
+            rootViewModel.send(.onAppear)
             calculatorViewModel.send(.addRow)
         }
 
@@ -102,7 +102,7 @@ struct IntegrationTests {
         // Given
         clearTestUserDefaults()
         let rootViewModel = RootViewModel()
-        rootViewModel.updateOnboardingShown(true)
+        rootViewModel.send(.updateOnboardingShown(true))
         let calculatorViewModel = SurebetCalculatorViewModel()
 
         // When
@@ -132,7 +132,7 @@ struct IntegrationTests {
         let rootViewModel = RootViewModel(analyticsService: mockAnalytics)
 
         // When
-        rootViewModel.handleReviewNo()
+        rootViewModel.send(.handleReviewNo)
 
         // Then
         #expect(mockAnalytics.logEventCallCount == 1)
@@ -155,7 +155,8 @@ struct IntegrationTests {
         let rootViewModel = RootViewModel(analyticsService: mockAnalytics)
 
         // When
-        await rootViewModel.handleReviewYes()
+        rootViewModel.send(.handleReviewYes)
+        try? await Task.sleep(nanoseconds: ReviewConstants.reviewRequestDelay + 100_000_000)
 
         // Then
         #expect(mockAnalytics.logEventCallCount == 1)
@@ -178,21 +179,22 @@ struct IntegrationTests {
         let rootViewModel = RootViewModel(reviewService: mockReview)
 
         // Устанавливаем начальные условия
-        rootViewModel.updateOnboardingShown(true)
+        rootViewModel.send(.updateOnboardingShown(true))
         UserDefaults.standard.set(true, forKey: "1.7.0") // requestReviewWasShown = true
 
         // When
         // Симулируем 3 запуска приложения
-        rootViewModel.onAppear() // 1
-        rootViewModel.onAppear() // 2
-        rootViewModel.onAppear() // 3
+        rootViewModel.send(.onAppear) // 1
+        rootViewModel.send(.onAppear) // 2
+        rootViewModel.send(.onAppear) // 3
 
         // Then
         // Проверяем, что fullscreenBannerIsAvailable == true (numberOfOpenings % 3 == 0)
         #expect(rootViewModel.fullscreenBannerIsAvailable == true)
 
         // Проверяем, что при вызове handleReviewYes ReviewService вызывается
-        await rootViewModel.handleReviewYes()
+        rootViewModel.send(.handleReviewYes)
+        try? await Task.sleep(nanoseconds: ReviewConstants.reviewRequestDelay + 100_000_000)
         #expect(mockReview.requestReviewCallCount == 1)
     }
 
@@ -205,7 +207,8 @@ struct IntegrationTests {
         let rootViewModel = RootViewModel(reviewService: mockReview)
 
         // When
-        await rootViewModel.handleReviewYes()
+        rootViewModel.send(.handleReviewYes)
+        try? await Task.sleep(nanoseconds: ReviewConstants.reviewRequestDelay + 100_000_000)
 
         // Then
         #expect(mockReview.requestReviewCallCount == 1)
