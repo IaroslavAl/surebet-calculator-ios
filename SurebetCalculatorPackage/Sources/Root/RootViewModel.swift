@@ -21,6 +21,8 @@ final class RootViewModel: ObservableObject {
     private let analyticsService: AnalyticsService
     private let reviewService: ReviewService
 
+    private var bannerFetchTask: Task<Void, Never>?
+
     // MARK: - Initialization
 
     init(
@@ -38,6 +40,7 @@ final class RootViewModel: ObservableObject {
         case showOnboardingView
         case showRequestReview
         case showFullscreenBanner
+        case fetchBanner
         case handleReviewNo
         case handleReviewYes
         case updateOnboardingShown(Bool)
@@ -55,6 +58,8 @@ final class RootViewModel: ObservableObject {
             requestReviewIfNeeded()
         case .showFullscreenBanner:
             showFullscreenBannerIfAvailable()
+        case .fetchBanner:
+            fetchBannerIfNeeded()
         case .handleReviewNo:
             handleReviewNoInternal()
         case .handleReviewYes:
@@ -138,5 +143,16 @@ private extension RootViewModel {
 
     func updateOnboardingShownInternal(_ value: Bool) {
         onboardingIsShown = value
+    }
+
+    func fetchBannerIfNeeded() {
+        guard !Banner.isBannerFullyCached else { return }
+        guard bannerFetchTask == nil else { return }
+        bannerFetchTask = Task { [weak self] in
+            try? await Banner.fetchBanner()
+            await MainActor.run {
+                self?.bannerFetchTask = nil
+            }
+        }
     }
 }

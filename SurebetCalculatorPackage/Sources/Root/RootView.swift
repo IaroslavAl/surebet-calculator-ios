@@ -14,7 +14,6 @@ struct RootView: View {
     var body: some View {
         mainContent
             .modifier(LifecycleModifier(viewModel: viewModel))
-            .modifier(BannerTaskModifier())
             .modifier(ReviewAlertModifier(viewModel: viewModel))
             .modifier(FullscreenBannerOverlayModifier(viewModel: viewModel))
             .modifier(AnimationModifier(viewModel: viewModel))
@@ -78,14 +77,8 @@ private struct LifecycleModifier: ViewModifier {
             .onAppear {
                 viewModel.send(.showFullscreenBanner)
             }
-    }
-}
-
-private struct BannerTaskModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .task {
-                try? await Banner.fetchBanner()
+            .onAppear {
+                viewModel.send(.fetchBanner)
             }
     }
 }
