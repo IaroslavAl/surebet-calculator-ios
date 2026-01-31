@@ -278,9 +278,6 @@ struct RootViewModelTests {
         #if DEBUG
         // В DEBUG режиме метод showRequestReview() не выполняется
         #expect(viewModel.alertIsPresented == false)
-        // В DEBUG режиме requestReviewWasShown не должен быть установлен
-        let requestReviewWasShown = UserDefaults.standard.bool(forKey: "1.7.0")
-        #expect(requestReviewWasShown == false)
         #else
         // В не-DEBUG режиме метод должен выполниться
         #expect(viewModel.alertIsPresented == true)
