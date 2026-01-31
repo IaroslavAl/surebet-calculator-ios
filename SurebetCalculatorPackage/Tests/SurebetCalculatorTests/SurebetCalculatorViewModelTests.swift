@@ -729,6 +729,7 @@ struct SurebetCalculatorViewModelTests {
         let viewModel = SurebetCalculatorViewModel()
 
         // When
+        viewModel.send(.selectRow(.row(0)))
         viewModel.send(.setTextFieldText(.rowCoefficient(0), "2"))
         viewModel.send(.setTextFieldText(.rowCoefficient(1), "3"))
         viewModel.send(.setTextFieldText(.rowBetSize(0), "500"))
