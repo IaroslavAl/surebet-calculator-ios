@@ -7,6 +7,7 @@ import Testing
 
 /// Интеграционные тесты для проверки взаимодействия модулей
 @MainActor
+@Suite(.serialized)
 struct IntegrationTests {
     // MARK: - Helper Methods
 
