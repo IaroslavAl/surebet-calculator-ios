@@ -31,7 +31,7 @@ struct Calculator: Sendable {
         case let .row(id):
             return calculateSpecificRow(id)
         case .none:
-            return (nil, nil)
+            return resetDerivedValues()
         }
     }
 }
@@ -78,7 +78,7 @@ private extension Calculator {
         switch selectedRow {
         case .total where total.betSize.isValidDouble() && !total.betSize.isEmpty:
             return .total
-        case let .row(id) where rows[id].betSize.isValidDouble():
+        case let .row(id) where rows[id].betSize.isValidDouble() && !rows[id].betSize.isEmpty:
             return .row(id)
         case .none where hasValidBetSizes:
             return .rows
@@ -195,5 +195,35 @@ private extension Calculator {
         let winning = coefficient * betSize
         let income = winning - totalBetSize
         return income.formatToString()
+    }
+
+    /// Сбрасывает только вычисляемые поля при невалидном вводе.
+    /// Не изменяет поля ввода (betSize/coefficient/total.betSize).
+    func resetDerivedValues() -> (TotalRow?, [Row]?) {
+        var total = self.total
+        var rows = self.rows
+
+        total.profitPercentage = TotalRow().profitPercentage
+        rows.indices.forEach { index in
+            rows[index].income = Row(id: rows[index].id).income
+        }
+
+        switch selectedRow {
+        case .total:
+            displayedRowIndexes.forEach { index in
+                rows[index].betSize.removeAll()
+            }
+        case let .row(id):
+            total.betSize.removeAll()
+            displayedRowIndexes.forEach { index in
+                if index != id {
+                    rows[index].betSize.removeAll()
+                }
+            }
+        case .none:
+            total.betSize.removeAll()
+        }
+
+        return (total, rows)
     }
 }
