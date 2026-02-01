@@ -7,12 +7,14 @@ struct Calculator: Sendable {
 
     /// Итоговая строка с общим размером ставки и процентом прибыли.
     let total: TotalRow
-    /// Массив строк с данными о ставках (коэффициенты, размеры ставок, доходы).
-    let rows: [Row]
-    /// Выбранная строка для вычислений (nil, если выбрана итоговая строка или ничего не выбрано).
-    let selectedRow: RowType?
-    /// Диапазон индексов строк, которые отображаются и участвуют в вычислениях.
-    let displayedRowIndexes: Range<Int>
+    /// Строки с данными о ставках по идентификаторам.
+    let rowsById: [RowID: Row]
+    /// Общий порядок строк (для UI и стабильности идентификаторов).
+    let orderedRowIds: [RowID]
+    /// Упорядоченный список активных строк для расчётов.
+    let activeRowIds: [RowID]
+    /// Выбранная строка для вычислений.
+    let selection: Selection
 
     // MARK: - Public Methods
 
@@ -21,17 +23,25 @@ struct Calculator: Sendable {
     /// - Если изменена итоговая ставка - пересчитываются все строки пропорционально.
     /// - Если изменена ставка в конкретной строке - пересчитываются итоговая ставка и остальные строки.
     /// - Если изменены ставки в нескольких строках - пересчитывается итоговая ставка.
-    /// - Returns: Кортеж с обновленными итоговыми данными и строками.
-    func calculate() -> (total: TotalRow?, rows: [Row]?) {
+    /// - Returns: Результат расчёта (обновление, сброс производных, no-op или ошибка ввода).
+    func calculate() -> CalculationResult {
+        if let validationResult = validateInput() {
+            return validationResult
+        }
+
+        if activeRowIds.count < AppConstants.Calculator.minRowCount {
+            return .resetDerived(resetDerivedValues())
+        }
+
         switch calculationMethod {
         case .total:
-            return calculateTotal()
+            return .updated(calculateTotal())
         case .rows:
-            return calculateRows()
+            return .updated(calculateRows())
         case let .row(id):
-            return calculateSpecificRow(id)
+            return .updated(calculateSpecificRow(id))
         case .none:
-            return resetDerivedValues()
+            return .resetDerived(resetDerivedValues())
         }
     }
 }
@@ -39,29 +49,51 @@ struct Calculator: Sendable {
 // MARK: - Private Methods
 
 private extension Calculator {
+    func validateInput() -> CalculationResult? {
+        let orderedSet = Set(orderedRowIds)
+        if orderedSet.count != orderedRowIds.count {
+            return .invalidInput(.duplicateRowIds)
+        }
+
+        let activeSet = Set(activeRowIds)
+        if activeSet.count != activeRowIds.count {
+            return .invalidInput(.duplicateRowIds)
+        }
+
+        for id in activeRowIds where rowsById[id] == nil {
+            return .invalidInput(.missingRow(id))
+        }
+
+        if case let .row(id) = selection, rowsById[id] == nil {
+            return .invalidInput(.selectionRowMissing(id))
+        }
+
+        return nil
+    }
+
     /// Вычисляет значение сурбета как обратную величину суммы обратных величин коэффициентов.
     /// Используется для определения, является ли комбинация ставок выигрышной (значение < 1.0).
-    /// Формула: 1 / (1/k1 + 1/k2 + ... + 1/kn), где k1, k2, ..., kn - коэффициенты отображаемых строк.
+    /// Формула: 1 / (1/k1 + 1/k2 + ... + 1/kn), где k1, k2, ..., kn - коэффициенты активных строк.
     var surebetValue: Double {
-        rows[displayedRowIndexes]
-            .compactMap { $0.coefficient.formatToDouble() }
+        activeRowIds
+            .compactMap { rowsById[$0]?.coefficient.formatToDouble() }
             .reduce(0) { $0 + (1 / $1) }
     }
 
-    /// Проверяет, что все отображаемые строки имеют валидные и непустые размеры ставок.
+    /// Проверяет, что все активные строки имеют валидные и непустые размеры ставок.
     /// Используется для определения возможности вычисления итоговой ставки из суммы ставок по строкам.
     var hasValidBetSizes: Bool {
-        rows[displayedRowIndexes]
-            .map(\.betSize)
+        activeRowIds
+            .compactMap { rowsById[$0]?.betSize }
             .allSatisfy { $0.isValidDouble() && !$0.isEmpty }
     }
 
-    /// Проверяет, что все отображаемые коэффициенты могут быть преобразованы в числа и являются положительными.
+    /// Проверяет, что все активные коэффициенты могут быть преобразованы в числа и являются положительными.
     /// Необходимо для корректного вычисления сурбета,
     /// так как отрицательные или нулевые коэффициенты делают вычисления невозможными.
     var hasValidCoefficients: Bool {
-        rows[displayedRowIndexes]
-            .map(\.coefficient)
+        activeRowIds
+            .compactMap { rowsById[$0]?.coefficient }
             .allSatisfy { $0.formatToDouble() ?? 0 > 0 }
     }
 
@@ -75,11 +107,14 @@ private extension Calculator {
         guard hasValidCoefficients else {
             return .none
         }
-        switch selectedRow {
+        switch selection {
         case .total where total.betSize.isValidDouble() && !total.betSize.isEmpty:
             return .total
-        case let .row(id) where rows[id].betSize.isValidDouble() && !rows[id].betSize.isEmpty:
-            return .row(id)
+        case let .row(id):
+            if let row = rowsById[id], row.betSize.isValidDouble() && !row.betSize.isEmpty {
+                return .row(id)
+            }
+            return .none
         case .none where hasValidBetSizes:
             return .rows
         default:
@@ -91,58 +126,60 @@ private extension Calculator {
     /// Используется, когда пользователь изменил итоговую ставку - все строки пересчитываются пропорционально,
     /// чтобы сохранить соотношение между коэффициентами и обеспечить корректный сурбет.
     /// - Returns: Обновленные итоговые данные и строки.
-    func calculateTotal() -> (TotalRow?, [Row]?) {
+    func calculateTotal() -> CalculationOutput {
         var total = self.total
-        let rows = calculateRowsBetSizesAndIncomes(total: total, rows: self.rows)
+        let rowsById = calculateRowsBetSizesAndIncomes(total: total, rowsById: self.rowsById)
         let profitPercentage = (100 / surebetValue) - 100
         total.profitPercentage = profitPercentage.formatToString(isPercent: true)
-        return (total, rows)
+        return CalculationOutput(total: total, rowsById: rowsById)
     }
 
     /// Обновляет размеры ставок и доходы для каждой строки и пересчитывает итоговые данные.
     /// Используется, когда пользователь изменил размеры ставок в нескольких строках -
     /// итоговая ставка вычисляется как сумма всех ставок, а доходы пересчитываются для каждой строки.
     /// - Returns: Обновленные итоговые данные и строки.
-    func calculateRows() -> (TotalRow?, [Row]?) {
+    func calculateRows() -> CalculationOutput {
         var total = self.total
-        var rows = self.rows
-        let totalBetSize = displayedRowIndexes
-            .compactMap { rows[$0].betSize.formatToDouble() }
+        var rowsById = self.rowsById
+        let totalBetSize = activeRowIds
+            .compactMap { rowsById[$0]?.betSize.formatToDouble() }
             .reduce(0, +)
-        displayedRowIndexes.forEach {
-            let coefficient = rows[$0].coefficient.formatToDouble()
-            let betSize = rows[$0].betSize.formatToDouble()
+        for id in activeRowIds {
+            guard var row = rowsById[id] else { continue }
+            let coefficient = row.coefficient.formatToDouble()
+            let betSize = row.betSize.formatToDouble()
             if let coefficient, let betSize {
-                rows[$0].income = calculateIncome(
+                row.income = calculateIncome(
                     coefficient: coefficient,
                     betSize: betSize,
                     totalBetSize: totalBetSize
                 )
+                rowsById[id] = row
             }
         }
         total.betSize = totalBetSize.formatToString()
         total.profitPercentage = calculateProfitPercentage(totalBetSize: totalBetSize)
-        return (total, rows)
+        return CalculationOutput(total: total, rowsById: rowsById)
     }
 
     /// Вычисляет данные для конкретной строки и обновляет итоговые данные и остальные строки.
     /// Используется, когда пользователь изменил размер ставки в одной строке -
     /// итоговая ставка пересчитывается так, чтобы сохранить пропорции сурбета,
     /// а остальные строки обновляются пропорционально.
-    /// - Parameter id: Индекс строки, для которой выполняются вычисления.
+    /// - Parameter id: Идентификатор строки, для которой выполняются вычисления.
     /// - Returns: Обновленные итоговые данные и строки.
-    func calculateSpecificRow(_ id: Int) -> (TotalRow?, [Row]?) {
+    func calculateSpecificRow(_ id: RowID) -> CalculationOutput {
         var total = self.total
-        var rows = self.rows
-        let coefficient = rows[id].coefficient.formatToDouble()
-        let betSize = rows[id].betSize.formatToDouble()
+        var rowsById = self.rowsById
+        let coefficient = rowsById[id]?.coefficient.formatToDouble()
+        let betSize = rowsById[id]?.betSize.formatToDouble()
         if let coefficient, let betSize {
             let totalBetSize = (betSize / (1 / coefficient / surebetValue))
             total.betSize = totalBetSize.formatToString()
             total.profitPercentage = calculateProfitPercentage(totalBetSize: totalBetSize)
         }
-        rows = calculateRowsBetSizesAndIncomes(total: total, rows: rows)
-        return (total, rows)
+        rowsById = calculateRowsBetSizesAndIncomes(total: total, rowsById: rowsById)
+        return CalculationOutput(total: total, rowsById: rowsById)
     }
 
     /// Корректирует размеры ставок и доходы на основе итогового размера ставки и коэффициента каждой строки.
@@ -150,24 +187,29 @@ private extension Calculator {
     /// в соответствии с их коэффициентами, чтобы сохранить корректность сурбета.
     /// - Parameters:
     ///   - total: Текущие итоговые данные.
-    ///   - rows: Строки для обновления.
+    ///   - rowsById: Строки для обновления.
     /// - Returns: Обновленные строки с новыми размерами ставок и доходами.
-    func calculateRowsBetSizesAndIncomes(total: TotalRow, rows: [Row]) -> [Row] {
-        var updatedRows = rows
-        displayedRowIndexes.forEach { index in
-            let coefficient = rows[index].coefficient.formatToDouble()
+    func calculateRowsBetSizesAndIncomes(
+        total: TotalRow,
+        rowsById: [RowID: Row]
+    ) -> [RowID: Row] {
+        var updatedRowsById = rowsById
+        for id in activeRowIds {
+            guard var row = rowsById[id] else { continue }
+            let coefficient = row.coefficient.formatToDouble()
             let totalBetSize = total.betSize.formatToDouble()
             if let coefficient, let totalBetSize {
                 let betSize = 1 / coefficient / surebetValue * totalBetSize
-                updatedRows[index].betSize = betSize.formatToString()
-                updatedRows[index].income = calculateIncome(
+                row.betSize = betSize.formatToString()
+                row.income = calculateIncome(
                     coefficient: coefficient,
                     betSize: betSize,
                     totalBetSize: totalBetSize
                 )
+                updatedRowsById[id] = row
             }
         }
-        return updatedRows
+        return updatedRowsById
     }
 
     /// Вычисляет и форматирует процент прибыли на основе итогового размера ставки.
@@ -199,31 +241,37 @@ private extension Calculator {
 
     /// Сбрасывает только вычисляемые поля при невалидном вводе.
     /// Не изменяет поля ввода (betSize/coefficient/total.betSize).
-    func resetDerivedValues() -> (TotalRow?, [Row]?) {
+    func resetDerivedValues() -> CalculationOutput {
         var total = self.total
-        var rows = self.rows
+        var rowsById = self.rowsById
 
         total.profitPercentage = TotalRow().profitPercentage
-        rows.indices.forEach { index in
-            rows[index].income = Row(id: rows[index].id).income
+        let rowIds = Array(rowsById.keys)
+        for id in rowIds {
+            if var row = rowsById[id] {
+                row.income = Row(id: id).income
+                rowsById[id] = row
+            }
         }
 
-        switch selectedRow {
+        switch selection {
         case .total:
-            displayedRowIndexes.forEach { index in
-                rows[index].betSize.removeAll()
+            for id in activeRowIds {
+                guard var row = rowsById[id] else { continue }
+                row.betSize.removeAll()
+                rowsById[id] = row
             }
         case let .row(id):
             total.betSize.removeAll()
-            displayedRowIndexes.forEach { index in
-                if index != id {
-                    rows[index].betSize.removeAll()
-                }
+            for currentId in activeRowIds where currentId != id {
+                guard var row = rowsById[currentId] else { continue }
+                row.betSize.removeAll()
+                rowsById[currentId] = row
             }
         case .none:
             total.betSize.removeAll()
         }
 
-        return (total, rows)
+        return CalculationOutput(total: total, rowsById: rowsById)
     }
 }

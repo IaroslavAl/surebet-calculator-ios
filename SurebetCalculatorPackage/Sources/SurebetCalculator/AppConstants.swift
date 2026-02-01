@@ -106,4 +106,15 @@ public enum AppConstants {
         /// Индекс первой страницы
         static let firstPageIndex = 0
     }
+
+    // MARK: - Calculator
+
+    /// Константы для калькулятора
+    public enum Calculator {
+        /// Минимальное количество исходов
+        static let minRowCount = 2
+
+        /// Максимальное количество исходов
+        static let maxRowCount = 20
+    }
 }
