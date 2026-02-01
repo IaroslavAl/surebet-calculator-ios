@@ -19,7 +19,7 @@ struct NavigationClearButton: View {
     }
 
     var font: Font {
-        isIPad ? .body : .title3
+        isIPad ? .body : .callout
     }
 }
 
