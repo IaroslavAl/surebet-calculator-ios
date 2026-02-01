@@ -17,6 +17,9 @@ enum OnboardingConstants {
     /// Средний отступ (12pt)
     static let paddingMedium: CGFloat = 12
 
+    /// Большой отступ (16pt)
+    static let paddingLarge: CGFloat = 16
+
     /// Очень большой отступ (24pt)
     static let paddingExtraLarge: CGFloat = 24
 
@@ -68,7 +71,7 @@ enum OnboardingConstants {
 
         /// Плавный переход справа
         static var moveFromTrailing: AnyTransition {
-            .move(edge: .trailing).combined(with: .opacity)
+            .move(edge: .trailing)
         }
     }
 }

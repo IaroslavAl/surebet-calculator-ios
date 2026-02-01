@@ -27,7 +27,7 @@ struct OnboardingPageView: View {
     }
 
     var contentPadding: CGFloat {
-        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingSmall
+        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingLarge
     }
 
     var imagePadding: CGFloat {

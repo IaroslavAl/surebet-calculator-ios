@@ -2,6 +2,13 @@ import SwiftUI
 
 /// Система адаптивных цветов для онбординга
 enum OnboardingColors {
+    // MARK: - Background
+
+    /// Фон экрана онбординга
+    static var background: Color {
+        Color(uiColor: .systemBackground)
+    }
+
     // MARK: - Button Colors
 
     /// Цвет фона для кнопок онбординга

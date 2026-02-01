@@ -32,6 +32,9 @@ struct OnboardingView: View {
             .frame(maxWidth: .infinity)
         }
         .padding(.bottom, padding)
+        .background {
+            OnboardingColors.background.ignoresSafeArea()
+        }
         .onChange(of: viewModel.onboardingIsShown) {
             onboardingIsShown = $0
         }
@@ -44,7 +47,7 @@ struct OnboardingView: View {
 
 private extension OnboardingView {
     var padding: CGFloat {
-        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingSmall
+        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingLarge
     }
 }
 

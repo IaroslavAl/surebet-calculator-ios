@@ -50,7 +50,7 @@ private extension OnboardingButton {
     }
 
     var padding: CGFloat {
-        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingMedium
+        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingLarge
     }
 }
 
