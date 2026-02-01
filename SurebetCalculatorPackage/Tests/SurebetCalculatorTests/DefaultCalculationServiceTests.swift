@@ -54,9 +54,15 @@ struct DefaultCalculationServiceTests {
         )
 
         // Then
-        // При невалидных коэффициентах Calculator возвращает nil
-        #expect(result.total == nil)
-        #expect(result.rows == nil)
+        // При невалидных коэффициентах Calculator сбрасывает только вычисляемые значения
+        #expect(result.total?.betSize == "1000")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].betSize == "")
+        #expect(result.rows?[0].coefficient == "")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].betSize == "")
+        #expect(result.rows?[1].coefficient == "3")
+        #expect(result.rows?[1].income == "0")
     }
 
     @Test
@@ -80,9 +86,15 @@ struct DefaultCalculationServiceTests {
         )
 
         // Then
-        // Когда selectedRow = .none и нет валидных betSize, Calculator возвращает nil
-        #expect(result.total == nil)
-        #expect(result.rows == nil)
+        // Когда selectedRow = .none и нет валидных betSize, сбрасываются только вычисляемые значения
+        #expect(result.total?.betSize == "")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].betSize == "")
+        #expect(result.rows?[0].coefficient == "2")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].betSize == "")
+        #expect(result.rows?[1].coefficient == "3")
+        #expect(result.rows?[1].income == "0")
     }
 
     @Test
@@ -170,8 +182,14 @@ struct DefaultCalculationServiceTests {
         )
 
         // Then
-        // Нулевой коэффициент должен привести к nil результату
-        #expect(result.total == nil)
-        #expect(result.rows == nil)
+        // Нулевой коэффициент должен привести к сбросу вычисляемых значений
+        #expect(result.total?.betSize == "")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].betSize == "")
+        #expect(result.rows?[0].coefficient == "0")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].betSize == "")
+        #expect(result.rows?[1].coefficient == "3")
+        #expect(result.rows?[1].income == "0")
     }
 }

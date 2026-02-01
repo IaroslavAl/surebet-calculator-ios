@@ -82,8 +82,68 @@ struct CalculatorTests {
         let result = calculator.calculate()
 
         // Then
-        #expect(result.total == nil)
-        #expect(result.rows == nil)
+        #expect(result.total?.betSize == "")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].betSize == "")
+        #expect(result.rows?[0].coefficient == "2")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].betSize == "")
+        #expect(result.rows?[1].coefficient == "3")
+        #expect(result.rows?[1].income == "0")
+    }
+
+    @Test
+    func rowCalculationWhenBetSizeIsEmpty() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "1000", profitPercentage: "77%"),
+            rows: [
+                Row(id: 0, betSize: "", coefficient: "2", income: "123"),
+                Row(id: 1, betSize: "200", coefficient: "3", income: "456")
+            ],
+            selectedRow: .row(0),
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        #expect(result.total?.betSize == "")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].betSize == "")
+        #expect(result.rows?[0].coefficient == "2")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].betSize == "")
+        #expect(result.rows?[1].coefficient == "3")
+        #expect(result.rows?[1].income == "0")
+    }
+
+    @Test
+    func rowsCalculationWhenAnyBetSizeIsInvalid() {
+        // Given
+        let calculator = Calculator(
+            total: TotalRow(betSize: "900", profitPercentage: "12%"),
+            rows: [
+                Row(id: 0, betSize: "100", coefficient: "2", income: "10"),
+                Row(id: 1, betSize: "xxx", coefficient: "3", income: "20")
+            ],
+            selectedRow: .none,
+            displayedRowIndexes: 0..<2
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        #expect(result.total?.betSize == "")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].betSize == "100")
+        #expect(result.rows?[0].coefficient == "2")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].betSize == "xxx")
+        #expect(result.rows?[1].coefficient == "3")
+        #expect(result.rows?[1].income == "0")
     }
 
     @Test
@@ -103,8 +163,14 @@ struct CalculatorTests {
         let result = calculator.calculate()
 
         // Then
-        #expect(result.total == nil)
-        #expect(result.rows == nil)
+        #expect(result.total?.betSize == "")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].betSize == "100")
+        #expect(result.rows?[0].coefficient == "")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].betSize == "200")
+        #expect(result.rows?[1].coefficient == "3")
+        #expect(result.rows?[1].income == "0")
     }
 
     @Test
@@ -208,8 +274,12 @@ struct CalculatorTests {
 
         // Then
         // Нулевой коэффициент должен привести к .none методу
-        #expect(result.total == nil)
-        #expect(result.rows == nil)
+        #expect(result.total?.betSize == "1000")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].coefficient == "0")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].coefficient == "3")
+        #expect(result.rows?[1].income == "0")
     }
 
     @Test
@@ -230,8 +300,12 @@ struct CalculatorTests {
 
         // Then
         // Отрицательный коэффициент должен привести к .none методу
-        #expect(result.total == nil)
-        #expect(result.rows == nil)
+        #expect(result.total?.betSize == "1000")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].coefficient == "-2")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].coefficient == "3")
+        #expect(result.rows?[1].income == "0")
     }
 
     @Test
@@ -477,8 +551,12 @@ struct CalculatorTests {
 
         // Then
         // Все нулевые коэффициенты должны привести к .none методу
-        #expect(result.total == nil)
-        #expect(result.rows == nil)
+        #expect(result.total?.betSize == "1000")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].coefficient == "0")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].coefficient == "0")
+        #expect(result.rows?[1].income == "0")
     }
 
     @Test
@@ -499,7 +577,11 @@ struct CalculatorTests {
 
         // Then
         // Все отрицательные коэффициенты должны привести к .none методу
-        #expect(result.total == nil)
-        #expect(result.rows == nil)
+        #expect(result.total?.betSize == "1000")
+        #expect(result.total?.profitPercentage == "0%")
+        #expect(result.rows?[0].coefficient == "-2")
+        #expect(result.rows?[0].income == "0")
+        #expect(result.rows?[1].coefficient == "-3")
+        #expect(result.rows?[1].income == "0")
     }
 }

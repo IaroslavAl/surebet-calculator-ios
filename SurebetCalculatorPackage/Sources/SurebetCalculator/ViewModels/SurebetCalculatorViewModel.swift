@@ -124,6 +124,7 @@ private extension SurebetCalculatorViewModel {
     func addRow() {
         if selectedNumberOfRows != .ten {
             selectedNumberOfRows = .init(rawValue: selectedNumberOfRows.rawValue + 1) ?? .two
+            calculate()
             analytics.calculatorRowAdded(rowCount: selectedNumberOfRows.rawValue)
         }
     }
@@ -132,8 +133,12 @@ private extension SurebetCalculatorViewModel {
         if selectedNumberOfRows != .two {
             selectedNumberOfRows = .init(rawValue: selectedNumberOfRows.rawValue - 1) ?? .two
             let indexesOfUndisplayedRows = selectedNumberOfRows.rawValue..<rows.count
-            if rows[indexesOfUndisplayedRows].contains(where: \.isON) {
+            if let selectedRow,
+               case let .row(id) = selectedRow,
+               indexesOfUndisplayedRows.contains(id) {
                 deselectCurrentRow()
+                total.isON = true
+                self.selectedRow = .total
             }
             clear(indexesOfUndisplayedRows)
             calculate()
