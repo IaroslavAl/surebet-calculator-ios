@@ -23,35 +23,38 @@ private extension ToggleButton {
     var isON: Bool {
         switch row {
         case .total:
-            return viewModel.total.isON
+            viewModel.total.isON
         case let .row(id):
-            return viewModel.row(for: id)?.isON ?? false
+            viewModel.row(for: id)?.isON ?? false
         case .none:
-            return false
+            false
         }
     }
+
     var height: CGFloat {
         isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact
     }
+
     var horizontalPadding: CGFloat {
         isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small
     }
+
     var transition: AnyTransition { AppConstants.Animations.scaleWithOpacity }
 
     func label() -> some View {
-        if isON {
-            Image(systemName: "soccerball")
-                .frame(minWidth: 0, minHeight: height, maxHeight: height)
-                .foregroundColor(AppColors.primaryGreen)
-                .padding(.horizontal, horizontalPadding)
-                .transition(transition)
-        } else {
-            Image(systemName: "circle")
-                .frame(minWidth: 0, minHeight: height, maxHeight: height)
-                .foregroundColor(AppColors.primaryRed)
-                .padding(.horizontal, horizontalPadding)
-                .transition(transition)
+        Group {
+            if isON {
+                Image(systemName: "soccerball")
+                    .foregroundColor(AppColors.primaryGreen)
+            } else {
+                Image(systemName: "circle")
+                    .foregroundColor(AppColors.primaryRed)
+            }
         }
+        .frame(minWidth: .zero, minHeight: height, maxHeight: height)
+        .padding(.horizontal, horizontalPadding)
+        .contentShape(.rect)
+        .transition(transition)
     }
 
     func actionWithImpactFeedback() {

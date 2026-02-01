@@ -11,7 +11,7 @@ struct RowView: View {
     // MARK: - Body
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 0) {
+        HStack(alignment: .bottom, spacing: .zero) {
             ToggleButton(row: .row(rowId))
             HStack(spacing: spacing) {
                 betSize

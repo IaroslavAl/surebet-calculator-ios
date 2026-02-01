@@ -56,9 +56,12 @@ private extension SurebetCalculatorView {
                     .padding(.trailing, horizontalPadding)
                 rowsView
                 actionButtons
+                    .padding(.leading, rowsSpacing)
                     .id("EndOfView")
             }
-            .padding(rowsSpacing)
+            .padding(.vertical, rowsSpacing)
+            // leading отступ уже внутри rowsView у ToggleButton
+            .padding(.trailing, rowsSpacing)
             .background(backgroundTapGesture)
         }
     }

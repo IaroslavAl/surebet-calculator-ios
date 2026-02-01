@@ -8,7 +8,7 @@ struct TotalRowView: View {
     // MARK: - Body
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 0) {
+        HStack(alignment: .bottom, spacing: .zero) {
             ToggleButton(row: .total)
             HStack(spacing: spacing) {
                 totalBetSizeColumn
