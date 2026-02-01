@@ -55,9 +55,9 @@ private extension TextFieldView {
         case .totalBetSize:
             return viewModel.total.betSize
         case let .rowBetSize(id):
-            return viewModel.rows[id].betSize
+            return viewModel.row(for: id)?.betSize ?? ""
         case let .rowCoefficient(id):
-            return viewModel.rows[id].coefficient
+            return viewModel.row(for: id)?.coefficient ?? ""
         }
     }
 
@@ -66,9 +66,11 @@ private extension TextFieldView {
         case .totalBetSize:
             return AccessibilityIdentifiers.TotalRow.betSizeTextField
         case let .rowBetSize(id):
-            return AccessibilityIdentifiers.Row.betSizeTextField(id)
+            let displayIndex = viewModel.displayIndex(for: id) ?? 0
+            return AccessibilityIdentifiers.Row.betSizeTextField(displayIndex)
         case let .rowCoefficient(id):
-            return AccessibilityIdentifiers.Row.coefficientTextField(id)
+            let displayIndex = viewModel.displayIndex(for: id) ?? 0
+            return AccessibilityIdentifiers.Row.coefficientTextField(displayIndex)
         }
     }
 }
