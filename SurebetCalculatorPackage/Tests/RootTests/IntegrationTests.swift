@@ -53,28 +53,28 @@ struct IntegrationTests {
         // Проверяем, что можем создать SurebetCalculatorViewModel
         let calculatorViewModel = SurebetCalculatorViewModel()
         #expect(calculatorViewModel.selectedNumberOfRows == .two)
-        #expect(calculatorViewModel.selectedRow == .total)
+        #expect(calculatorViewModel.selection == .total)
     }
 
     /// Тест передачи данных между модулями через CalculationService
     @Test
     func dataFlowThroughCalculationService() {
         // Given
-        let calculatorViewModel = SurebetCalculatorViewModel(selectedRow: .none)
+        let calculatorViewModel = SurebetCalculatorViewModel(selection: .none)
 
         // When
-        calculatorViewModel.send(.setTextFieldText(.rowCoefficient(0), "2.5"))
-        calculatorViewModel.send(.setTextFieldText(.rowCoefficient(1), "2.0"))
-        calculatorViewModel.send(.setTextFieldText(.rowBetSize(0), "500"))
-        calculatorViewModel.send(.setTextFieldText(.rowBetSize(1), "500"))
+        calculatorViewModel.send(.setTextFieldText(.rowCoefficient(RowID(rawValue: 0)), "2.5"))
+        calculatorViewModel.send(.setTextFieldText(.rowCoefficient(RowID(rawValue: 1)), "2.0"))
+        calculatorViewModel.send(.setTextFieldText(.rowBetSize(RowID(rawValue: 0)), "500"))
+        calculatorViewModel.send(.setTextFieldText(.rowBetSize(RowID(rawValue: 1)), "500"))
 
         // Then
         // Проверяем, что данные передались через CalculationService
         #expect(calculatorViewModel.total.betSize == "1000")
-        #expect(calculatorViewModel.rows[0].coefficient == "2.5")
-        #expect(calculatorViewModel.rows[0].betSize == "500")
-        #expect(calculatorViewModel.rows[1].coefficient == "2.0")
-        #expect(calculatorViewModel.rows[1].betSize == "500")
+        #expect(calculatorViewModel.rowsById[RowID(rawValue: 0)]?.coefficient == "2.5")
+        #expect(calculatorViewModel.rowsById[RowID(rawValue: 0)]?.betSize == "500")
+        #expect(calculatorViewModel.rowsById[RowID(rawValue: 1)]?.coefficient == "2.0")
+        #expect(calculatorViewModel.rowsById[RowID(rawValue: 1)]?.betSize == "500")
     }
 
     /// Тест обновления UI при изменении состояния
@@ -84,11 +84,11 @@ struct IntegrationTests {
         let calculatorViewModel = SurebetCalculatorViewModel()
 
         // When
-        calculatorViewModel.send(.selectRow(.row(0)))
+        calculatorViewModel.send(.selectRow(.row(RowID(rawValue: 0))))
 
         // Then
-        #expect(calculatorViewModel.selectedRow == .row(0))
-        #expect(calculatorViewModel.rows[0].isON == true)
+        #expect(calculatorViewModel.selection == .row(RowID(rawValue: 0)))
+        #expect(calculatorViewModel.rowsById[RowID(rawValue: 0)]?.isON == true)
     }
 
     /// Тест MainActor isolation для инициализации обоих ViewModel
@@ -127,14 +127,14 @@ struct IntegrationTests {
         // When
         // Пользователь вводит данные в калькулятор
         calculatorViewModel.send(.setTextFieldText(.totalBetSize, "1000"))
-        calculatorViewModel.send(.setTextFieldText(.rowCoefficient(0), "2.0"))
-        calculatorViewModel.send(.setTextFieldText(.rowCoefficient(1), "2.0"))
+        calculatorViewModel.send(.setTextFieldText(.rowCoefficient(RowID(rawValue: 0)), "2.0"))
+        calculatorViewModel.send(.setTextFieldText(.rowCoefficient(RowID(rawValue: 1)), "2.0"))
 
         // Then
         // Проверяем, что расчет выполнен через CalculationService
         #expect(calculatorViewModel.total.betSize == "1000")
-        #expect(calculatorViewModel.rows[0].coefficient == "2.0")
-        #expect(calculatorViewModel.rows[1].coefficient == "2.0")
+        #expect(calculatorViewModel.rowsById[RowID(rawValue: 0)]?.coefficient == "2.0")
+        #expect(calculatorViewModel.rowsById[RowID(rawValue: 1)]?.coefficient == "2.0")
 
         // Проверяем, что RootViewModel готов показать калькулятор
         #expect(rootViewModel.isOnboardingShown == true)

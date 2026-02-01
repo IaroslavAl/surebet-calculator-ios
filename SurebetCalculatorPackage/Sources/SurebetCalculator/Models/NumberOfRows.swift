@@ -10,4 +10,14 @@ enum NumberOfRows: Int, CaseIterable, Sendable {
     case eight
     case nine
     case ten
+    case eleven
+    case twelve
+    case thirteen
+    case fourteen
+    case fifteen
+    case sixteen
+    case seventeen
+    case eighteen
+    case nineteen
+    case twenty
 }

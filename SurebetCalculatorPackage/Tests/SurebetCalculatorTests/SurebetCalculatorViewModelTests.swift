@@ -45,6 +45,55 @@ final class TestDelay: CalculationAnalyticsDelay, @unchecked Sendable {
 struct SurebetCalculatorViewModelTests {
     // MARK: - Helpers
 
+    private func rowId(_ value: Int) -> RowID {
+        RowID(rawValue: UInt64(value))
+    }
+
+    private func makeRows(_ rows: [Row]) -> (rowsById: [RowID: Row], orderedRowIds: [RowID]) {
+        let orderedRowIds = rows.map(\.id)
+        let rowsById = Dictionary(uniqueKeysWithValues: rows.map { ($0.id, $0) })
+        return (rowsById: rowsById, orderedRowIds: orderedRowIds)
+    }
+
+    private func makeViewModel(
+        total: TotalRow = TotalRow(),
+        rows: [Row]? = nil,
+        selectedNumberOfRows: NumberOfRows = .two,
+        selection: Selection = .total,
+        focus: FocusableField? = nil,
+        calculationService: CalculationService = DefaultCalculationService(),
+        analytics: CalculatorAnalytics = NoopCalculatorAnalytics(),
+        delay: CalculationAnalyticsDelay = SystemCalculationAnalyticsDelay()
+    ) -> SurebetCalculatorViewModel {
+        if let rows {
+            let data = makeRows(rows)
+            return SurebetCalculatorViewModel(
+                total: total,
+                rowsById: data.rowsById,
+                orderedRowIds: data.orderedRowIds,
+                selectedNumberOfRows: selectedNumberOfRows,
+                selection: selection,
+                focus: focus,
+                calculationService: calculationService,
+                analytics: analytics,
+                delay: delay
+            )
+        }
+        return SurebetCalculatorViewModel(
+            total: total,
+            selectedNumberOfRows: selectedNumberOfRows,
+            selection: selection,
+            focus: focus,
+            calculationService: calculationService,
+            analytics: analytics,
+            delay: delay
+        )
+    }
+
+    private func row(_ viewModel: SurebetCalculatorViewModel, _ id: Int) -> Row {
+        viewModel.rowsById[rowId(id)] ?? Row(id: rowId(id))
+    }
+
     /// Форматирует число в строку с учётом текущей локали (для тестов).
     private func formatNumber(_ value: Double, isPercent: Bool = false) -> String {
         let formatter = NumberFormatter()
@@ -70,46 +119,46 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func selectRow() {
         // Given
-        let viewModel = SurebetCalculatorViewModel()
+        let viewModel = makeViewModel()
         let id = 0
-        let row: RowType = .row(id)
+        let selection: Selection = .row(rowId(id))
 
         // When
-        viewModel.send(.selectRow(row))
+        viewModel.send(.selectRow(selection))
 
         // Then
         #expect(!viewModel.total.isON)
-        #expect(viewModel.rows[id].isON)
-        #expect(viewModel.selectedRow == row)
+        #expect(row(viewModel, id).isON)
+        #expect(viewModel.selection == selection)
     }
 
     @Test
     func selectTotal() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(selectedRow: .none)
-        let row: RowType = .total
+        let viewModel = makeViewModel(selection: .none)
+        let selection: Selection = .total
 
         // When
-        viewModel.send(.selectRow(row))
+        viewModel.send(.selectRow(selection))
 
         // Then
         #expect(viewModel.total.isON)
-        #expect(viewModel.selectedRow == row)
+        #expect(viewModel.selection == selection)
     }
 
     @Test
     func selectNone() {
         // Given
         let id = 0
-        let viewModel = SurebetCalculatorViewModel(selectedRow: .row(id))
-        let row: RowType = .row(id)
+        let viewModel = makeViewModel(selection: .row(rowId(id)))
+        let selection: Selection = .row(rowId(id))
 
         // When
-        viewModel.send(.selectRow(row))
+        viewModel.send(.selectRow(selection))
 
         // Then
-        #expect(!viewModel.rows[id].isON)
-        #expect(viewModel.selectedRow == .none)
+        #expect(!row(viewModel, id).isON)
+        #expect(viewModel.selection == .none)
     }
 
     @Test
@@ -118,38 +167,38 @@ struct SurebetCalculatorViewModelTests {
         let initialNumberOfRows: NumberOfRows = .three
         let newNumberOfRows: NumberOfRows = .two
         let id = 2
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0),
-                .init(id: 1),
-                .init(id: 2, isON: true, betSize: "777"),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0)),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2), isON: true, betSize: "777"),
+                .init(id: RowID(rawValue: 3))
             ],
             selectedNumberOfRows: initialNumberOfRows,
-            selectedRow: .row(id)
+            selection: .row(rowId(id))
         )
 
         // When
         viewModel.send(.removeRow)
 
         // Then
-        #expect(!viewModel.rows[id].isON)
-        #expect(viewModel.rows[id].betSize == "")
+        #expect(!row(viewModel, id).isON)
+        #expect(row(viewModel, id).betSize == "")
         #expect(viewModel.selectedNumberOfRows == newNumberOfRows)
     }
 
     @Test
     func setTotalBetSizeTextField() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             total: .init(betSize: "777"),
             rows: [
-                .init(id: 0, betSize: "555"),
-                .init(id: 1),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), betSize: "555"),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ],
-            selectedRow: .row(0)
+            selection: .row(rowId(0))
         )
         let textField: FocusableField = .totalBetSize
         let text = ""
@@ -158,83 +207,83 @@ struct SurebetCalculatorViewModelTests {
         viewModel.send(.setTextFieldText(textField, text))
 
         // Then
-        #expect(viewModel.selectedRow == .total)
+        #expect(viewModel.selection == .total)
         #expect(viewModel.total.betSize == text)
-        #expect(viewModel.rows[0].betSize == "")
+        #expect(row(viewModel, 0).betSize == "")
     }
 
     @Test
     func setRowBetSize() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             total: .init(isON: true, betSize: "777"),
             rows: [
-                .init(id: 0),
-                .init(id: 1, betSize: "777"),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0)),
+                .init(id: RowID(rawValue: 1), betSize: "777"),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ]
         )
-        let textField: FocusableField = .rowBetSize(0)
+        let textField: FocusableField = .rowBetSize(rowId(0))
         let text = ""
 
         // When
         viewModel.send(.setTextFieldText(textField, text))
 
         // Then
-        #expect(viewModel.rows[0].betSize == text)
-        #expect(viewModel.rows[1].betSize == "")
+        #expect(row(viewModel, 0).betSize == text)
+        #expect(row(viewModel, 1).betSize == "")
         #expect(viewModel.total.betSize == "")
     }
 
     @Test
     func setRowBetSizeWhenSelectedRowIsNone() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(selectedRow: .none)
-        let textField: FocusableField = .rowBetSize(0)
+        let viewModel = makeViewModel(selection: .none)
+        let textField: FocusableField = .rowBetSize(rowId(0))
         let text = "777"
 
         // When
         viewModel.send(.setTextFieldText(textField, text))
 
         // Then
-        #expect(viewModel.rows[0].betSize == text)
+        #expect(row(viewModel, 0).betSize == text)
         #expect(viewModel.total.betSize == "")
     }
 
     @Test
     func setRowBetSizeWhenSelectedRowIsNoneAndSumOfBetSizesEqualZero() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(selectedRow: .none)
-        let textField: FocusableField = .rowBetSize(0)
+        let viewModel = makeViewModel(selection: .none)
+        let textField: FocusableField = .rowBetSize(rowId(0))
         let text = ""
 
         // When
         viewModel.send(.setTextFieldText(textField, text))
 
         // Then
-        #expect(viewModel.rows[0].betSize == text)
+        #expect(row(viewModel, 0).betSize == text)
         #expect(viewModel.total.betSize == "")
     }
 
     @Test
     func setRowCoefficient() {
         // Given
-        let viewModel = SurebetCalculatorViewModel()
-        let textField: FocusableField = .rowCoefficient(0)
+        let viewModel = makeViewModel()
+        let textField: FocusableField = .rowCoefficient(rowId(0))
         let text = ""
 
         // When
         viewModel.send(.setTextFieldText(textField, text))
 
         // Then
-        #expect(viewModel.rows[0].coefficient == text)
+        #expect(row(viewModel, 0).coefficient == text)
     }
 
     @Test
     func setFocus() {
         // Given
-        let viewModel = SurebetCalculatorViewModel()
+        let viewModel = makeViewModel()
         let field: FocusableField = .totalBetSize
 
         // When
@@ -247,7 +296,7 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func clearTotalBetSizeField() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             total: .init(betSize: "777"),
             focus: .totalBetSize
         )
@@ -262,47 +311,47 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func clearRowBetSizeField() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0, betSize: "777"),
-                .init(id: 1),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), betSize: "777"),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ],
-            focus: .rowBetSize(0)
+            focus: .rowBetSize(rowId(0))
         )
 
         // When
         viewModel.send(.clearFocusableField)
 
         // Then
-        #expect(viewModel.rows[0].betSize == "")
+        #expect(row(viewModel, 0).betSize == "")
     }
 
     @Test
     func clearRowCoefficientField() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0, coefficient: "777"),
-                .init(id: 1),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), coefficient: "777"),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ],
-            focus: .rowCoefficient(0)
+            focus: .rowCoefficient(rowId(0))
         )
 
         // When
         viewModel.send(.clearFocusableField)
 
         // Then
-        #expect(viewModel.rows[0].coefficient == "")
+        #expect(row(viewModel, 0).coefficient == "")
     }
 
     @Test
     func clearNoneField() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(focus: .none)
+        let viewModel = makeViewModel(focus: .none)
 
         // When
         viewModel.send(.clearFocusableField)
@@ -313,13 +362,13 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func clearAll() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             total: .init(betSize: "777", profitPercentage: "777%"),
             rows: [
-                .init(id: 0, betSize: "777", coefficient: "777", income: "777"),
-                .init(id: 1),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), betSize: "777", coefficient: "777", income: "777"),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ]
         )
 
@@ -329,15 +378,15 @@ struct SurebetCalculatorViewModelTests {
         // Then
         #expect(viewModel.total.betSize == "")
         #expect(viewModel.total.profitPercentage == "0%")
-        #expect(viewModel.rows[0].betSize == "")
-        #expect(viewModel.rows[0].coefficient == "")
-        #expect(viewModel.rows[0].income == "0")
+        #expect(row(viewModel, 0).betSize == "")
+        #expect(row(viewModel, 0).coefficient == "")
+        #expect(row(viewModel, 0).income == "0")
     }
 
     @Test
     func hideKeyboard() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             focus: .totalBetSize
         )
 
@@ -351,12 +400,12 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func calculationMethodWhenSelectedRowIsTotalAndSelectedNumberOfRowsIsTwo() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0, coefficient: formatCoefficient(2.22)),
-                .init(id: 1, coefficient: formatCoefficient(3.33)),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), coefficient: formatCoefficient(2.22)),
+                .init(id: RowID(rawValue: 1), coefficient: formatCoefficient(3.33)),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ],
             selectedNumberOfRows: .two
         )
@@ -373,8 +422,8 @@ struct SurebetCalculatorViewModelTests {
             )
         )
         #expect(
-            viewModel.rows[0] == Row(
-                id: 0,
+            row(viewModel, 0) == Row(
+                id: RowID(rawValue: 0),
                 isON: false,
                 betSize: formatNumber(466.2),
                 coefficient: formatNumber(2.22),
@@ -382,35 +431,35 @@ struct SurebetCalculatorViewModelTests {
             )
         )
         #expect(
-            viewModel.rows[1] == Row(
-                id: 1,
+            row(viewModel, 1) == Row(
+                id: RowID(rawValue: 1),
                 isON: false,
                 betSize: formatNumber(310.8),
                 coefficient: formatNumber(3.33),
                 income: formatNumber(257.96)
             )
         )
-        #expect(viewModel.rows[2] == Row(id: 2))
-        #expect(viewModel.rows[3] == Row(id: 3))
+        #expect(row(viewModel, 2) == Row(id: RowID(rawValue: 2)))
+        #expect(row(viewModel, 3) == Row(id: RowID(rawValue: 3)))
     }
 
     @Test
     func calculationMethodWhenSelectedRowIsRowAndSelectedNumberOfRowsIsThree() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             total: .init(isON: false),
             rows: [
-                .init(id: 0, isON: true, coefficient: formatCoefficient(2.22)),
-                .init(id: 1, coefficient: formatCoefficient(3.33)),
-                .init(id: 2, coefficient: formatCoefficient(4.44)),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), isON: true, coefficient: formatCoefficient(2.22)),
+                .init(id: RowID(rawValue: 1), coefficient: formatCoefficient(3.33)),
+                .init(id: RowID(rawValue: 2), coefficient: formatCoefficient(4.44)),
+                .init(id: RowID(rawValue: 3))
             ],
             selectedNumberOfRows: .three,
-            selectedRow: .row(0)
+            selection: .row(rowId(0))
         )
 
         // When
-        viewModel.send(.setTextFieldText(.rowBetSize(0), "777"))
+        viewModel.send(.setTextFieldText(.rowBetSize(rowId(0)), "777"))
 
         // Then
         #expect(
@@ -421,8 +470,8 @@ struct SurebetCalculatorViewModelTests {
             )
         )
         #expect(
-            viewModel.rows[0] == Row(
-                id: 0,
+            row(viewModel, 0) == Row(
+                id: RowID(rawValue: 0),
                 isON: true,
                 betSize: "777",
                 coefficient: formatNumber(2.22),
@@ -430,8 +479,8 @@ struct SurebetCalculatorViewModelTests {
             )
         )
         #expect(
-            viewModel.rows[1] == Row(
-                id: 1,
+            row(viewModel, 1) == Row(
+                id: RowID(rawValue: 1),
                 isON: false,
                 betSize: "518",
                 coefficient: formatNumber(3.33),
@@ -439,34 +488,34 @@ struct SurebetCalculatorViewModelTests {
             )
         )
         #expect(
-            viewModel.rows[2] == Row(
-                id: 2,
+            row(viewModel, 2) == Row(
+                id: RowID(rawValue: 2),
                 isON: false,
                 betSize: formatNumber(388.5),
                 coefficient: formatNumber(4.44),
                 income: formatNumber(41.44)
             )
         )
-        #expect(viewModel.rows[3] == Row(id: 3))
+        #expect(row(viewModel, 3) == Row(id: RowID(rawValue: 3)))
     }
 
     @Test
     func calculationMethodWhenSelectedRowIsNoneAndSelectedNumberOfRowsIsFour() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             total: .init(isON: false),
             rows: [
-                .init(id: 0, betSize: "444", coefficient: formatCoefficient(2.22)),
-                .init(id: 1, betSize: "555", coefficient: formatCoefficient(3.33)),
-                .init(id: 2, betSize: "666", coefficient: formatCoefficient(4.44)),
-                .init(id: 3, coefficient: formatCoefficient(5.55))
+                .init(id: RowID(rawValue: 0), betSize: "444", coefficient: formatCoefficient(2.22)),
+                .init(id: RowID(rawValue: 1), betSize: "555", coefficient: formatCoefficient(3.33)),
+                .init(id: RowID(rawValue: 2), betSize: "666", coefficient: formatCoefficient(4.44)),
+                .init(id: RowID(rawValue: 3), coefficient: formatCoefficient(5.55))
             ],
             selectedNumberOfRows: .four,
-            selectedRow: .none
+            selection: .none
         )
 
         // When
-        viewModel.send(.setTextFieldText(.rowBetSize(3), "777"))
+        viewModel.send(.setTextFieldText(.rowBetSize(rowId(3)), "777"))
 
         // Then
         let expectedTotal = TotalRow(
@@ -477,51 +526,79 @@ struct SurebetCalculatorViewModelTests {
         #expect(viewModel.total == expectedTotal)
 
         let expectedRow0 = Row(
-            id: 0,
+            id: RowID(rawValue: 0),
             isON: false,
             betSize: "444",
             coefficient: formatNumber(2.22),
             income: formatNumber(-1456.32)
         )
-        #expect(viewModel.rows[0] == expectedRow0)
+        #expect(row(viewModel, 0) == expectedRow0)
 
         let expectedRow1 = Row(
-            id: 1,
+            id: RowID(rawValue: 1),
             isON: false,
             betSize: "555",
             coefficient: formatNumber(3.33),
             income: formatNumber(-593.85)
         )
-        #expect(viewModel.rows[1] == expectedRow1)
+        #expect(row(viewModel, 1) == expectedRow1)
 
         let expectedRow2 = Row(
-            id: 2,
+            id: RowID(rawValue: 2),
             isON: false,
             betSize: "666",
             coefficient: formatNumber(4.44),
             income: formatNumber(515.04)
         )
-        #expect(viewModel.rows[2] == expectedRow2)
+        #expect(row(viewModel, 2) == expectedRow2)
 
         let expectedRow3 = Row(
-            id: 3,
+            id: RowID(rawValue: 3),
             isON: false,
             betSize: "777",
             coefficient: formatNumber(5.55),
             income: formatNumber(1870.35)
         )
-        #expect(viewModel.rows[3] == expectedRow3)
+        #expect(row(viewModel, 3) == expectedRow3)
+    }
+
+    @Test
+    func reorderActiveRowsDoesNotBreakCalculation() {
+        // Given
+        let viewModel = makeViewModel(
+            rows: [
+                .init(id: RowID(rawValue: 0), coefficient: formatCoefficient(2.0)),
+                .init(id: RowID(rawValue: 1), coefficient: formatCoefficient(3.0)),
+                .init(id: RowID(rawValue: 2), coefficient: formatCoefficient(4.0))
+            ],
+            selectedNumberOfRows: .three,
+            selection: .total
+        )
+
+        // When
+        viewModel.send(.setTextFieldText(.totalBetSize, "1000"))
+        let betSize0Before = row(viewModel, 0).betSize
+        let betSize1Before = row(viewModel, 1).betSize
+        let betSize2Before = row(viewModel, 2).betSize
+
+        viewModel.send(.reorderRows(fromOffsets: IndexSet(integer: 0), toOffset: 3))
+
+        // Then
+        #expect(viewModel.activeRowIds == [rowId(1), rowId(2), rowId(0)])
+        #expect(row(viewModel, 0).betSize == betSize0Before)
+        #expect(row(viewModel, 1).betSize == betSize1Before)
+        #expect(row(viewModel, 2).betSize == betSize2Before)
     }
 
     @Test
     func noneCalculationMethod() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0, coefficient: formatCoefficient(2.22)),
-                .init(id: 1, coefficient: formatCoefficient(3.33)),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), coefficient: formatCoefficient(2.22)),
+                .init(id: RowID(rawValue: 1), coefficient: formatCoefficient(3.33)),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ]
         )
 
@@ -534,17 +611,17 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func profitPercentageDoesNotChangeForAllCoefficients() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0, coefficient: formatCoefficient(2.22)),
-                .init(id: 1),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), coefficient: formatCoefficient(2.22)),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ]
         )
 
         // When
-        viewModel.send(.setTextFieldText(.rowCoefficient(1), "3,33"))
+        viewModel.send(.setTextFieldText(.rowCoefficient(rowId(1)), "3,33"))
 
         // Then
         #expect(viewModel.total.profitPercentage == "0%")
@@ -556,12 +633,12 @@ struct SurebetCalculatorViewModelTests {
     func calculationServiceIsCalledOnSelectRow() {
         // Given
         let mockService = MockCalculationService()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             calculationService: mockService
         )
 
         // When
-        viewModel.send(.selectRow(.row(0)))
+        viewModel.send(.selectRow(.row(rowId(0))))
 
         // Then
         #expect(mockService.calculateCallCount == 1)
@@ -572,7 +649,7 @@ struct SurebetCalculatorViewModelTests {
     func calculationServiceIsCalledOnSetTextFieldText() {
         // Given
         let mockService = MockCalculationService()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             calculationService: mockService
         )
 
@@ -587,7 +664,7 @@ struct SurebetCalculatorViewModelTests {
     func calculationServiceIsCalledOnRemoveRow() {
         // Given
         let mockService = MockCalculationService()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .three,
             calculationService: mockService
         )
@@ -605,20 +682,23 @@ struct SurebetCalculatorViewModelTests {
         let mockService = MockCalculationService()
         let expectedTotal = TotalRow(betSize: "999", profitPercentage: "99%")
         let expectedRows = [
-            Row(id: 0, betSize: "500", coefficient: "2", income: "100")
+            Row(id: RowID(rawValue: 0), betSize: "500", coefficient: "2", income: "100")
         ]
-        mockService.calculateResult = (expectedTotal, expectedRows)
-        let viewModel = SurebetCalculatorViewModel(
+        let data = makeRows(expectedRows)
+        mockService.calculateResult = .updated(
+            CalculationOutput(total: expectedTotal, rowsById: data.rowsById)
+        )
+        let viewModel = makeViewModel(
             calculationService: mockService
         )
 
         // When
-        viewModel.send(.selectRow(.row(0)))
+        viewModel.send(.selectRow(.row(rowId(0))))
 
         // Then
         #expect(viewModel.total.betSize == expectedTotal.betSize)
         #expect(viewModel.total.profitPercentage == expectedTotal.profitPercentage)
-        #expect(viewModel.rows[0].betSize == expectedRows[0].betSize)
+        #expect(row(viewModel, 0).betSize == expectedRows[0].betSize)
     }
 
     // MARK: - addRow Tests
@@ -626,7 +706,7 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func addRowWhenNumberOfRowsIsLessThanTen() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .two
         )
 
@@ -640,36 +720,36 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func addRowWhenNumberOfRowsIsTen() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
-            selectedNumberOfRows: .ten
+        let viewModel = makeViewModel(
+            selectedNumberOfRows: .twenty
         )
 
         // When
         viewModel.send(.addRow)
 
         // Then
-        // Не должно добавляться, если уже 10 строк
-        #expect(viewModel.selectedNumberOfRows == .ten)
+        // Не должно добавляться, если уже 20 строк
+        #expect(viewModel.selectedNumberOfRows == .twenty)
     }
 
     @Test
     func addRowWhenNumberOfRowsIsNine() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
-            selectedNumberOfRows: .nine
+        let viewModel = makeViewModel(
+            selectedNumberOfRows: .nineteen
         )
 
         // When
         viewModel.send(.addRow)
 
         // Then
-        #expect(viewModel.selectedNumberOfRows == .ten)
+        #expect(viewModel.selectedNumberOfRows == .twenty)
     }
 
     @Test
     func addRowMultipleTimes() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .two
         )
 
@@ -685,63 +765,63 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func addRowResetsDerivedValuesWhenSelectedRowIsNone() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(selectedRow: .none)
+        let viewModel = makeViewModel(selection: .none)
 
         // When
-        viewModel.send(.setTextFieldText(.rowCoefficient(0), "2"))
-        viewModel.send(.setTextFieldText(.rowCoefficient(1), "3"))
-        viewModel.send(.setTextFieldText(.rowBetSize(0), "100"))
-        viewModel.send(.setTextFieldText(.rowBetSize(1), "200"))
+        viewModel.send(.setTextFieldText(.rowCoefficient(rowId(0)), "2"))
+        viewModel.send(.setTextFieldText(.rowCoefficient(rowId(1)), "3"))
+        viewModel.send(.setTextFieldText(.rowBetSize(rowId(0)), "100"))
+        viewModel.send(.setTextFieldText(.rowBetSize(rowId(1)), "200"))
         viewModel.send(.addRow)
 
         // Then
         #expect(viewModel.total.betSize == "")
         #expect(viewModel.total.profitPercentage == "0%")
-        #expect(viewModel.rows[0].betSize == "100")
-        #expect(viewModel.rows[0].income == "0")
-        #expect(viewModel.rows[1].betSize == "200")
-        #expect(viewModel.rows[1].income == "0")
+        #expect(row(viewModel, 0).betSize == "100")
+        #expect(row(viewModel, 0).income == "0")
+        #expect(row(viewModel, 1).betSize == "200")
+        #expect(row(viewModel, 1).income == "0")
     }
 
     @Test
     func addRowResetsDerivedValuesWhenSelectedRowIsTotal() {
         // Given
-        let viewModel = SurebetCalculatorViewModel()
+        let viewModel = makeViewModel()
 
         // When
-        viewModel.send(.setTextFieldText(.rowCoefficient(0), "2"))
-        viewModel.send(.setTextFieldText(.rowCoefficient(1), "3"))
+        viewModel.send(.setTextFieldText(.rowCoefficient(rowId(0)), "2"))
+        viewModel.send(.setTextFieldText(.rowCoefficient(rowId(1)), "3"))
         viewModel.send(.setTextFieldText(.totalBetSize, "1000"))
         viewModel.send(.addRow)
 
         // Then
         #expect(viewModel.total.betSize == "1000")
         #expect(viewModel.total.profitPercentage == "0%")
-        #expect(viewModel.rows[0].betSize == "")
-        #expect(viewModel.rows[0].income == "0")
-        #expect(viewModel.rows[1].betSize == "")
-        #expect(viewModel.rows[1].income == "0")
+        #expect(row(viewModel, 0).betSize == "")
+        #expect(row(viewModel, 0).income == "0")
+        #expect(row(viewModel, 1).betSize == "")
+        #expect(row(viewModel, 1).income == "0")
     }
 
     @Test
     func addRowResetsDerivedValuesWhenSelectedRowIsSpecificRow() {
         // Given
-        let viewModel = SurebetCalculatorViewModel()
+        let viewModel = makeViewModel()
 
         // When
-        viewModel.send(.selectRow(.row(0)))
-        viewModel.send(.setTextFieldText(.rowCoefficient(0), "2"))
-        viewModel.send(.setTextFieldText(.rowCoefficient(1), "3"))
-        viewModel.send(.setTextFieldText(.rowBetSize(0), "500"))
+        viewModel.send(.selectRow(.row(rowId(0))))
+        viewModel.send(.setTextFieldText(.rowCoefficient(rowId(0)), "2"))
+        viewModel.send(.setTextFieldText(.rowCoefficient(rowId(1)), "3"))
+        viewModel.send(.setTextFieldText(.rowBetSize(rowId(0)), "500"))
         viewModel.send(.addRow)
 
         // Then
         #expect(viewModel.total.betSize == "")
         #expect(viewModel.total.profitPercentage == "0%")
-        #expect(viewModel.rows[0].betSize == "500")
-        #expect(viewModel.rows[0].income == "0")
-        #expect(viewModel.rows[1].betSize == "")
-        #expect(viewModel.rows[1].income == "0")
+        #expect(row(viewModel, 0).betSize == "500")
+        #expect(row(viewModel, 0).income == "0")
+        #expect(row(viewModel, 1).betSize == "")
+        #expect(row(viewModel, 1).income == "0")
     }
 
     // MARK: - removeRow Tests
@@ -749,7 +829,7 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func removeRowWhenNumberOfRowsIsGreaterThanTwo() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .three
         )
 
@@ -763,7 +843,7 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func removeRowWhenNumberOfRowsIsTwo() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .two
         )
 
@@ -779,15 +859,15 @@ struct SurebetCalculatorViewModelTests {
     func removeRowWhenSelectedRowIsInUndisplayedRange() {
         // Given
         let id = 2
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0),
-                .init(id: 1),
-                .init(id: 2, isON: true, betSize: "777"),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0)),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2), isON: true, betSize: "777"),
+                .init(id: RowID(rawValue: 3))
             ],
             selectedNumberOfRows: .three,
-            selectedRow: .row(id)
+            selection: .row(rowId(id))
         )
 
         // When
@@ -796,9 +876,9 @@ struct SurebetCalculatorViewModelTests {
         // Then
         // Строка должна быть снята с выбора, так как она теперь вне отображаемого диапазона
         // Выбор должен переключиться на total
-        #expect(!viewModel.rows[id].isON)
+        #expect(!row(viewModel, id).isON)
         #expect(viewModel.total.isON)
-        #expect(viewModel.selectedRow == .total)
+        #expect(viewModel.selection == .total)
         #expect(viewModel.selectedNumberOfRows == .two)
     }
 
@@ -806,12 +886,12 @@ struct SurebetCalculatorViewModelTests {
     func removeRowWhenUndisplayedRowContainsData() {
         // Given
         let id = 2
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0),
-                .init(id: 1),
-                .init(id: 2, betSize: "777", coefficient: formatCoefficient(2.22)),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0)),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2), betSize: "777", coefficient: formatCoefficient(2.22)),
+                .init(id: RowID(rawValue: 3))
             ],
             selectedNumberOfRows: .three
         )
@@ -821,9 +901,9 @@ struct SurebetCalculatorViewModelTests {
 
         // Then
         // Данные в неотображаемой строке должны быть очищены
-        #expect(viewModel.rows[id].betSize == "")
-        #expect(viewModel.rows[id].coefficient == "")
-        #expect(viewModel.rows[id].income == "0")
+        #expect(row(viewModel, id).betSize == "")
+        #expect(row(viewModel, id).coefficient == "")
+        #expect(row(viewModel, id).income == "0")
         #expect(viewModel.selectedNumberOfRows == .two)
     }
 
@@ -831,7 +911,7 @@ struct SurebetCalculatorViewModelTests {
     func removeRowCallsCalculate() {
         // Given
         let mockService = MockCalculationService()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .three,
             calculationService: mockService
         )
@@ -847,15 +927,15 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func removeRowWhenSelectedRowIsNotInUndisplayedRange() {
         // Given
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0, isON: true),
-                .init(id: 1),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), isON: true),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ],
             selectedNumberOfRows: .three,
-            selectedRow: .row(0)
+            selection: .row(rowId(0))
         )
 
         // When
@@ -863,8 +943,8 @@ struct SurebetCalculatorViewModelTests {
 
         // Then
         // Выбранная строка остается выбранной, так как она в отображаемом диапазоне
-        #expect(viewModel.rows[0].isON)
-        #expect(viewModel.selectedRow == .row(0))
+        #expect(row(viewModel, 0).isON)
+        #expect(viewModel.selection == .row(rowId(0)))
         #expect(viewModel.selectedNumberOfRows == .two)
     }
 
@@ -873,21 +953,21 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func mainActorIsolation() async {
         // Given
-        let viewModel = SurebetCalculatorViewModel()
+        let viewModel = makeViewModel()
 
         // When & Then
         // Проверяем, что методы ViewModel выполняются на MainActor
         await MainActor.run {
-            viewModel.send(.selectRow(.row(0)))
-            #expect(viewModel.selectedRow == .row(0))
+            viewModel.send(.selectRow(.row(rowId(0))))
+            #expect(viewModel.selection == .row(rowId(0)))
         }
 
         // Проверяем доступ к @Published свойствам из MainActor контекста
         await MainActor.run {
             _ = viewModel.total
-            _ = viewModel.rows
+            _ = viewModel.rowsById
             _ = viewModel.selectedNumberOfRows
-            _ = viewModel.selectedRow
+            _ = viewModel.selection
             _ = viewModel.focus
         }
     }
@@ -895,7 +975,7 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func concurrentSendCalls() async {
         // Given
-        let viewModel = SurebetCalculatorViewModel()
+        let viewModel = makeViewModel()
         let iterations = 100
 
         // When
@@ -904,7 +984,7 @@ struct SurebetCalculatorViewModelTests {
             for index in 0..<iterations {
                 group.addTask {
                     await MainActor.run {
-                        viewModel.send(.setTextFieldText(.rowCoefficient(index % 4), "\(index)"))
+                        viewModel.send(.setTextFieldText(.rowCoefficient(rowId(index % 4)), "\(index)"))
                     }
                 }
             }
@@ -915,7 +995,7 @@ struct SurebetCalculatorViewModelTests {
         // Все строки должны иметь валидные значения коэффициентов
         await MainActor.run {
             for index in 0..<4 {
-                let coefficient = viewModel.rows[index].coefficient
+                let coefficient = row(viewModel, index).coefficient
                 // Коэффициент должен быть либо пустым, либо валидным числом
                 #expect(coefficient.isEmpty || Double(coefficient.replacingOccurrences(of: ",", with: ".")) != nil)
             }
@@ -925,7 +1005,7 @@ struct SurebetCalculatorViewModelTests {
     @Test
     func concurrentAddAndRemoveRow() async {
         // Given
-        let viewModel = SurebetCalculatorViewModel(selectedNumberOfRows: .five)
+        let viewModel = makeViewModel(selectedNumberOfRows: .five)
         let iterations = 50
 
         // When
@@ -952,15 +1032,15 @@ struct SurebetCalculatorViewModelTests {
         // Проверяем, что количество строк в допустимых пределах
         await MainActor.run {
             #expect(viewModel.selectedNumberOfRows.rawValue >= 2)
-            #expect(viewModel.selectedNumberOfRows.rawValue <= 10)
+            #expect(viewModel.selectedNumberOfRows.rawValue <= 20)
         }
     }
 
     @Test
     func concurrentSelectRow() async {
         // Given
-        let viewModel = SurebetCalculatorViewModel()
-        let rowTypes: [RowType] = [.total, .row(0), .row(1), .row(2), .row(3)]
+        let viewModel = makeViewModel()
+        let rowTypes: [Selection] = [.total, .none, .row(rowId(0)), .row(rowId(1)), .row(rowId(2)), .row(rowId(3))]
 
         // When
         // Параллельно выбираем разные строки
@@ -977,45 +1057,44 @@ struct SurebetCalculatorViewModelTests {
         }
 
         // Then
-        // Проверяем, что состояние корректно (selectedRow должен быть одним из валидных значений или nil)
+        // Проверяем, что состояние корректно (selection должен быть одним из валидных значений)
         await MainActor.run {
-            if let selected = viewModel.selectedRow {
-                #expect(rowTypes.contains(selected))
-            }
+            let selected = viewModel.selection
+            #expect(rowTypes.contains(selected))
         }
     }
 
     @Test
     func publishedPropertiesUpdateOnMainActor() async {
         // Given
-        let viewModel = SurebetCalculatorViewModel()
+        let viewModel = makeViewModel()
 
         // When
         await MainActor.run {
             viewModel.send(.setTextFieldText(.totalBetSize, "1000"))
-            viewModel.send(.selectRow(.row(0)))
+            viewModel.send(.selectRow(.row(rowId(0))))
         }
 
         // Then
         // Проверяем, что @Published свойства обновились корректно
         await MainActor.run {
             #expect(viewModel.total.betSize == "")
-            #expect(viewModel.selectedRow == .row(0))
-            #expect(viewModel.rows[0].isON)
+            #expect(viewModel.selection == .row(rowId(0)))
+            #expect(row(viewModel, 0).isON)
         }
     }
 
     @Test
     func rapidSequentialActions() async {
         // Given
-        let viewModel = SurebetCalculatorViewModel()
+        let viewModel = makeViewModel()
 
         // When
         // Быстрые последовательные вызовы без задержек
         await MainActor.run {
             for index in 0..<10 {
-                viewModel.send(.setTextFieldText(.rowCoefficient(index % 4), "\(index + 1)"))
-                viewModel.send(.setTextFieldText(.rowBetSize(index % 4), "\(index * 100)"))
+                viewModel.send(.setTextFieldText(.rowCoefficient(rowId(index % 4)), "\(index + 1)"))
+                viewModel.send(.setTextFieldText(.rowBetSize(rowId(index % 4)), "\(index * 100)"))
             }
             viewModel.send(.selectRow(.total))
             viewModel.send(.setTextFieldText(.totalBetSize, "5000"))
@@ -1025,7 +1104,7 @@ struct SurebetCalculatorViewModelTests {
         // Проверяем, что финальное состояние корректно
         await MainActor.run {
             #expect(viewModel.total.betSize == "5000")
-            #expect(viewModel.selectedRow == .total)
+            #expect(viewModel.selection == .total)
             #expect(viewModel.total.isON)
         }
     }
@@ -1037,7 +1116,7 @@ struct SurebetCalculatorViewModelTests {
     func analyticsWhenCalculatorRowAdded() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .two,
             analytics: mockAnalytics
         )
@@ -1060,7 +1139,7 @@ struct SurebetCalculatorViewModelTests {
     func analyticsWhenCalculatorRowAddedParameters() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .two,
             analytics: mockAnalytics
         )
@@ -1083,8 +1162,8 @@ struct SurebetCalculatorViewModelTests {
     func analyticsWhenCalculatorRowAddedNotCalledAtMax() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
-        let viewModel = SurebetCalculatorViewModel(
-            selectedNumberOfRows: .ten,
+        let viewModel = makeViewModel(
+            selectedNumberOfRows: .twenty,
             analytics: mockAnalytics
         )
         let initialCallCount = mockAnalytics.eventCallCount
@@ -1102,7 +1181,7 @@ struct SurebetCalculatorViewModelTests {
     func analyticsWhenCalculatorRowRemoved() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .three,
             analytics: mockAnalytics
         )
@@ -1125,7 +1204,7 @@ struct SurebetCalculatorViewModelTests {
     func analyticsWhenCalculatorRowRemovedParameters() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .three,
             analytics: mockAnalytics
         )
@@ -1148,7 +1227,7 @@ struct SurebetCalculatorViewModelTests {
     func analyticsWhenCalculatorRowRemovedNotCalledAtMin() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             selectedNumberOfRows: .two,
             analytics: mockAnalytics
         )
@@ -1167,13 +1246,13 @@ struct SurebetCalculatorViewModelTests {
     func analyticsWhenCalculatorCleared() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             total: .init(betSize: "777", profitPercentage: "10%"),
             rows: [
-                .init(id: 0, betSize: "100", coefficient: "2.0"),
-                .init(id: 1),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), betSize: "100", coefficient: "2.0"),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ],
             analytics: mockAnalytics
         )
@@ -1193,12 +1272,12 @@ struct SurebetCalculatorViewModelTests {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
         let delay = TestDelay()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0, coefficient: "2.0"),
-                .init(id: 1, coefficient: "3.0"),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), coefficient: "2.0"),
+                .init(id: RowID(rawValue: 1), coefficient: "3.0"),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ],
             analytics: mockAnalytics,
             delay: delay
@@ -1225,12 +1304,12 @@ struct SurebetCalculatorViewModelTests {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
         let delay = TestDelay()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0, coefficient: "2.0"),
-                .init(id: 1, coefficient: "3.0"),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), coefficient: "2.0"),
+                .init(id: RowID(rawValue: 1), coefficient: "3.0"),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ],
             analytics: mockAnalytics,
             delay: delay
@@ -1261,12 +1340,12 @@ struct SurebetCalculatorViewModelTests {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
         let delay = TestDelay()
-        let viewModel = SurebetCalculatorViewModel(
+        let viewModel = makeViewModel(
             rows: [
-                .init(id: 0, coefficient: "2.0"),
-                .init(id: 1, coefficient: "3.0"),
-                .init(id: 2),
-                .init(id: 3)
+                .init(id: RowID(rawValue: 0), coefficient: "2.0"),
+                .init(id: RowID(rawValue: 1), coefficient: "3.0"),
+                .init(id: RowID(rawValue: 2)),
+                .init(id: RowID(rawValue: 3))
             ],
             analytics: mockAnalytics,
             delay: delay

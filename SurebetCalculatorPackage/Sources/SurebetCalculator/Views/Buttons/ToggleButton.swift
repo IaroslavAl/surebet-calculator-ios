@@ -5,7 +5,7 @@ struct ToggleButton: View {
 
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
 
-    let row: RowType
+    let row: Selection
 
     // MARK: - Body
 
@@ -25,9 +25,8 @@ private extension ToggleButton {
         case .total:
             return viewModel.total.isON
         case let .row(id):
-            if let row = viewModel.rows.first(where: { $0.id == id }) {
-                return row.isON
-            }
+            return viewModel.row(for: id)?.isON ?? false
+        case .none:
             return false
         }
     }
@@ -67,7 +66,10 @@ private extension ToggleButton {
         case .total:
             return AccessibilityIdentifiers.TotalRow.toggleButton
         case let .row(id):
-            return AccessibilityIdentifiers.Row.toggleButton(id)
+            let displayIndex = viewModel.displayIndex(for: id) ?? 0
+            return AccessibilityIdentifiers.Row.toggleButton(displayIndex)
+        case .none:
+            return AccessibilityIdentifiers.TotalRow.toggleButton
         }
     }
 }

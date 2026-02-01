@@ -288,3 +288,10 @@
 ---
 
 **Последнее обновление:** 2026-01-31
+
+### 2026-02-01: Destination ID и сбои CoreSimulator
+- **Наблюдение:** Destination ID из AGENTS.md может быть machine-specific; в агентских окружениях возможны несоответствия.
+- **Симптом:** `xcodebuild test` падает с ошибками CoreSimulator (`simdiskimaged` не отвечает / runtimes не обнаружены) даже при наличии устройства в `simctl list devices available`.
+- **Проверка:** Всегда запускать `xcrun simctl list devices available` и подтверждать наличие указанного ID до fallback.
+- **Fallback:** Использовать другой iPhone Simulator только если ID из AGENTS.md недоступен; AGENTS.md не менять автоматически.
+- **CI/агенты:** Окружения без корректно запущенного CoreSimulator могут давать ложные падения тестов без проблем в коде.

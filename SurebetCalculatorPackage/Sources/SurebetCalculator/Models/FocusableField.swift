@@ -2,6 +2,6 @@ import Foundation
 
 enum FocusableField: Hashable, Sendable {
     case totalBetSize
-    case rowBetSize(_ id: Int)
-    case rowCoefficient(_ id: Int)
+    case rowBetSize(_ id: RowID)
+    case rowCoefficient(_ id: RowID)
 }

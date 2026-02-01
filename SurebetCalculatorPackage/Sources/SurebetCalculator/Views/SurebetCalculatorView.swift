@@ -86,8 +86,8 @@ private extension SurebetCalculatorView {
 
     var rowsView: some View {
         VStack(spacing: rowsSpacing) {
-            ForEach(viewModel.displayedRowIndexes, id: \.self) { id in
-                RowView(id: id)
+            ForEach(Array(viewModel.activeRowIds.enumerated()), id: \.element) { index, id in
+                RowView(rowId: id, displayIndex: index)
             }
         }
         .padding(.trailing, horizontalPadding)
@@ -112,12 +112,12 @@ private extension SurebetCalculatorView {
     var addButton: some View {
         Image(systemName: "plus.circle")
             .foregroundStyle(
-                viewModel.selectedNumberOfRows == .ten
+                viewModel.selectedNumberOfRows == .twenty
                     ? AppColors.inactiveButton
                     : AppColors.activeButton
             )
             .font(AppConstants.Typography.button)
-            .disabled(viewModel.selectedNumberOfRows == .ten)
+            .disabled(viewModel.selectedNumberOfRows == .twenty)
             .padding(AppConstants.Padding.small)
             .contentShape(.rect)
             .onTapGesture {

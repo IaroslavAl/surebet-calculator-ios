@@ -5,17 +5,13 @@ struct DefaultCalculationService: CalculationService, Sendable {
     // MARK: - Public Methods
 
     /// Выполняет вычисления через Calculator.
-    func calculate(
-        total: TotalRow,
-        rows: [Row],
-        selectedRow: RowType?,
-        displayedRowIndexes: Range<Int>
-    ) -> (total: TotalRow?, rows: [Row]?) {
+    func calculate(input: CalculationInput) -> CalculationResult {
         let calculator = Calculator(
-            total: total,
-            rows: rows,
-            selectedRow: selectedRow,
-            displayedRowIndexes: displayedRowIndexes
+            total: input.total,
+            rowsById: input.rowsById,
+            orderedRowIds: input.orderedRowIds,
+            activeRowIds: input.activeRowIds,
+            selection: input.selection
         )
         return calculator.calculate()
     }
