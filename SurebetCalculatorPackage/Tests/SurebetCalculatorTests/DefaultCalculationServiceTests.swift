@@ -4,33 +4,44 @@ import Testing
 
 /// Тесты для DefaultCalculationService
 struct DefaultCalculationServiceTests {
+    private func makeRows(_ rows: [Row]) -> (rowsById: [RowID: Row], orderedRowIds: [RowID]) {
+        let orderedRowIds = rows.map(\.id)
+        let rowsById = Dictionary(uniqueKeysWithValues: rows.map { ($0.id, $0) })
+        return (rowsById: rowsById, orderedRowIds: orderedRowIds)
+    }
+
     @Test
     func calculateWhenValidParameters() {
         // Given
         let service = DefaultCalculationService()
         let total = TotalRow(betSize: "1000", profitPercentage: "")
         let rows = [
-            Row(id: 0, betSize: "", coefficient: "2", income: ""),
-            Row(id: 1, betSize: "", coefficient: "3", income: "")
+            Row(id: RowID(rawValue: 0), betSize: "", coefficient: "2", income: ""),
+            Row(id: RowID(rawValue: 1), betSize: "", coefficient: "3", income: "")
         ]
-        let selectedRow: RowType = .total
-        let displayedRowIndexes = 0..<2
+        let data = makeRows(rows)
 
         // When
         let result = service.calculate(
-            total: total,
-            rows: rows,
-            selectedRow: selectedRow,
-            displayedRowIndexes: displayedRowIndexes
+            input: CalculationInput(
+                total: total,
+                rowsById: data.rowsById,
+                orderedRowIds: data.orderedRowIds,
+                activeRowIds: data.orderedRowIds,
+                selection: .total
+            )
         )
 
         // Then
         // Проверяем, что результат не nil и содержит корректные данные
-        #expect(result.total != nil)
-        #expect(result.rows != nil)
-        #expect(result.total?.betSize == "1000")
-        #expect(result.total?.profitPercentage == "20%")
-        #expect(result.rows?.count == 2)
+        switch result {
+        case let .updated(output):
+            #expect(output.total.betSize == "1000")
+            #expect(output.total.profitPercentage == "20%")
+            #expect(output.rowsById.count == 2)
+        default:
+            #expect(Bool(false))
+        }
     }
 
     @Test
@@ -39,30 +50,37 @@ struct DefaultCalculationServiceTests {
         let service = DefaultCalculationService()
         let total = TotalRow(betSize: "1000", profitPercentage: "")
         let rows = [
-            Row(id: 0, betSize: "", coefficient: "", income: ""),
-            Row(id: 1, betSize: "", coefficient: "3", income: "")
+            Row(id: RowID(rawValue: 0), betSize: "", coefficient: "", income: ""),
+            Row(id: RowID(rawValue: 1), betSize: "", coefficient: "3", income: "")
         ]
-        let selectedRow: RowType = .total
-        let displayedRowIndexes = 0..<2
+        let data = makeRows(rows)
 
         // When
         let result = service.calculate(
-            total: total,
-            rows: rows,
-            selectedRow: selectedRow,
-            displayedRowIndexes: displayedRowIndexes
+            input: CalculationInput(
+                total: total,
+                rowsById: data.rowsById,
+                orderedRowIds: data.orderedRowIds,
+                activeRowIds: data.orderedRowIds,
+                selection: .total
+            )
         )
 
         // Then
         // При невалидных коэффициентах Calculator сбрасывает только вычисляемые значения
-        #expect(result.total?.betSize == "1000")
-        #expect(result.total?.profitPercentage == "0%")
-        #expect(result.rows?[0].betSize == "")
-        #expect(result.rows?[0].coefficient == "")
-        #expect(result.rows?[0].income == "0")
-        #expect(result.rows?[1].betSize == "")
-        #expect(result.rows?[1].coefficient == "3")
-        #expect(result.rows?[1].income == "0")
+        switch result {
+        case let .resetDerived(output):
+            #expect(output.total.betSize == "1000")
+            #expect(output.total.profitPercentage == "0%")
+            #expect(output.rowsById[RowID(rawValue: 0)]?.betSize == "")
+            #expect(output.rowsById[RowID(rawValue: 0)]?.coefficient == "")
+            #expect(output.rowsById[RowID(rawValue: 0)]?.income == "0")
+            #expect(output.rowsById[RowID(rawValue: 1)]?.betSize == "")
+            #expect(output.rowsById[RowID(rawValue: 1)]?.coefficient == "3")
+            #expect(output.rowsById[RowID(rawValue: 1)]?.income == "0")
+        default:
+            #expect(Bool(false))
+        }
     }
 
     @Test
@@ -71,30 +89,37 @@ struct DefaultCalculationServiceTests {
         let service = DefaultCalculationService()
         let total = TotalRow(betSize: "", profitPercentage: "")
         let rows = [
-            Row(id: 0, betSize: "", coefficient: "2", income: ""),
-            Row(id: 1, betSize: "", coefficient: "3", income: "")
+            Row(id: RowID(rawValue: 0), betSize: "", coefficient: "2", income: ""),
+            Row(id: RowID(rawValue: 1), betSize: "", coefficient: "3", income: "")
         ]
-        let selectedRow: RowType? = .none
-        let displayedRowIndexes = 0..<2
+        let data = makeRows(rows)
 
         // When
         let result = service.calculate(
-            total: total,
-            rows: rows,
-            selectedRow: selectedRow,
-            displayedRowIndexes: displayedRowIndexes
+            input: CalculationInput(
+                total: total,
+                rowsById: data.rowsById,
+                orderedRowIds: data.orderedRowIds,
+                activeRowIds: data.orderedRowIds,
+                selection: .none
+            )
         )
 
         // Then
-        // Когда selectedRow = .none и нет валидных betSize, сбрасываются только вычисляемые значения
-        #expect(result.total?.betSize == "")
-        #expect(result.total?.profitPercentage == "0%")
-        #expect(result.rows?[0].betSize == "")
-        #expect(result.rows?[0].coefficient == "2")
-        #expect(result.rows?[0].income == "0")
-        #expect(result.rows?[1].betSize == "")
-        #expect(result.rows?[1].coefficient == "3")
-        #expect(result.rows?[1].income == "0")
+        // Когда selection = .none и нет валидных betSize, сбрасываются только вычисляемые значения
+        switch result {
+        case let .resetDerived(output):
+            #expect(output.total.betSize == "")
+            #expect(output.total.profitPercentage == "0%")
+            #expect(output.rowsById[RowID(rawValue: 0)]?.betSize == "")
+            #expect(output.rowsById[RowID(rawValue: 0)]?.coefficient == "2")
+            #expect(output.rowsById[RowID(rawValue: 0)]?.income == "0")
+            #expect(output.rowsById[RowID(rawValue: 1)]?.betSize == "")
+            #expect(output.rowsById[RowID(rawValue: 1)]?.coefficient == "3")
+            #expect(output.rowsById[RowID(rawValue: 1)]?.income == "0")
+        default:
+            #expect(Bool(false))
+        }
     }
 
     @Test
@@ -103,33 +128,38 @@ struct DefaultCalculationServiceTests {
         let service = DefaultCalculationService()
         let total = TotalRow(betSize: "", profitPercentage: "")
         let rows = [
-            Row(id: 0, betSize: "500", coefficient: "2", income: ""),
-            Row(id: 1, betSize: "", coefficient: "3", income: "")
+            Row(id: RowID(rawValue: 0), betSize: "500", coefficient: "2", income: ""),
+            Row(id: RowID(rawValue: 1), betSize: "", coefficient: "3", income: "")
         ]
-        let selectedRow: RowType = .row(0)
-        let displayedRowIndexes = 0..<2
+        let data = makeRows(rows)
 
         // When
         let result = service.calculate(
-            total: total,
-            rows: rows,
-            selectedRow: selectedRow,
-            displayedRowIndexes: displayedRowIndexes
+            input: CalculationInput(
+                total: total,
+                rowsById: data.rowsById,
+                orderedRowIds: data.orderedRowIds,
+                activeRowIds: data.orderedRowIds,
+                selection: .row(RowID(rawValue: 0))
+            )
         )
 
         // Then
         // Проверяем, что результат не nil и содержит корректные данные
-        #expect(result.total != nil)
-        #expect(result.rows != nil)
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .none
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
-        formatter.locale = Locale.current
-        let expectedBetSize = formatter.string(from: 833.33 as NSNumber) ?? ""
-        #expect(result.total?.betSize == expectedBetSize)
-        #expect(result.total?.profitPercentage == "20%")
-        #expect(result.rows?.count == 2)
+        switch result {
+        case let .updated(output):
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .none
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 2
+            formatter.locale = Locale.current
+            let expectedBetSize = formatter.string(from: 833.33 as NSNumber) ?? ""
+            #expect(output.total.betSize == expectedBetSize)
+            #expect(output.total.profitPercentage == "20%")
+            #expect(output.rowsById.count == 2)
+        default:
+            #expect(Bool(false))
+        }
     }
 
     @Test
@@ -138,58 +168,70 @@ struct DefaultCalculationServiceTests {
         let service = DefaultCalculationService()
         let total = TotalRow(betSize: "1000", profitPercentage: "")
         let rows = [
-            Row(id: 0, betSize: "", coefficient: "2", income: ""),
-            Row(id: 1, betSize: "", coefficient: "3", income: ""),
-            Row(id: 2, betSize: "", coefficient: "4", income: "")
+            Row(id: RowID(rawValue: 0), betSize: "", coefficient: "2", income: ""),
+            Row(id: RowID(rawValue: 1), betSize: "", coefficient: "3", income: ""),
+            Row(id: RowID(rawValue: 2), betSize: "", coefficient: "4", income: "")
         ]
-        let selectedRow: RowType = .total
-        let displayedRowIndexes = 0..<3
+        let data = makeRows(rows)
 
         // When
         let result = service.calculate(
-            total: total,
-            rows: rows,
-            selectedRow: selectedRow,
-            displayedRowIndexes: displayedRowIndexes
+            input: CalculationInput(
+                total: total,
+                rowsById: data.rowsById,
+                orderedRowIds: data.orderedRowIds,
+                activeRowIds: data.orderedRowIds,
+                selection: .total
+            )
         )
 
         // Then
         // Проверяем, что результат не nil и содержит корректные данные для 3 строк
-        #expect(result.total != nil)
-        #expect(result.rows != nil)
-        #expect(result.total?.betSize == "1000")
-        #expect(result.rows?.count == 3)
+        switch result {
+        case let .updated(output):
+            #expect(output.total.betSize == "1000")
+            #expect(output.rowsById.count == 3)
+        default:
+            #expect(Bool(false))
+        }
     }
 
     @Test
-    func calculateWhenResultIsNil() {
+    func calculateWhenResultIsResetDerived() {
         // Given
         let service = DefaultCalculationService()
         let total = TotalRow(betSize: "", profitPercentage: "")
         let rows = [
-            Row(id: 0, betSize: "", coefficient: "0", income: ""),
-            Row(id: 1, betSize: "", coefficient: "3", income: "")
+            Row(id: RowID(rawValue: 0), betSize: "", coefficient: "0", income: ""),
+            Row(id: RowID(rawValue: 1), betSize: "", coefficient: "3", income: "")
         ]
-        let selectedRow: RowType = .total
-        let displayedRowIndexes = 0..<2
+        let data = makeRows(rows)
 
         // When
         let result = service.calculate(
-            total: total,
-            rows: rows,
-            selectedRow: selectedRow,
-            displayedRowIndexes: displayedRowIndexes
+            input: CalculationInput(
+                total: total,
+                rowsById: data.rowsById,
+                orderedRowIds: data.orderedRowIds,
+                activeRowIds: data.orderedRowIds,
+                selection: .total
+            )
         )
 
         // Then
         // Нулевой коэффициент должен привести к сбросу вычисляемых значений
-        #expect(result.total?.betSize == "")
-        #expect(result.total?.profitPercentage == "0%")
-        #expect(result.rows?[0].betSize == "")
-        #expect(result.rows?[0].coefficient == "0")
-        #expect(result.rows?[0].income == "0")
-        #expect(result.rows?[1].betSize == "")
-        #expect(result.rows?[1].coefficient == "3")
-        #expect(result.rows?[1].income == "0")
+        switch result {
+        case let .resetDerived(output):
+            #expect(output.total.betSize == "")
+            #expect(output.total.profitPercentage == "0%")
+            #expect(output.rowsById[RowID(rawValue: 0)]?.betSize == "")
+            #expect(output.rowsById[RowID(rawValue: 0)]?.coefficient == "0")
+            #expect(output.rowsById[RowID(rawValue: 0)]?.income == "0")
+            #expect(output.rowsById[RowID(rawValue: 1)]?.betSize == "")
+            #expect(output.rowsById[RowID(rawValue: 1)]?.coefficient == "3")
+            #expect(output.rowsById[RowID(rawValue: 1)]?.income == "0")
+        default:
+            #expect(Bool(false))
+        }
     }
 }
