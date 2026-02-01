@@ -24,7 +24,7 @@ struct SurebetCalculatorView: View {
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: toolbar)
-            .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
+            .frame(minHeight: .zero, maxHeight: .infinity, alignment: .top)
             .font(AppConstants.Typography.body)
             .environmentObject(viewModel)
             .animation(.default, value: viewModel.selectedNumberOfRows)
@@ -107,7 +107,7 @@ private extension SurebetCalculatorView {
         // https://developer.apple.com/forums/thread/709656
         ToolbarItemGroup(placement: .keyboard) {
             KeyboardClearButton()
-            Spacer(minLength: 0)
+            Color.clear
             KeyboardDoneButton()
         }
     }
