@@ -14,8 +14,8 @@ struct RowView: View {
         HStack(alignment: .bottom, spacing: .zero) {
             ToggleButton(row: .row(rowId))
             HStack(spacing: spacing) {
-                betSize
                 coefficient
+                betSize
                 income
             }
         }
