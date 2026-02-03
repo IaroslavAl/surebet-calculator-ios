@@ -1,4 +1,5 @@
 import Banner
+import Foundation
 import SwiftUI
 
 struct SurebetCalculatorView: View {
@@ -133,7 +134,10 @@ private extension SurebetCalculatorView {
             get: { viewModel.selectedNumberOfRows.rawValue },
             set: { newValue in
                 guard let selected = NumberOfRows(rawValue: newValue) else { return }
-                viewModel.send(.setNumberOfRows(selected))
+                guard selected != viewModel.selectedNumberOfRows else { return }
+                DispatchQueue.main.async {
+                    viewModel.send(.setNumberOfRows(selected))
+                }
             }
         )
     }
