@@ -57,6 +57,7 @@ private extension SurebetCalculatorView {
             .padding(.trailing, rowsSpacing)
             .background(backgroundTapGesture)
         }
+        .scrollDismissesKeyboard(.immediately)
     }
 
     var backgroundTapGesture: some View {
