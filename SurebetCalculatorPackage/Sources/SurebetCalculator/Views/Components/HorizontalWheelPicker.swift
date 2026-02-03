@@ -58,7 +58,22 @@ struct HorizontalWheelPicker: UIViewRepresentable {
         if context.coordinator.shouldReload(options: options, currentCount: uiView.numberOfItems(inSection: 0)) {
             uiView.reloadData()
         }
-        context.coordinator.scrollToSelectionIfNeeded(in: uiView, animated: false)
+        if !context.coordinator.hasCentered {
+            if uiView.bounds.width > 0 {
+                context.coordinator.centerOnSelection(in: uiView)
+            } else if !context.coordinator.isCenteringScheduled {
+                context.coordinator.isCenteringScheduled = true
+                DispatchQueue.main.async { [weak uiView] in
+                    guard let uiView else { return }
+                    if uiView.bounds.width > 0 {
+                        context.coordinator.centerOnSelection(in: uiView)
+                    }
+                    context.coordinator.isCenteringScheduled = false
+                }
+            }
+        } else {
+            context.coordinator.scrollToSelectionIfNeeded(in: uiView, animated: false)
+        }
         context.coordinator.updateVisibleCells(in: uiView)
     }
 }
@@ -75,13 +90,16 @@ extension HorizontalWheelPicker {
         private var lastItemSpacing: CGFloat = .zero
         private var lastBoundsWidth: CGFloat = .zero
         private var lastInset: CGFloat = .zero
+        private let repeatMultiplier = 200
+        var hasCentered = false
+        var isCenteringScheduled = false
 
         init(_ parent: HorizontalWheelPicker) {
             self.parent = parent
         }
 
         func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            parent.options.count
+            totalItemCount()
         }
 
         func collectionView(
@@ -94,19 +112,22 @@ extension HorizontalWheelPicker {
             ) as? NumberCell else {
                 return UICollectionViewCell()
             }
-            cell.configure(text: "\(parent.options[indexPath.item])")
-            let highlightIndex = parent.options.firstIndex(of: parent.selection)
-            cell.setHighlighted(indexPath.item == highlightIndex)
+            if let option = optionValue(for: indexPath.item) {
+                cell.configure(text: "\(option)")
+            } else {
+                cell.configure(text: "")
+            }
+            cell.setHighlighted(false)
             return cell
         }
 
         func scrollViewDidScroll(_ scrollView: UIScrollView) {
             guard let collectionView = scrollView as? UICollectionView else { return }
             if isUserDragging {
-                let index = nearestIndex(in: collectionView)
-                let value = parent.options[index]
-                if parent.selection != value {
-                    parent.selection = value
+                if let value = optionValue(for: nearestIndex(in: collectionView)) {
+                    if parent.selection != value {
+                        parent.selection = value
+                    }
                 }
             }
             updateVisibleCells(in: collectionView)
@@ -148,11 +169,12 @@ extension HorizontalWheelPicker {
                 updateVisibleCells(in: collectionView)
                 return
             }
-            guard let index = parent.options.firstIndex(of: parent.selection) else { return }
+            guard let optionIndex = parent.options.firstIndex(of: parent.selection) else { return }
             if lastSelection == parent.selection, collectionView.numberOfItems(inSection: 0) > 0 {
                 return
             }
-            let offset = offsetForIndex(index, in: collectionView)
+            let listIndex = centeredIndex(forOptionIndex: optionIndex)
+            let offset = offsetForIndex(listIndex, in: collectionView)
             collectionView.setContentOffset(CGPoint(x: offset, y: 0), animated: animated)
             lastSelection = parent.selection
         }
@@ -181,32 +203,27 @@ extension HorizontalWheelPicker {
             guard let collectionView = scrollView as? UICollectionView else { return }
             let index = pendingIndex ?? nearestIndex(in: collectionView)
             pendingIndex = nil
-            let targetOffset = offsetForIndex(index, in: collectionView)
-            if abs(collectionView.contentOffset.x - targetOffset) > 0.5 {
-                collectionView.setContentOffset(CGPoint(x: targetOffset, y: 0), animated: animated)
-            }
-            let value = parent.options[index]
-            if parent.selection != value {
-                parent.selection = value
-            }
-            lastSelection = value
+            guard let optionIndex = optionIndex(for: index) else { return }
+            let centered = centeredIndex(forOptionIndex: optionIndex)
+            let targetIndex = abs(index - centered) > parent.options.count * 2 ? centered : index
+            selectListIndex(targetIndex, in: collectionView, animated: animated)
             updateVisibleCells(in: collectionView)
         }
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            selectIndex(indexPath.item, in: collectionView, animated: true)
+            selectListIndex(indexPath.item, in: collectionView, animated: true)
         }
 
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
             guard let collectionView = recognizer.view as? UICollectionView else { return }
             let location = recognizer.location(in: collectionView)
             if let indexPath = collectionView.indexPathForItem(at: location) {
-                selectIndex(indexPath.item, in: collectionView, animated: true)
+                selectListIndex(indexPath.item, in: collectionView, animated: true)
                 return
             }
 
             let index = nearestIndex(in: collectionView)
-            selectIndex(index, in: collectionView, animated: true)
+            selectListIndex(index, in: collectionView, animated: true)
         }
 
         func gestureRecognizer(
@@ -217,12 +234,19 @@ extension HorizontalWheelPicker {
         }
 
         func shouldReload(options: [Int], currentCount: Int) -> Bool {
-            if currentCount != options.count {
+            let totalCount = totalItemCount(for: options)
+            if currentCount != totalCount {
                 lastOptions = options
+                lastSelection = nil
+                hasCentered = false
+                isCenteringScheduled = false
                 return true
             }
             if lastOptions != options {
                 lastOptions = options
+                lastSelection = nil
+                hasCentered = false
+                isCenteringScheduled = false
                 return true
             }
             return false
@@ -252,10 +276,11 @@ extension HorizontalWheelPicker {
         }
 
         private func nearestIndex(contentOffsetX: CGFloat, in collectionView: UICollectionView) -> Int {
+            guard totalItemCount() > 0 else { return 0 }
             let itemStep = parent.itemWidth + parent.itemSpacing
             let offsetX = contentOffsetX + collectionView.contentInset.left
             let rawIndex = Int(round(offsetX / itemStep))
-            return min(max(rawIndex, 0), max(parent.options.count - 1, 0))
+            return min(max(rawIndex, 0), totalItemCount() - 1)
         }
 
         private func offsetForIndex(_ index: Int, in collectionView: UICollectionView) -> CGFloat {
@@ -263,14 +288,52 @@ extension HorizontalWheelPicker {
             return CGFloat(index) * itemStep - collectionView.contentInset.left
         }
 
-        private func selectIndex(_ index: Int, in collectionView: UICollectionView, animated: Bool) {
+        private func selectListIndex(_ index: Int, in collectionView: UICollectionView, animated: Bool) {
             let offset = offsetForIndex(index, in: collectionView)
             collectionView.setContentOffset(CGPoint(x: offset, y: 0), animated: animated)
-            let value = parent.options[index]
-            if parent.selection != value {
-                parent.selection = value
+            if let value = optionValue(for: index) {
+                if parent.selection != value {
+                    parent.selection = value
+                }
+                lastSelection = value
             }
-            lastSelection = value
+        }
+
+        private func totalItemCount() -> Int {
+            totalItemCount(for: parent.options)
+        }
+
+        private func totalItemCount(for options: [Int]) -> Int {
+            let count = options.count
+            guard count > 0 else { return 0 }
+            return count * repeatMultiplier
+        }
+
+        private func optionIndex(for listIndex: Int) -> Int? {
+            let count = parent.options.count
+            guard count > 0 else { return nil }
+            return listIndex % count
+        }
+
+        private func optionValue(for listIndex: Int) -> Int? {
+            guard let index = optionIndex(for: listIndex) else { return nil }
+            return parent.options[index]
+        }
+
+        private func centeredIndex(forOptionIndex optionIndex: Int) -> Int {
+            let count = parent.options.count
+            guard count > 0 else { return 0 }
+            let base = (repeatMultiplier / 2) * count
+            return base + optionIndex
+        }
+
+        func centerOnSelection(in collectionView: UICollectionView) {
+            guard let optionIndex = parent.options.firstIndex(of: parent.selection) else { return }
+            let listIndex = centeredIndex(forOptionIndex: optionIndex)
+            let offset = offsetForIndex(listIndex, in: collectionView)
+            collectionView.setContentOffset(CGPoint(x: offset, y: 0), animated: false)
+            lastSelection = parent.selection
+            hasCentered = true
         }
     }
 }
