@@ -36,16 +36,28 @@ struct HorizontalWheelPicker: UIViewRepresentable {
         context.coordinator.parent = self
 
         if let layout = uiView.collectionViewLayout as? UICollectionViewFlowLayout {
-            layout.itemSize = CGSize(width: itemWidth, height: itemHeight)
-            layout.minimumLineSpacing = itemSpacing
+            if context.coordinator.updateLayoutIfNeeded(
+                itemWidth: itemWidth,
+                itemHeight: itemHeight,
+                itemSpacing: itemSpacing
+            ) {
+                layout.itemSize = CGSize(width: itemWidth, height: itemHeight)
+                layout.minimumLineSpacing = itemSpacing
+                layout.invalidateLayout()
+            }
         }
 
         let inset = max(0, (uiView.bounds.width - itemWidth) / 2)
-        if uiView.contentInset.left != inset || uiView.contentInset.right != inset {
+        if context.coordinator.updateInsetIfNeeded(
+            inset: inset,
+            boundsWidth: uiView.bounds.width
+        ) {
             uiView.contentInset = UIEdgeInsets(top: 0, left: inset, bottom: 0, right: inset)
         }
 
-        uiView.reloadData()
+        if context.coordinator.shouldReload(options: options, currentCount: uiView.numberOfItems(inSection: 0)) {
+            uiView.reloadData()
+        }
         context.coordinator.scrollToSelectionIfNeeded(in: uiView, animated: false)
         context.coordinator.updateVisibleCells(in: uiView)
     }
@@ -57,6 +69,12 @@ extension HorizontalWheelPicker {
         private var lastSelection: Int?
         private var pendingIndex: Int?
         private var isUserDragging = false
+        private var lastOptions: [Int] = []
+        private var lastItemWidth: CGFloat = .zero
+        private var lastItemHeight: CGFloat = .zero
+        private var lastItemSpacing: CGFloat = .zero
+        private var lastBoundsWidth: CGFloat = .zero
+        private var lastInset: CGFloat = .zero
 
         init(_ parent: HorizontalWheelPicker) {
             self.parent = parent
@@ -198,6 +216,37 @@ extension HorizontalWheelPicker {
             true
         }
 
+        func shouldReload(options: [Int], currentCount: Int) -> Bool {
+            if currentCount != options.count {
+                lastOptions = options
+                return true
+            }
+            if lastOptions != options {
+                lastOptions = options
+                return true
+            }
+            return false
+        }
+
+        func updateLayoutIfNeeded(itemWidth: CGFloat, itemHeight: CGFloat, itemSpacing: CGFloat) -> Bool {
+            if lastItemWidth != itemWidth || lastItemHeight != itemHeight || lastItemSpacing != itemSpacing {
+                lastItemWidth = itemWidth
+                lastItemHeight = itemHeight
+                lastItemSpacing = itemSpacing
+                return true
+            }
+            return false
+        }
+
+        func updateInsetIfNeeded(inset: CGFloat, boundsWidth: CGFloat) -> Bool {
+            if lastBoundsWidth != boundsWidth || lastInset != inset {
+                lastBoundsWidth = boundsWidth
+                lastInset = inset
+                return true
+            }
+            return false
+        }
+
         private func nearestIndex(in collectionView: UICollectionView) -> Int {
             nearestIndex(contentOffsetX: collectionView.contentOffset.x, in: collectionView)
         }
@@ -243,6 +292,9 @@ private final class NumberCell: UICollectionViewCell {
         label.textAlignment = .center
         label.textColor = .placeholderText
         label.font = UIFont.preferredFont(forTextStyle: .body)
+        label.adjustsFontForContentSizeCategory = true
+        label.minimumScaleFactor = 0.7
+        label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(backgroundContainer)
         contentView.addSubview(label)
@@ -269,12 +321,23 @@ private final class NumberCell: UICollectionViewCell {
     }
 
     func setSelected(_ isSelected: Bool) {
-        let textStyle: UIFont.TextStyle = isSelected ? .title3 : .body
+        let textStyle: UIFont.TextStyle
+        if traitCollection.userInterfaceIdiom == .pad {
+            textStyle = isSelected ? .title1 : .title2
+        } else {
+            textStyle = isSelected ? .title3 : .body
+        }
         label.font = UIFont.preferredFont(forTextStyle: textStyle)
-        let color: UIColor = isSelected ? .white : .placeholderText
-        label.textColor = color
-        backgroundContainer.layer.borderColor = color.withAlphaComponent(0.7).cgColor
-        backgroundContainer.backgroundColor = isSelected ? UIColor.label.withAlphaComponent(0.08) : .clear
+
+        if isSelected {
+            label.textColor = .label
+            backgroundContainer.layer.borderColor = UIColor.label.withAlphaComponent(0.6).cgColor
+            backgroundContainer.backgroundColor = UIColor.secondarySystemFill
+        } else {
+            label.textColor = .placeholderText
+            backgroundContainer.layer.borderColor = UIColor.separator.withAlphaComponent(0.8).cgColor
+            backgroundContainer.backgroundColor = .clear
+        }
     }
 
     func setHighlighted(_ isHighlighted: Bool) {

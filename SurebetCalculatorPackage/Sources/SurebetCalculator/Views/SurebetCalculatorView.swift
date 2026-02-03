@@ -109,7 +109,6 @@ private extension SurebetCalculatorView {
             }
             .frame(maxWidth: .infinity, minHeight: pickerHeight, maxHeight: pickerHeight)
         }
-        .padding(.horizontal, rowsSpacing)
     }
 }
 
