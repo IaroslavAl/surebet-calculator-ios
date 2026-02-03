@@ -188,6 +188,7 @@
 			);
 			mainGroup = C4620663297BFAC900E70051;
 			packageReferences = (
+				A328EB392C20000100143A27 /* SurebetCalculatorPackage */,
 			);
 			productRefGroup = C462066D297BFAC900E70051 /* Products */;
 			projectDirPath = "";
@@ -531,9 +532,17 @@
 /* Begin XCSwiftPackageProductDependency section */
 		A328EB362C14C10C00143A27 /* Root */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = A328EB392C20000100143A27 /* SurebetCalculatorPackage */;
 			productName = Root;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A328EB392C20000100143A27 /* SurebetCalculatorPackage */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = SurebetCalculatorPackage;
+		};
+/* End XCLocalSwiftPackageReference section */
 	};
 	rootObject = C4620664297BFAC900E70051 /* Project object */;
 }

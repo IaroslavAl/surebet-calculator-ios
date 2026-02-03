@@ -11,6 +11,7 @@ enum SurebetCalculatorLocalizationKey: String {
     case totalBetSize = "calculator_total_bet_size"
     case profitPercentage = "calculator_profit_percentage"
     case navigationTitle = "calculator_navigation_title"
+    case outcomesCount = "calculator_outcomes_count"
 
     /// Локализованная строка для ключа
     var localized: String {

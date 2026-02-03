@@ -210,8 +210,8 @@ final class SurebetCalculatorUITests: XCTestCase {
         )
     }
 
-    /// Тест: Добавление строки (кнопка +)
-    func testAddRow() throws {
+    /// Тест: Изменение количества строк через пикер
+    func testChangeRowCount() throws {
         launchAppWithoutOnboarding()
 
         let row0BetSize = app.textFields[Identifiers.Row.betSizeTextField(0)]
@@ -222,37 +222,27 @@ final class SurebetCalculatorUITests: XCTestCase {
         XCTAssertTrue(row1BetSize.exists)
         XCTAssertFalse(row2BetSize.exists, "Третья строка не должна существовать изначально")
 
-        // Ищем кнопку + по accessibilityIdentifier (теперь это Button)
-        let addButton = app.buttons[Identifiers.Calculator.addRowButton]
-        XCTAssertTrue(
-            addButton.waitForExistence(timeout: 2),
-            "Кнопка добавления строки должна существовать"
-        )
-        addButton.tap()
+        selectRowCount(3)
 
         row2BetSize = app.textFields[Identifiers.Row.betSizeTextField(2)]
         XCTAssertTrue(
             row2BetSize.waitForExistence(timeout: 2),
-            "Третья строка должна появиться после нажатия +"
+            "Третья строка должна появиться после выбора количества исходов"
         )
     }
 
-    /// Тест: Удаление строки (кнопка -)
-    func testRemoveRow() throws {
+    /// Тест: Уменьшение количества строк через пикер
+    func testReduceRowCount() throws {
         launchAppWithoutOnboarding()
 
-        // Сначала добавляем строку
-        let addButton = app.buttons[Identifiers.Calculator.addRowButton]
-        XCTAssertTrue(addButton.waitForExistence(timeout: 2))
-        addButton.tap()
+        // Сначала увеличиваем количество строк
+        selectRowCount(3)
 
         var row2BetSize = app.textFields[Identifiers.Row.betSizeTextField(2)]
         XCTAssertTrue(row2BetSize.waitForExistence(timeout: 2), "Третья строка должна появиться")
 
-        // Удаляем строку
-        let removeButton = app.buttons[Identifiers.Calculator.removeRowButton]
-        XCTAssertTrue(removeButton.waitForExistence(timeout: 2))
-        removeButton.tap()
+        // Уменьшаем количество строк
+        selectRowCount(2)
 
         row2BetSize = app.textFields[Identifiers.Row.betSizeTextField(2)]
         XCTAssertFalse(
@@ -261,46 +251,36 @@ final class SurebetCalculatorUITests: XCTestCase {
         )
     }
 
-    /// Тест: Невозможность удалить строки ниже минимума (2 строки)
-    func testCannotRemoveBelowMinimumRows() throws {
+    /// Тест: Минимальное количество строк (2)
+    func testMinimumRowCount() throws {
         launchAppWithoutOnboarding()
 
-        let removeButton = app.buttons[Identifiers.Calculator.removeRowButton]
-        XCTAssertTrue(removeButton.waitForExistence(timeout: 2))
-        removeButton.tap()
+        selectRowCount(2)
 
         let row0BetSize = app.textFields[Identifiers.Row.betSizeTextField(0)]
         let row1BetSize = app.textFields[Identifiers.Row.betSizeTextField(1)]
+        let row2BetSize = app.textFields[Identifiers.Row.betSizeTextField(2)]
 
         XCTAssertTrue(row0BetSize.exists, "Первая строка должна существовать")
         XCTAssertTrue(row1BetSize.exists, "Вторая строка должна существовать")
+        XCTAssertFalse(row2BetSize.exists, "Третья строка не должна существовать")
     }
 
-    /// Тест: Невозможность добавить строки выше максимума (10 строк)
-    func testCannotAddAboveMaximumRows() throws {
+    /// Тест: Максимальное количество строк (20)
+    func testMaximumRowCount() throws {
         launchAppWithoutOnboarding()
 
-        let addButton = app.buttons[Identifiers.Calculator.addRowButton]
-        XCTAssertTrue(addButton.waitForExistence(timeout: 2))
+        selectRowCount(20)
 
-        // Добавляем 8 строк (до 10)
-        for _ in 0..<8 {
-            addButton.tap()
-            Thread.sleep(forTimeInterval: 0.1)
-        }
-
-        let row9BetSize = app.textFields[Identifiers.Row.betSizeTextField(9)]
+        let row19BetSize = app.textFields[Identifiers.Row.betSizeTextField(19)]
         XCTAssertTrue(
-            row9BetSize.waitForExistence(timeout: 2),
-            "10-я строка должна существовать"
+            row19BetSize.waitForExistence(timeout: 2),
+            "20-я строка должна существовать"
         )
-
-        addButton.tap()
-
-        let row10BetSize = app.textFields[Identifiers.Row.betSizeTextField(10)]
+        let row20BetSize = app.textFields[Identifiers.Row.betSizeTextField(20)]
         XCTAssertFalse(
-            row10BetSize.waitForExistence(timeout: 1),
-            "11-я строка не должна существовать"
+            row20BetSize.waitForExistence(timeout: 1),
+            "21-я строка не должна существовать"
         )
     }
 
@@ -376,6 +356,15 @@ final class SurebetCalculatorUITests: XCTestCase {
         }
     }
 
+    private func selectRowCount(_ value: Int) {
+        let picker = app.pickers[Identifiers.Calculator.rowCountPicker]
+        XCTAssertTrue(picker.waitForExistence(timeout: 2), "Пикер количества исходов должен существовать")
+
+        let wheel = picker.pickerWheels.element
+        XCTAssertTrue(wheel.exists, "Колесо пикера должно существовать")
+        wheel.adjust(toPickerWheelValue: "\(value)")
+    }
+
     /// Форматирует число в строку для ввода в текстовое поле с учётом текущей локали.
     private func formatNumberForInput(_ value: Double) -> String {
         let formatter = NumberFormatter()
@@ -400,8 +389,7 @@ private enum Identifiers {
     enum Calculator {
         static let view = "calculator_view"
         static let clearButton = "calculator_clear_button"
-        static let addRowButton = "calculator_add_row_button"
-        static let removeRowButton = "calculator_remove_row_button"
+        static let rowCountPicker = "calculator_row_count_picker"
     }
 
     enum TotalRow {
