@@ -91,6 +91,8 @@ extension HorizontalWheelPicker {
         private var lastBoundsWidth: CGFloat = .zero
         private var lastInset: CGFloat = .zero
         private let repeatMultiplier = 200
+        private let selectionFeedback = UISelectionFeedbackGenerator()
+        private var lastHapticValue: Int?
         var hasCentered = false
         var isCenteringScheduled = false
 
@@ -127,6 +129,7 @@ extension HorizontalWheelPicker {
                 if let value = optionValue(for: nearestIndex(in: collectionView)) {
                     if parent.selection != value {
                         parent.selection = value
+                        emitHapticIfNeeded(for: value)
                     }
                 }
             }
@@ -135,6 +138,7 @@ extension HorizontalWheelPicker {
 
         func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
             isUserDragging = true
+            selectionFeedback.prepare()
         }
 
         func scrollViewWillEndDragging(
@@ -211,19 +215,22 @@ extension HorizontalWheelPicker {
         }
 
         func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-            selectListIndex(indexPath.item, in: collectionView, animated: true)
+            selectionFeedback.prepare()
+            selectListIndex(indexPath.item, in: collectionView, animated: true, emitHaptic: true)
         }
 
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
             guard let collectionView = recognizer.view as? UICollectionView else { return }
             let location = recognizer.location(in: collectionView)
             if let indexPath = collectionView.indexPathForItem(at: location) {
-                selectListIndex(indexPath.item, in: collectionView, animated: true)
+                selectionFeedback.prepare()
+                selectListIndex(indexPath.item, in: collectionView, animated: true, emitHaptic: true)
                 return
             }
 
             let index = nearestIndex(in: collectionView)
-            selectListIndex(index, in: collectionView, animated: true)
+            selectionFeedback.prepare()
+            selectListIndex(index, in: collectionView, animated: true, emitHaptic: true)
         }
 
         func gestureRecognizer(
@@ -288,15 +295,32 @@ extension HorizontalWheelPicker {
             return CGFloat(index) * itemStep - collectionView.contentInset.left
         }
 
-        private func selectListIndex(_ index: Int, in collectionView: UICollectionView, animated: Bool) {
+        private func selectListIndex(
+            _ index: Int,
+            in collectionView: UICollectionView,
+            animated: Bool,
+            emitHaptic: Bool = false
+        ) {
             let offset = offsetForIndex(index, in: collectionView)
             collectionView.setContentOffset(CGPoint(x: offset, y: 0), animated: animated)
             if let value = optionValue(for: index) {
                 if parent.selection != value {
                     parent.selection = value
+                    if emitHaptic {
+                        emitHapticIfNeeded(for: value)
+                    }
                 }
                 lastSelection = value
             }
+        }
+
+        private func emitHapticIfNeeded(for value: Int) {
+            if lastHapticValue == value {
+                return
+            }
+            lastHapticValue = value
+            selectionFeedback.selectionChanged()
+            selectionFeedback.prepare()
         }
 
         private func totalItemCount() -> Int {
