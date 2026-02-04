@@ -19,11 +19,10 @@ struct TextView: View {
             .cornerRadius(cornerRadius)
             .foregroundColor(color)
             .overlay {
-                if isEmphasized {
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(AppColors.border, lineWidth: 1)
-                }
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(isEmphasized ? AppColors.border : AppColors.borderMuted, lineWidth: 1)
             }
+            .opacity(isEmphasized ? 1 : inactiveOpacity)
             .accessibilityIdentifier(accessibilityId ?? "")
     }
 }
@@ -41,9 +40,14 @@ private extension TextView {
         isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
     }
     var color: Color { text.isNumberNotNegative() ? AppColors.success : AppColors.error }
+    var inactiveOpacity: CGFloat { 0.7 }
 }
 
 #Preview {
-    TextView(text: 1.formatToString(isPercent: true), isPercent: true, isEmphasized: false)
+    TextView(
+        text: 1.formatToString(isPercent: true),
+        isPercent: true,
+        isEmphasized: false
+    )
         .padding()
 }
