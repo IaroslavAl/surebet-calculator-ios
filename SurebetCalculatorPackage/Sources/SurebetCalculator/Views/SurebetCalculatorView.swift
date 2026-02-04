@@ -33,6 +33,12 @@ struct SurebetCalculatorView: View {
             .onTapGesture {
                 isFocused = false
             }
+            .background(
+                KeyboardAccessoryOverlayHost(
+                    onClear: { viewModel.send(.clearFocusableField) },
+                    onDone: { viewModel.send(.hideKeyboard) }
+                )
+            )
     }
 }
 
@@ -83,15 +89,6 @@ private extension SurebetCalculatorView {
         ToolbarItem(placement: .topBarTrailing) {
             NavigationClearButton()
         }
-        // WORKAROUND: ToolbarItemGroup(placement: .keyboard) вызывает runtime warning
-        // "Invalid frame dimension (negative or non-finite)" - это известный баг SwiftUI.
-        // Warning безвреден и не влияет на работу приложения.
-        // https://developer.apple.com/forums/thread/709656
-        ToolbarItemGroup(placement: .keyboard) {
-            KeyboardClearButton()
-            Color.clear
-            KeyboardDoneButton()
-        }
     }
 
     var rowCountPicker: some View {
@@ -112,6 +109,7 @@ private extension SurebetCalculatorView {
             .frame(maxWidth: .infinity, minHeight: pickerHeight, maxHeight: pickerHeight)
         }
     }
+
 }
 
 // MARK: - Private Computed Properties
