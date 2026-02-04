@@ -9,15 +9,9 @@ final class KeyboardAccessoryOverlayManager {
 
     private let toolbarView = KeyboardAccessoryToolbarView()
     private var observers: [NSObjectProtocol] = []
-    private var bottomConstraint: NSLayoutConstraint?
     private weak var hostWindow: UIWindow?
-    private var lastKeyboardFrame: CGRect?
-    private var lastKeyboardAnimation = (
-        duration: Layout.animationFallbackDuration,
-        curveRaw: Layout.animationFallbackCurve
-    )
-    private var overlayWindow: PassthroughWindow?
-    private var containerView: UIView?
+    private weak var hostView: UIView?
+    private var constraints: [NSLayoutConstraint] = []
 
     init() {
         toolbarView.configure(onClear: {}, onDone: {})
@@ -43,67 +37,61 @@ final class KeyboardAccessoryOverlayManager {
     func teardown() {
         observers.forEach { NotificationCenter.default.removeObserver($0) }
         observers.removeAll()
-        bottomConstraint?.isActive = false
-        bottomConstraint = nil
-        containerView = nil
-        lastKeyboardFrame = nil
-        lastKeyboardAnimation = (
-            duration: Layout.animationFallbackDuration,
-            curveRaw: Layout.animationFallbackCurve
-        )
-        overlayWindow?.isHidden = true
-        overlayWindow?.interactiveView = nil
-        overlayWindow?.rootViewController = nil
-        overlayWindow = nil
+        NSLayoutConstraint.deactivate(constraints)
+        constraints.removeAll()
+        toolbarView.removeFromSuperview()
         hostWindow = nil
+        hostView = nil
     }
 
     private func install(hostWindow: UIWindow) {
-        if self.hostWindow === hostWindow, overlayWindow != nil { return }
+        let baseView = hostWindow.rootViewController?.view ?? hostWindow
+        if self.hostWindow === hostWindow, toolbarView.superview === baseView { return }
         teardown()
         self.hostWindow = hostWindow
-        guard let scene = hostWindow.windowScene else { return }
-
-        let overlayWindow = PassthroughWindow(windowScene: scene)
-        overlayWindow.windowLevel = .alert + 1
-        overlayWindow.backgroundColor = .clear
-        overlayWindow.isUserInteractionEnabled = true
-
-        let controller = UIViewController()
-        controller.view.backgroundColor = .clear
-        controller.view.isUserInteractionEnabled = true
-        controller.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        overlayWindow.rootViewController = controller
-        overlayWindow.interactiveView = toolbarView
-
+        self.hostView = baseView
         toolbarView.translatesAutoresizingMaskIntoConstraints = false
-        controller.view.addSubview(toolbarView)
+        baseView.addSubview(toolbarView)
 
-        bottomConstraint = toolbarView.bottomAnchor.constraint(equalTo: controller.view.bottomAnchor)
-        NSLayoutConstraint.activate([
-            toolbarView.leadingAnchor.constraint(equalTo: controller.view.leadingAnchor),
-            toolbarView.trailingAnchor.constraint(equalTo: controller.view.trailingAnchor),
+        let bottomConstraint = toolbarView.bottomAnchor.constraint(
+            equalTo: baseView.keyboardLayoutGuide.topAnchor,
+            constant: -AppConstants.Padding.small
+        )
+        constraints = [
+            toolbarView.leadingAnchor.constraint(equalTo: baseView.leadingAnchor),
+            toolbarView.trailingAnchor.constraint(equalTo: baseView.trailingAnchor),
             toolbarView.heightAnchor.constraint(equalToConstant: toolbarView.intrinsicContentSize.height),
-            bottomConstraint!
-        ])
+            bottomConstraint
+        ]
+        NSLayoutConstraint.activate(constraints)
+        baseView.layoutIfNeeded()
 
-        overlayWindow.frame = hostWindow.frame
-        controller.view.frame = overlayWindow.bounds
-        overlayWindow.isHidden = false
-        controller.view.layoutIfNeeded()
-
-        self.overlayWindow = overlayWindow
-        self.containerView = controller.view
-
-        updateFromHost(animated: false)
-        Task { @MainActor [weak self] in
-            self?.updateFromHost(animated: false)
-        }
-
+        updateVisibilityFromKeyboard(animated: false, duration: 0, curveRaw: Layout.animationFallbackCurve)
         registerObservers()
     }
 
     private func registerObservers() {
+        let willShow = NotificationCenter.default.addObserver(
+            forName: UIResponder.keyboardWillShowNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let frame = notification.userInfo?[
+                UIResponder.keyboardFrameEndUserInfoKey
+            ] as? CGRect else { return }
+            let duration = notification.userInfo?[
+                UIResponder.keyboardAnimationDurationUserInfoKey
+            ] as? Double ?? Layout.animationFallbackDuration
+            let curveRaw = notification.userInfo?[
+                UIResponder.keyboardAnimationCurveUserInfoKey
+            ] as? Int ?? Layout.animationFallbackCurve
+            self?.handleKeyboardVisibility(
+                frame: frame,
+                duration: duration,
+                curveRaw: curveRaw
+            )
+        }
+
         let willChange = NotificationCenter.default.addObserver(
             forName: UIResponder.keyboardWillChangeFrameNotification,
             object: nil,
@@ -118,9 +106,11 @@ final class KeyboardAccessoryOverlayManager {
             let curveRaw = notification.userInfo?[
                 UIResponder.keyboardAnimationCurveUserInfoKey
             ] as? Int ?? Layout.animationFallbackCurve
-            Task { @MainActor in
-                self?.handleKeyboard(frame: frame, duration: duration, curveRaw: curveRaw)
-            }
+            self?.handleKeyboardVisibility(
+                frame: frame,
+                duration: duration,
+                curveRaw: curveRaw
+            )
         }
 
         let willHide = NotificationCenter.default.addObserver(
@@ -137,116 +127,26 @@ final class KeyboardAccessoryOverlayManager {
             let curveRaw = notification.userInfo?[
                 UIResponder.keyboardAnimationCurveUserInfoKey
             ] as? Int ?? Layout.animationFallbackCurve
-            Task { @MainActor in
-                self?.handleKeyboard(frame: frame, duration: duration, curveRaw: curveRaw)
-            }
-        }
-
-        let didShow = NotificationCenter.default.addObserver(
-            forName: UIResponder.keyboardDidShowNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.updateFromHost(animated: false)
-            }
-        }
-
-        let didHide = NotificationCenter.default.addObserver(
-            forName: UIResponder.keyboardDidHideNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.updateFromHost(animated: false)
-            }
-        }
-
-        observers = [willChange, willHide, didShow, didHide]
-    }
-
-    private func updateFromHost(animated: Bool) {
-        guard let hostWindow, let overlayWindow else { return }
-        hostWindow.layoutIfNeeded()
-        syncOverlayFrame(for: hostWindow)
-        if let lastKeyboardFrame {
-            let duration = animated ? lastKeyboardAnimation.duration : 0
-            let curveRaw = lastKeyboardAnimation.curveRaw
-            let frameInOverlay = overlayWindow.convert(lastKeyboardFrame, from: nil)
-            let isVisible = frameInOverlay.minY < overlayWindow.bounds.maxY
-            applyVisibility(
-                isVisible: isVisible,
-                keyboardTop: frameInOverlay.minY,
+            self?.handleKeyboardVisibility(
+                frame: frame,
                 duration: duration,
                 curveRaw: curveRaw
             )
-            return
         }
-        let keyboardTopInHost = hostWindow.keyboardLayoutGuide.layoutFrame.minY
-        let isVisible = keyboardTopInHost < hostWindow.bounds.maxY
-        guard isVisible else {
-            let duration = animated ? Layout.animationFallbackDuration : 0
-            applyVisibility(
-                isVisible: false,
-                keyboardTop: overlayWindow.bounds.maxY,
-                duration: duration,
-                curveRaw: Layout.animationFallbackCurve
-            )
-            return
-        }
-        let keyboardTopInScreen = hostWindow.convert(CGPoint(x: 0, y: keyboardTopInHost), to: nil).y
-        let keyboardTopInOverlay = overlayWindow.convert(
-            CGPoint(x: 0, y: keyboardTopInScreen),
-            from: nil
-        ).y
-        applyVisibility(
-            isVisible: true,
-            keyboardTop: keyboardTopInOverlay,
-            duration: animated ? Layout.animationFallbackDuration : 0,
-            curveRaw: Layout.animationFallbackCurve
-        )
+
+        observers = [willShow, willChange, willHide]
     }
 
-    private func handleKeyboard(frame: CGRect, duration: Double, curveRaw: Int) {
-        lastKeyboardFrame = frame
-        lastKeyboardAnimation = (duration: duration, curveRaw: curveRaw)
-        guard let overlayWindow, let hostWindow else { return }
-        syncOverlayFrame(for: hostWindow)
-        let frameInOverlay = overlayWindow.convert(frame, from: nil)
-        let isVisible = frameInOverlay.minY < overlayWindow.bounds.maxY
-        applyVisibility(
-            isVisible: isVisible,
-            keyboardTop: frameInOverlay.minY,
+    private func handleKeyboardVisibility(frame: CGRect, duration: Double, curveRaw: Int) {
+        guard let hostWindow else { return }
+        let screenBounds = hostWindow.screen.bounds
+        let isVisible = frame.minY < screenBounds.maxY && frame.height > 0
+        updateVisibilityFromKeyboard(
+            animated: true,
             duration: duration,
-            curveRaw: curveRaw
+            curveRaw: curveRaw,
+            isVisibleOverride: isVisible
         )
-    }
-
-    private func applyVisibility(isVisible: Bool, keyboardTop: CGFloat, duration: Double, curveRaw: Int) {
-        guard let overlayWindow, let containerView, let bottomConstraint else { return }
-        let keyboardHeight = max(0, overlayWindow.bounds.maxY - keyboardTop)
-        let targetConstant = isVisible ? -(keyboardHeight + AppConstants.Padding.small) : 0
-        bottomConstraint.constant = targetConstant
-        toolbarView.isUserInteractionEnabled = isVisible
-
-        let curve = UIView.AnimationCurve(rawValue: curveRaw) ?? .easeOut
-        let options = UIView.AnimationOptions(rawValue: UInt(curve.rawValue << 16))
-
-        let updates = {
-            containerView.layoutIfNeeded()
-            self.toolbarView.alpha = isVisible ? 1 : 0
-        }
-
-        if duration > 0 {
-            UIView.animate(
-                withDuration: duration,
-                delay: 0,
-                options: [options, .beginFromCurrentState],
-                animations: updates
-            )
-        } else {
-            updates()
-        }
     }
 
     private func resolveHostWindow(for view: UIView) -> UIWindow? {
@@ -262,11 +162,44 @@ final class KeyboardAccessoryOverlayManager {
         return nil
     }
 
-    private func syncOverlayFrame(for hostWindow: UIWindow) {
-        guard let overlayWindow else { return }
-        let targetFrame = hostWindow.frame
-        if overlayWindow.frame != targetFrame {
-            overlayWindow.frame = targetFrame
+    private func updateVisibilityFromKeyboard(
+        animated: Bool,
+        duration: Double,
+        curveRaw: Int,
+        isVisibleOverride: Bool? = nil
+    ) {
+        guard let hostView else { return }
+        hostView.layoutIfNeeded()
+        let layoutFrame = hostView.keyboardLayoutGuide.layoutFrame
+        let isVisible = isVisibleOverride ?? (layoutFrame.height > 0)
+
+        toolbarView.isUserInteractionEnabled = isVisible
+        let curve = UIView.AnimationCurve(rawValue: curveRaw) ?? .easeOut
+        let options = UIView.AnimationOptions(rawValue: UInt(curve.rawValue << 16))
+
+        let updates = {
+            if isVisible {
+                self.toolbarView.alpha = 1
+            }
+            hostView.layoutIfNeeded()
+        }
+
+        if animated && duration > 0 {
+            UIView.animate(
+                withDuration: duration,
+                delay: 0,
+                options: [options, .beginFromCurrentState],
+                animations: updates
+            ) { _ in
+                if !isVisible {
+                    self.toolbarView.alpha = 0
+                }
+            }
+        } else {
+            updates()
+            if !isVisible {
+                toolbarView.alpha = 0
+            }
         }
     }
 }

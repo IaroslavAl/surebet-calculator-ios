@@ -96,8 +96,8 @@ final class KeyboardAccessoryToolbarView: UIView {
     }
 
     private func applyStyle() {
-        let backgroundColor = UIColor.secondarySystemFill
-        let borderColor = UIColor.separator.withAlphaComponent(0.6).cgColor
+        let backgroundColor = UIColor.secondarySystemBackground
+        let borderColor = UIColor.separator.withAlphaComponent(0.8).cgColor
         let tintColor = UIColor.label
 
         clearButton.backgroundColor = backgroundColor
