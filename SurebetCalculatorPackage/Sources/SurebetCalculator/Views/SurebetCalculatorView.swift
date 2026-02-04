@@ -61,10 +61,12 @@ private extension SurebetCalculatorView {
             }
             .padding(.vertical, rowsSpacing)
             // leading отступ уже внутри rowsView у ToggleButton
-            .padding(.trailing, rowsSpacing)
             .background(backgroundTapGesture)
         }
         .scrollDismissesKeyboard(.immediately)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Color.clear.frame(height: keyboardAccessoryInset)
+        }
     }
 
     var backgroundTapGesture: some View {
@@ -121,6 +123,10 @@ private extension SurebetCalculatorView {
     var rowsSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
     var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.small : AppConstants.Padding.small }
     var pickerHeight: CGFloat { isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact }
+    var keyboardAccessoryInset: CGFloat {
+        guard viewModel.focus != nil else { return 0 }
+        return AppConstants.Heights.keyboardAccessoryToolbar + AppConstants.Padding.small
+    }
     var rowCountBinding: Binding<NumberOfRows> {
         Binding(
             get: { viewModel.selectedNumberOfRows },

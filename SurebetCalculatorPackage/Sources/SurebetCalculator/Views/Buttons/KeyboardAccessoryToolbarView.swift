@@ -3,8 +3,8 @@ import UIKit
 final class KeyboardAccessoryToolbarView: UIView {
     private enum Layout {
         static let buttonSize: CGFloat = 44
-        static let sidePadding: CGFloat = 20
-        static let verticalPadding: CGFloat = 12
+        static let sidePadding: CGFloat = 8
+        static let verticalPadding: CGFloat = 0
         static let borderWidth: CGFloat = 1
         static let hitSlop: CGFloat = 8
     }
