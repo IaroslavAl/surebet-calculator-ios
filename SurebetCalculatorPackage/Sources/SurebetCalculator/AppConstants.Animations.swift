@@ -46,12 +46,12 @@ public extension AppConstants {
 
         /// Плавный переход снизу
         public static var moveFromBottom: AnyTransition {
-            .move(edge: .bottom).combined(with: .opacity)
+            .move(edge: .bottom)
         }
 
         /// Плавный переход справа
         public static var moveFromTrailing: AnyTransition {
-            .move(edge: .trailing).combined(with: .opacity)
+            .move(edge: .trailing)
         }
 
         /// Плавный переход с масштабированием

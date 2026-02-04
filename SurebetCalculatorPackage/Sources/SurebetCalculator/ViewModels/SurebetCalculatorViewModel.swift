@@ -57,6 +57,7 @@ final class SurebetCalculatorViewModel: ObservableObject {
         case selectRow(Selection)
         case addRow
         case removeRow
+        case setNumberOfRows(NumberOfRows)
         case reorderRows(fromOffsets: IndexSet, toOffset: Int)
         case setTextFieldText(FocusableField, String)
         case setFocus(FocusableField?)
@@ -73,6 +74,8 @@ final class SurebetCalculatorViewModel: ObservableObject {
             addRow()
         case .removeRow:
             removeRow()
+        case let .setNumberOfRows(numberOfRows):
+            setNumberOfRows(numberOfRows)
         case let .reorderRows(fromOffsets, toOffset):
             reorderRows(fromOffsets: fromOffsets, toOffset: toOffset)
         case let .setTextFieldText(field, text):
@@ -94,6 +97,13 @@ final class SurebetCalculatorViewModel: ObservableObject {
 extension SurebetCalculatorViewModel {
     var activeRowIds: [RowID] {
         Array(orderedRowIds.prefix(selectedNumberOfRows.rawValue))
+    }
+
+    var availableRowCounts: [NumberOfRows] {
+        let maxCount = min(orderedRowIds.count, AppConstants.Calculator.maxRowCount)
+        return NumberOfRows.allCases.filter { count in
+            count.rawValue >= AppConstants.Calculator.minRowCount && count.rawValue <= maxCount
+        }
     }
 
     /// Проверяет, должно ли поле быть заблокировано
@@ -152,24 +162,45 @@ private extension SurebetCalculatorViewModel {
 
     func addRow() {
         if selectedNumberOfRows.rawValue < maxRowCount {
-            selectedNumberOfRows = .init(rawValue: selectedNumberOfRows.rawValue + 1) ?? selectedNumberOfRows
-            calculate()
-            analytics.calculatorRowAdded(rowCount: selectedNumberOfRows.rawValue)
+            let updated = NumberOfRows(rawValue: selectedNumberOfRows.rawValue + 1) ?? selectedNumberOfRows
+            setNumberOfRows(updated)
         }
     }
 
     func removeRow() {
         if selectedNumberOfRows.rawValue > AppConstants.Calculator.minRowCount {
-            selectedNumberOfRows = .init(rawValue: selectedNumberOfRows.rawValue - 1) ?? selectedNumberOfRows
-            let inactiveRowIds = orderedRowIds.dropFirst(selectedNumberOfRows.rawValue)
+            let updated = NumberOfRows(rawValue: selectedNumberOfRows.rawValue - 1) ?? selectedNumberOfRows
+            setNumberOfRows(updated)
+        }
+    }
+
+    func setNumberOfRows(_ numberOfRows: NumberOfRows) {
+        let maxCount = maxRowCount
+        let clampedRaw = min(numberOfRows.rawValue, maxCount)
+        let clamped = NumberOfRows(
+            rawValue: max(clampedRaw, AppConstants.Calculator.minRowCount)
+        ) ?? selectedNumberOfRows
+        guard clamped != selectedNumberOfRows else { return }
+
+        let previous = selectedNumberOfRows
+        selectedNumberOfRows = clamped
+
+        if clamped.rawValue < previous.rawValue {
+            let inactiveRowIds = orderedRowIds.dropFirst(clamped.rawValue)
             if case let .row(id) = selection, inactiveRowIds.contains(id) {
                 deselectCurrentRow()
                 total.isON = true
                 selection = .total
             }
             clear(Array(inactiveRowIds))
-            calculate()
-            analytics.calculatorRowRemoved(rowCount: selectedNumberOfRows.rawValue)
+        }
+
+        calculate()
+
+        if clamped.rawValue > previous.rawValue {
+            analytics.calculatorRowAdded(rowCount: clamped.rawValue)
+        } else {
+            analytics.calculatorRowRemoved(rowCount: clamped.rawValue)
         }
     }
 

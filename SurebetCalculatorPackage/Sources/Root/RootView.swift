@@ -38,12 +38,9 @@ struct RootView: View {
 
 private extension RootView {
     var mainContent: some View {
-        Group {
-            if viewModel.isOnboardingShown {
-                calculatorView
-            } else {
-                onboardingView
-            }
+        ZStack {
+            calculatorView
+            onboardingView
         }
     }
 
@@ -52,23 +49,33 @@ private extension RootView {
             SurebetCalculator.view(analytics: calculatorAnalytics)
         }
         .navigationViewStyle(.stack)
+        .allowsHitTesting(!viewModel.shouldShowOnboardingWithAnimation)
+        .accessibilityHidden(viewModel.shouldShowOnboardingWithAnimation)
     }
 
     @ViewBuilder
     var onboardingView: some View {
-        if viewModel.shouldShowOnboardingWithAnimation {
-            Onboarding.view(
-                onboardingIsShown: onboardingBinding,
-                analytics: onboardingAnalytics
-            )
+        Group {
+            if viewModel.shouldShowOnboardingWithAnimation {
+                Onboarding.view(
+                    onboardingIsShown: onboardingBinding,
+                    analytics: onboardingAnalytics
+                )
                 .transition(AppConstants.Animations.moveFromBottom)
+            }
         }
+        .zIndex(1)
+        .animation(AppConstants.Animations.smoothTransition, value: viewModel.shouldShowOnboardingWithAnimation)
     }
 
     var onboardingBinding: Binding<Bool> {
         Binding(
             get: { viewModel.isOnboardingShown },
-            set: { viewModel.send(.updateOnboardingShown($0)) }
+            set: { value in
+                withAnimation(AppConstants.Animations.smoothTransition) {
+                    viewModel.send(.updateOnboardingShown(value))
+                }
+            }
         )
     }
 }
@@ -147,7 +154,6 @@ private struct AnimationModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .animation(AppConstants.Animations.smoothTransition, value: viewModel.isOnboardingShown)
             .animation(AppConstants.Animations.smoothTransition, value: viewModel.fullscreenBannerIsPresented)
     }
 }

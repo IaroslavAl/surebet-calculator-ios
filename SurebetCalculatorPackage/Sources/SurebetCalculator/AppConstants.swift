@@ -30,6 +30,9 @@ public enum AppConstants {
 
         /// Обычная высота (60pt)
         static let regular: CGFloat = 60
+
+        /// Высота тулбара над клавиатурой (44pt)
+        static let keyboardAccessoryToolbar: CGFloat = 44
     }
 
     /// Константы для радиусов скругления углов

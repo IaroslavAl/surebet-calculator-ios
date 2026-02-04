@@ -16,7 +16,7 @@ struct TextFieldView: View {
             .textFieldStyle(
                 .calculatorStyle(
                     isEnabled: !isDisabled,
-                    isValid: text.isValidDouble()
+                    isValid: isValid
                 )
             )
             .focused($isFocused, equals: focusableField)
@@ -61,6 +61,15 @@ private extension TextFieldView {
         }
     }
 
+    var isValid: Bool {
+        switch focusableField {
+        case .rowCoefficient:
+            return isValidCoefficient(text)
+        default:
+            return text.isValidDouble()
+        }
+    }
+
     var accessibilityIdentifier: String {
         switch focusableField {
         case .totalBetSize:
@@ -72,6 +81,14 @@ private extension TextFieldView {
             let displayIndex = viewModel.displayIndex(for: id) ?? 0
             return AccessibilityIdentifiers.Row.coefficientTextField(displayIndex)
         }
+    }
+
+    func isValidCoefficient(_ value: String) -> Bool {
+        if value.isEmpty {
+            return true
+        }
+        guard let parsed = value.formatToDouble() else { return false }
+        return parsed >= 1
     }
 }
 

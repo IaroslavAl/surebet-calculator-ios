@@ -103,6 +103,23 @@
         }
       }
     },
+    "calculator_outcomes_count" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Number of outcomes"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Количество исходов"
+          }
+        }
+      }
+    },
     "calculator_profit_percentage" : {
       "extractionState" : "manual",
       "localizations" : {

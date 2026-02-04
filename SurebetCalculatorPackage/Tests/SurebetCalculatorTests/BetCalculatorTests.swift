@@ -116,6 +116,30 @@ struct CalculatorTests {
     }
 
     @Test
+    func totalCalculationWithFractionalCoefficientsKeepsIncomeConsistent() {
+        // Given
+        let calculator = makeCalculator(
+            total: TotalRow(betSize: "2000", profitPercentage: ""),
+            rows: [
+                Row(id: RowID(rawValue: 0), betSize: "", coefficient: "1.333", income: ""),
+                Row(id: RowID(rawValue: 1), betSize: "", coefficient: "2.224", income: "")
+            ],
+            activeCount: 2,
+            selection: .total
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        let output = expectUpdated(result)
+        let expectedIncome = formatNumber(-333.09)
+        #expect(output.rowsById[RowID(rawValue: 0)]?.income == expectedIncome)
+        #expect(output.rowsById[RowID(rawValue: 1)]?.income == expectedIncome)
+        #expect(output.rowsById[RowID(rawValue: 0)]?.income == output.rowsById[RowID(rawValue: 1)]?.income)
+    }
+
+    @Test
     func rowCalculation() {
         // Given
         let calculator = makeCalculator(
@@ -387,6 +411,33 @@ struct CalculatorTests {
         #expect(output.total.betSize == "1000")
         #expect(output.total.profitPercentage == "0%")
         #expect(output.rowsById[RowID(rawValue: 0)]?.coefficient == "-2")
+        #expect(output.rowsById[RowID(rawValue: 0)]?.income == "0")
+        #expect(output.rowsById[RowID(rawValue: 1)]?.coefficient == "3")
+        #expect(output.rowsById[RowID(rawValue: 1)]?.income == "0")
+    }
+
+    @Test
+    func calculateWhenCoefficientBelowOne() {
+        // Given
+        let calculator = makeCalculator(
+            total: TotalRow(betSize: "1000", profitPercentage: ""),
+            rows: [
+                Row(id: RowID(rawValue: 0), betSize: "", coefficient: "0.5", income: ""),
+                Row(id: RowID(rawValue: 1), betSize: "", coefficient: "3", income: "")
+            ],
+            activeCount: 2,
+            selection: .total
+        )
+
+        // When
+        let result = calculator.calculate()
+
+        // Then
+        // Коэффициент меньше 1 должен привести к .none методу
+        let output = expectResetDerived(result)
+        #expect(output.total.betSize == "1000")
+        #expect(output.total.profitPercentage == "0%")
+        #expect(output.rowsById[RowID(rawValue: 0)]?.coefficient == "0.5")
         #expect(output.rowsById[RowID(rawValue: 0)]?.income == "0")
         #expect(output.rowsById[RowID(rawValue: 1)]?.coefficient == "3")
         #expect(output.rowsById[RowID(rawValue: 1)]?.income == "0")
