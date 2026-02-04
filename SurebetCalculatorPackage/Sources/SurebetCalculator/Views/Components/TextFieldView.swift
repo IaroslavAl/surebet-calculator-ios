@@ -24,6 +24,7 @@ struct TextFieldView: View {
             .foregroundColor(isDisabled ? AppColors.textMuted : AppColors.textPrimary)
             .tint(AppColors.accent)
             .opacity(isDisabled ? 0.7 : 1)
+            .contentShape(.rect)
             .focused($isFocused, equals: focusableField)
             .disabled(isDisabled)
             .onTapGesture {

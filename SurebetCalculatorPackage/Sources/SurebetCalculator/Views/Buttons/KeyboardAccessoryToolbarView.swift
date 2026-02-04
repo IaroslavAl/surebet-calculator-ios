@@ -2,7 +2,8 @@ import UIKit
 
 final class KeyboardAccessoryToolbarView: UIView {
     private enum Layout {
-        static let buttonSize: CGFloat = 44
+        static let buttonSizePhone: CGFloat = 34
+        static let buttonSizePad: CGFloat = 44
         static let sidePadding: CGFloat = 8
         static let verticalPadding: CGFloat = 0
         static let borderWidth: CGFloat = 1
@@ -13,6 +14,10 @@ final class KeyboardAccessoryToolbarView: UIView {
     private let doneButton = UIButton(type: .system)
     private var clearAction: (() -> Void)?
     private var doneAction: (() -> Void)?
+    private var clearWidthConstraint: NSLayoutConstraint?
+    private var clearHeightConstraint: NSLayoutConstraint?
+    private var doneWidthConstraint: NSLayoutConstraint?
+    private var doneHeightConstraint: NSLayoutConstraint?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -28,7 +33,7 @@ final class KeyboardAccessoryToolbarView: UIView {
     override var intrinsicContentSize: CGSize {
         CGSize(
             width: UIView.noIntrinsicMetric,
-            height: Layout.buttonSize + Layout.verticalPadding * 2
+            height: currentButtonSize + Layout.verticalPadding * 2
         )
     }
 
@@ -82,34 +87,52 @@ final class KeyboardAccessoryToolbarView: UIView {
     }
 
     private func setupConstraints() {
-        NSLayoutConstraint.activate([
+        clearWidthConstraint = clearButton.widthAnchor.constraint(equalToConstant: currentButtonSize)
+        clearHeightConstraint = clearButton.heightAnchor.constraint(equalToConstant: currentButtonSize)
+        doneWidthConstraint = doneButton.widthAnchor.constraint(equalToConstant: currentButtonSize)
+        doneHeightConstraint = doneButton.heightAnchor.constraint(equalToConstant: currentButtonSize)
+
+        let constraints: [NSLayoutConstraint?] = [
             clearButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Layout.sidePadding),
             clearButton.centerYAnchor.constraint(equalTo: centerYAnchor),
-            clearButton.widthAnchor.constraint(equalToConstant: Layout.buttonSize),
-            clearButton.heightAnchor.constraint(equalToConstant: Layout.buttonSize),
+            clearWidthConstraint,
+            clearHeightConstraint,
 
             doneButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -Layout.sidePadding),
             doneButton.centerYAnchor.constraint(equalTo: clearButton.centerYAnchor),
-            doneButton.widthAnchor.constraint(equalToConstant: Layout.buttonSize),
-            doneButton.heightAnchor.constraint(equalToConstant: Layout.buttonSize)
-        ])
+            doneWidthConstraint,
+            doneHeightConstraint
+        ]
+        NSLayoutConstraint.activate(constraints.compactMap { $0 })
     }
 
     private func applyStyle() {
+        let buttonSize = currentButtonSize
         let backgroundColor = UIColor.secondarySystemBackground
         let borderColor = UIColor.separator.withAlphaComponent(0.8).cgColor
         let tintColor = UIColor.label
 
+        clearWidthConstraint?.constant = buttonSize
+        clearHeightConstraint?.constant = buttonSize
+        doneWidthConstraint?.constant = buttonSize
+        doneHeightConstraint?.constant = buttonSize
+
         clearButton.backgroundColor = backgroundColor
         clearButton.tintColor = tintColor
-        clearButton.layer.cornerRadius = Layout.buttonSize / 2
+        clearButton.layer.cornerRadius = buttonSize / 2
         clearButton.layer.borderWidth = Layout.borderWidth
         clearButton.layer.borderColor = borderColor
 
         doneButton.backgroundColor = backgroundColor
         doneButton.tintColor = tintColor
-        doneButton.layer.cornerRadius = Layout.buttonSize / 2
+        doneButton.layer.cornerRadius = buttonSize / 2
         doneButton.layer.borderWidth = Layout.borderWidth
         doneButton.layer.borderColor = borderColor
+
+        invalidateIntrinsicContentSize()
+    }
+
+    private var currentButtonSize: CGFloat {
+        traitCollection.userInterfaceIdiom == .pad ? Layout.buttonSizePad : Layout.buttonSizePhone
     }
 }

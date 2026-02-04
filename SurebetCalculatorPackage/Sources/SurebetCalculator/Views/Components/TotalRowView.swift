@@ -19,12 +19,13 @@ struct TotalRowView: View {
             }
         }
         .padding(cardPadding)
-        .background(AppColors.surfaceElevated)
+        .background(isSelected ? AppColors.surfaceElevated : AppColors.surface)
         .cornerRadius(cardCornerRadius)
         .overlay {
             RoundedRectangle(cornerRadius: cardCornerRadius)
-                .stroke(isSelected ? AppColors.accent : AppColors.border, lineWidth: 1)
+                .stroke(isSelected ? AppColors.accent : AppColors.borderMuted, lineWidth: 1)
         }
+        .background(selectionTapArea)
     }
 }
 
@@ -35,10 +36,10 @@ private extension TotalRowView {
     var profitPercentageLabel: String { SurebetCalculatorLocalizationKey.profitPercentage.localized }
     var placeholder: String { SurebetCalculatorLocalizationKey.totalBetSize.localized }
     var labelSpacing: CGFloat { AppConstants.Padding.small }
-    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var cardPadding: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
+    var cardPadding: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
     var cardCornerRadius: CGFloat { isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.medium }
-    var selectionIndicatorSize: CGFloat { isIPad ? 36 : 32 }
+    var selectionIndicatorSize: CGFloat { isIPad ? 48 : 44 }
     var isSelected: Bool { viewModel.selection == .total }
 
     var totalBetSizeColumn: some View {
@@ -65,9 +66,19 @@ private extension TotalRowView {
             TextView(
                 text: viewModel.total.profitPercentage,
                 isPercent: true,
+                isEmphasized: isSelected,
                 accessibilityId: AccessibilityIdentifiers.TotalRow.profitPercentageText
             )
         }
+    }
+
+    var selectionTapArea: some View {
+        Color.clear
+            .contentShape(.rect)
+            .onTapGesture {
+                guard viewModel.selection != .total else { return }
+                viewModel.send(.selectRow(.total))
+            }
     }
 }
 

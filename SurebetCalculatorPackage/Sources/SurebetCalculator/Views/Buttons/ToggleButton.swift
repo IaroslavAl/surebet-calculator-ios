@@ -79,7 +79,7 @@ private extension ToggleButton {
     }
 
     var tapAreaSize: CGFloat {
-        isIPad ? 36 : 32
+        isIPad ? 48 : 44
     }
 }
 

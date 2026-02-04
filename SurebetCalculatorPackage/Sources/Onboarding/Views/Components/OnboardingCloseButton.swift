@@ -30,6 +30,17 @@ private extension OnboardingCloseButton {
         Image(systemName: imageName)
             .font(OnboardingConstants.Typography.icon)
             .foregroundColor(OnboardingColors.closeButton)
+            .padding(padding)
+            .background(OnboardingColors.surface)
+            .clipShape(Circle())
+            .overlay {
+                Circle()
+                    .stroke(OnboardingColors.border, lineWidth: 1)
+            }
+    }
+
+    var padding: CGFloat {
+        isIPad ? OnboardingConstants.paddingSmall : 6
     }
 }
 

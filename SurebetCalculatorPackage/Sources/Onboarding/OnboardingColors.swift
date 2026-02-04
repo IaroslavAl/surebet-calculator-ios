@@ -13,6 +13,22 @@ enum OnboardingColors {
         )
     }
 
+    /// Поверхность карточек
+    static var surface: Color {
+        dynamicColor(
+            light: UIColor(red: 1, green: 1, blue: 1, alpha: 1),
+            dark: UIColor(red: 23 / 255, green: 27 / 255, blue: 24 / 255, alpha: 1)
+        )
+    }
+
+    /// Цвет бордера
+    static var border: Color {
+        dynamicColor(
+            light: UIColor(red: 214 / 255, green: 227 / 255, blue: 216 / 255, alpha: 1),
+            dark: UIColor(red: 46 / 255, green: 54 / 255, blue: 50 / 255, alpha: 1)
+        )
+    }
+
     // MARK: - Button Colors
 
     /// Цвет фона для кнопок онбординга
@@ -26,6 +42,32 @@ enum OnboardingColors {
     /// Цвет текста на кнопках онбординга
     static var buttonText: Color {
         .white
+    }
+
+    /// Цвет бордера у кнопок
+    static var buttonBorder: Color {
+        dynamicColor(
+            light: UIColor(red: 29 / 255, green: 174 / 255, blue: 94 / 255, alpha: 1),
+            dark: UIColor(red: 52 / 255, green: 201 / 255, blue: 123 / 255, alpha: 1)
+        )
+    }
+
+    // MARK: - Text
+
+    /// Основной цвет текста
+    static var textPrimary: Color {
+        dynamicColor(
+            light: UIColor(red: 29 / 255, green: 36 / 255, blue: 31 / 255, alpha: 1),
+            dark: UIColor(red: 233 / 255, green: 241 / 255, blue: 234 / 255, alpha: 1)
+        )
+    }
+
+    /// Вторичный цвет текста
+    static var textSecondary: Color {
+        dynamicColor(
+            light: UIColor(red: 84 / 255, green: 100 / 255, blue: 90 / 255, alpha: 1),
+            dark: UIColor(red: 181 / 255, green: 195 / 255, blue: 187 / 255, alpha: 1)
+        )
     }
 
     // MARK: - Indicator Colors

@@ -121,9 +121,9 @@ private extension SurebetCalculatorView {
     var payoutText: String { SurebetCalculatorLocalizationKey.income.localized }
     var sectionSpacing: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.medium }
     var rowsSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
-    var selectionIndicatorSize: CGFloat { isIPad ? 36 : 32 }
+    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
+    var horizontalPadding: CGFloat { AppConstants.Padding.large }
+    var selectionIndicatorSize: CGFloat { isIPad ? 48 : 44 }
     var keyboardAccessoryInset: CGFloat {
         guard viewModel.focus != nil else { return 0 }
         return AppConstants.Heights.keyboardAccessoryToolbar + AppConstants.Padding.small

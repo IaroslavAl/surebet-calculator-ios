@@ -12,8 +12,9 @@ struct OutcomeCountControlView: View {
             Text(label)
                 .font(AppConstants.Typography.label)
                 .foregroundColor(AppColors.textSecondary)
-                .lineLimit(1)
+                .lineLimit(2)
                 .minimumScaleFactor(0.8)
+                .layoutPriority(1)
             Spacer()
             HStack(spacing: spacing) {
                 counterButton(
@@ -49,10 +50,10 @@ private extension OutcomeCountControlView {
     var label: String { SurebetCalculatorLocalizationKey.outcomesCount.localized }
     var spacing: CGFloat { AppConstants.Padding.small }
     var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.medium }
-    var verticalPadding: CGFloat { AppConstants.Padding.small }
+    var verticalPadding: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
     var cornerRadius: CGFloat { AppConstants.CornerRadius.medium }
-    var controlHeight: CGFloat { isIPad ? 34 : 28 }
-    var valueMinWidth: CGFloat { isIPad ? 40 : 32 }
+    var controlHeight: CGFloat { isIPad ? 44 : 28 }
+    var valueMinWidth: CGFloat { isIPad ? 48 : 32 }
 
     var valuePill: some View {
         Text("\(viewModel.selectedNumberOfRows.rawValue)")

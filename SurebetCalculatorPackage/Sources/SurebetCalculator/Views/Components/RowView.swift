@@ -28,6 +28,7 @@ struct RowView: View {
             RoundedRectangle(cornerRadius: rowCornerRadius)
                 .stroke(isSelected ? AppColors.accent : AppColors.borderMuted, lineWidth: 1)
         }
+        .background(selectionTapArea)
     }
 }
 
@@ -36,10 +37,10 @@ struct RowView: View {
 private extension RowView {
     var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized }
     var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized }
-    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var rowPadding: CGFloat { isIPad ? AppConstants.Padding.small : AppConstants.Padding.small }
+    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
+    var rowPadding: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
     var rowCornerRadius: CGFloat { isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.medium }
-    var selectionIndicatorSize: CGFloat { isIPad ? 36 : 32 }
+    var selectionIndicatorSize: CGFloat { isIPad ? 48 : 44 }
     var isSelected: Bool { viewModel.selection == .row(rowId) }
 
     var betSize: some View {
@@ -60,8 +61,18 @@ private extension RowView {
         TextView(
             text: viewModel.row(for: rowId)?.income ?? "0",
             isPercent: false,
+            isEmphasized: isSelected,
             accessibilityId: AccessibilityIdentifiers.Row.incomeText(displayIndex)
         )
+    }
+
+    var selectionTapArea: some View {
+        Color.clear
+            .contentShape(.rect)
+            .onTapGesture {
+                guard viewModel.selection != .row(rowId) else { return }
+                viewModel.send(.selectRow(.row(rowId)))
+            }
     }
 }
 

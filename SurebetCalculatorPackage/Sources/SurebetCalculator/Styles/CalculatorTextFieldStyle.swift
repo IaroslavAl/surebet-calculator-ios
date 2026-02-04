@@ -25,7 +25,9 @@ struct CalculatorTextFieldStyle: TextFieldStyle {
 }
 
 private extension CalculatorTextFieldStyle {
-    var padding: CGFloat { AppConstants.Padding.small }
+    var padding: CGFloat {
+        Device.isIPadUnsafe ? AppConstants.Padding.large : AppConstants.Padding.small
+    }
     var frameHeight: CGFloat {
         Device.isIPadUnsafe ? AppConstants.Heights.regular : AppConstants.Heights.compact
     }

@@ -5,6 +5,7 @@ struct TextView: View {
 
     let text: String
     let isPercent: Bool
+    let isEmphasized: Bool
     var accessibilityId: String?
 
     // MARK: - Body
@@ -17,6 +18,12 @@ struct TextView: View {
             .background(AppColors.surfaceResult)
             .cornerRadius(cornerRadius)
             .foregroundColor(color)
+            .overlay {
+                if isEmphasized {
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .stroke(AppColors.border, lineWidth: 1)
+                }
+            }
             .accessibilityIdentifier(accessibilityId ?? "")
     }
 }
@@ -24,7 +31,9 @@ struct TextView: View {
 // MARK: - Private Computed Properties
 
 private extension TextView {
-    var textPadding: CGFloat { AppConstants.Padding.small }
+    var textPadding: CGFloat {
+        isIPad ? AppConstants.Padding.large : AppConstants.Padding.small
+    }
     var frameHeight: CGFloat {
         isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact
     }
@@ -35,6 +44,6 @@ private extension TextView {
 }
 
 #Preview {
-    TextView(text: 1.formatToString(isPercent: true), isPercent: true)
+    TextView(text: 1.formatToString(isPercent: true), isPercent: true, isEmphasized: false)
         .padding()
 }

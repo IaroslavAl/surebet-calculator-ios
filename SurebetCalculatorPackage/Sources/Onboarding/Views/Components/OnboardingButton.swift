@@ -40,12 +40,17 @@ private extension OnboardingButton {
 
     var label: some View {
         Text(text)
+            .font(OnboardingConstants.Typography.button)
             .foregroundColor(OnboardingColors.buttonText)
             .bold()
             .frame(maxWidth: .infinity)
             .padding(padding)
             .background(OnboardingColors.buttonBackground)
             .cornerRadius(cornerRadius)
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(OnboardingColors.buttonBorder, lineWidth: 1)
+            }
             .animation(OnboardingConstants.Animations.quickInteraction, value: viewModel.currentPage)
     }
 
