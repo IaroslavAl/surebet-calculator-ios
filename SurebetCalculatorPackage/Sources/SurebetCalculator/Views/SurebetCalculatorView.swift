@@ -1,5 +1,3 @@
-import Banner
-import Foundation
 import SwiftUI
 
 struct SurebetCalculatorView: View {
@@ -20,25 +18,28 @@ struct SurebetCalculatorView: View {
     // MARK: - Body
 
     var body: some View {
-        scrollableContent
-            .frame(maxWidth: .infinity)
-            .navigationTitle(navigationTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar(content: toolbar)
-            .frame(minHeight: .zero, maxHeight: .infinity, alignment: .top)
-            .font(AppConstants.Typography.body)
-            .environmentObject(viewModel)
-            .animation(.default, value: viewModel.selectedNumberOfRows)
-            .focused($isFocused)
-            .onTapGesture {
-                isFocused = false
-            }
-            .background(
-                KeyboardAccessoryOverlayHost(
-                    onClear: { viewModel.send(.clearFocusableField) },
-                    onDone: { viewModel.send(.hideKeyboard) }
-                )
+        ZStack {
+            AppColors.background.ignoresSafeArea()
+            scrollableContent
+        }
+        .frame(maxWidth: .infinity)
+        .navigationTitle(navigationTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(content: toolbar)
+        .frame(minHeight: .zero, maxHeight: .infinity, alignment: .top)
+        .font(AppConstants.Typography.body)
+        .environmentObject(viewModel)
+        .animation(.default, value: viewModel.selectedNumberOfRows)
+        .focused($isFocused)
+        .onTapGesture {
+            isFocused = false
+        }
+        .background(
+            KeyboardAccessoryOverlayHost(
+                onClear: { viewModel.send(.clearFocusableField) },
+                onDone: { viewModel.send(.hideKeyboard) }
             )
+        )
     }
 }
 
@@ -46,21 +47,19 @@ struct SurebetCalculatorView: View {
 
 private extension SurebetCalculatorView {
     var scrollableContent: some View {
-        VStack(spacing: spacing) {
-            scrollView
-        }
+        scrollView
     }
 
     var scrollView: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: spacing) {
-                rowCountPicker
+            VStack(spacing: sectionSpacing) {
+                OutcomeCountControlView()
                 TotalRowView()
-                    .padding(.trailing, horizontalPadding)
+                rowsHeader
                 rowsView
             }
-            .padding(.vertical, rowsSpacing)
-            // leading отступ уже внутри rowsView у ToggleButton
+            .padding(.vertical, sectionSpacing)
+            .padding(.horizontal, horizontalPadding)
             .background(backgroundTapGesture)
         }
         .scrollDismissesKeyboard(.immediately)
@@ -83,7 +82,25 @@ private extension SurebetCalculatorView {
                 RowView(rowId: id, displayIndex: index)
             }
         }
-        .padding(.trailing, horizontalPadding)
+    }
+
+    var rowsHeader: some View {
+        HStack(spacing: columnSpacing) {
+            Color.clear
+                .frame(width: selectionIndicatorSize, height: 1)
+            headerText(coefficientText)
+            headerText(betSizeText)
+            headerText(payoutText)
+        }
+    }
+
+    func headerText(_ text: String) -> some View {
+        Text(text)
+            .font(AppConstants.Typography.label)
+            .foregroundColor(AppColors.textSecondary)
+            .lineLimit(2)
+            .minimumScaleFactor(0.8)
+            .frame(maxWidth: .infinity, alignment: .center)
     }
 
     @ToolbarContentBuilder
@@ -93,60 +110,31 @@ private extension SurebetCalculatorView {
         }
     }
 
-    var rowCountPicker: some View {
-        VStack(alignment: .center, spacing: rowsSpacing) {
-            Text(rowCountLabel)
-                .font(AppConstants.Typography.label)
-                .frame(maxWidth: .infinity, alignment: .center)
-            GeometryReader { proxy in
-                HorizontalWheelPicker(
-                    options: viewModel.availableRowCounts.map(\.rawValue),
-                    selection: rowCountIntBinding,
-                    itemWidth: max(72, proxy.size.width / 4.5),
-                    itemHeight: pickerHeight,
-                    itemSpacing: max(10, proxy.size.width / 35)
-                )
-                .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.rowCountPicker)
-            }
-            .frame(maxWidth: .infinity, minHeight: pickerHeight, maxHeight: pickerHeight)
-        }
-    }
-
 }
 
 // MARK: - Private Computed Properties
 
 private extension SurebetCalculatorView {
     var navigationTitle: String { SurebetCalculatorLocalizationKey.navigationTitle.localized }
-    var rowCountLabel: String { SurebetCalculatorLocalizationKey.outcomesCount.localized }
-    var spacing: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
+    var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized }
+    var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized }
+    var payoutText: String { SurebetCalculatorLocalizationKey.income.localized }
+    var sectionSpacing: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.medium }
     var rowsSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.small : AppConstants.Padding.small }
-    var pickerHeight: CGFloat { isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact }
+    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
+    var selectionIndicatorSize: CGFloat { isIPad ? 36 : 32 }
     var keyboardAccessoryInset: CGFloat {
         guard viewModel.focus != nil else { return 0 }
         return AppConstants.Heights.keyboardAccessoryToolbar + AppConstants.Padding.small
-    }
-    var rowCountBinding: Binding<NumberOfRows> {
-        Binding(
-            get: { viewModel.selectedNumberOfRows },
-            set: { viewModel.send(.setNumberOfRows($0)) }
-        )
-    }
-    var rowCountIntBinding: Binding<Int> {
-        Binding(
-            get: { viewModel.selectedNumberOfRows.rawValue },
-            set: { newValue in
-                guard let selected = NumberOfRows(rawValue: newValue) else { return }
-                guard selected != viewModel.selectedNumberOfRows else { return }
-                DispatchQueue.main.async {
-                    viewModel.send(.setNumberOfRows(selected))
-                }
-            }
-        )
     }
 }
 
 #Preview {
     SurebetCalculatorView(viewModel: SurebetCalculatorViewModel())
+}
+
+#Preview("RU") {
+    SurebetCalculatorView(viewModel: SurebetCalculatorViewModel())
+        .environment(\.locale, Locale(identifier: "ru"))
 }

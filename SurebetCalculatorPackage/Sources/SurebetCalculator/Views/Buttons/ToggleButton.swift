@@ -31,28 +31,22 @@ private extension ToggleButton {
         }
     }
 
-    var height: CGFloat {
-        isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact
-    }
-
-    var horizontalPadding: CGFloat {
-        isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small
-    }
-
     var transition: AnyTransition { AppConstants.Animations.scaleWithOpacity }
 
     func label() -> some View {
-        Group {
+        ZStack {
+            Circle()
+                .fill(isON ? AppColors.accentSoft : AppColors.surface)
+            Circle()
+                .stroke(isON ? AppColors.accent : AppColors.borderMuted, lineWidth: 1.2)
             if isON {
-                Image(systemName: "soccerball")
-                    .foregroundColor(AppColors.primaryGreen)
-            } else {
-                Image(systemName: "circle")
-                    .foregroundColor(AppColors.primaryRed)
+                Image(systemName: "checkmark")
+                    .font(.system(size: iconSize, weight: .semibold))
+                    .foregroundColor(AppColors.accent)
             }
         }
-        .frame(minWidth: .zero, minHeight: height, maxHeight: height)
-        .padding(.horizontal, horizontalPadding)
+        .frame(width: size, height: size)
+        .frame(width: tapAreaSize, height: tapAreaSize)
         .contentShape(.rect)
         .transition(transition)
     }
@@ -74,6 +68,18 @@ private extension ToggleButton {
         case .none:
             return AccessibilityIdentifiers.TotalRow.toggleButton
         }
+    }
+
+    var size: CGFloat {
+        isIPad ? 28 : 24
+    }
+
+    var iconSize: CGFloat {
+        isIPad ? 12 : 10
+    }
+
+    var tapAreaSize: CGFloat {
+        isIPad ? 36 : 32
     }
 }
 

@@ -8,12 +8,22 @@ struct TotalRowView: View {
     // MARK: - Body
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: .zero) {
+        HStack(spacing: columnSpacing) {
             ToggleButton(row: .total)
-            HStack(spacing: spacing) {
+                .frame(width: selectionIndicatorSize)
+            HStack(spacing: columnSpacing) {
                 totalBetSizeColumn
+                    .frame(maxWidth: .infinity)
                 profitPercentageColumn
+                    .frame(maxWidth: .infinity)
             }
+        }
+        .padding(cardPadding)
+        .background(AppColors.surfaceElevated)
+        .cornerRadius(cardCornerRadius)
+        .overlay {
+            RoundedRectangle(cornerRadius: cardCornerRadius)
+                .stroke(isSelected ? AppColors.accent : AppColors.border, lineWidth: 1)
         }
     }
 }
@@ -24,12 +34,20 @@ private extension TotalRowView {
     var betSizeLabel: String { SurebetCalculatorLocalizationKey.totalBetSize.localized }
     var profitPercentageLabel: String { SurebetCalculatorLocalizationKey.profitPercentage.localized }
     var placeholder: String { SurebetCalculatorLocalizationKey.totalBetSize.localized }
-    var spacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var labelSpacing: CGFloat { AppConstants.Padding.small }
+    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var cardPadding: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var cardCornerRadius: CGFloat { isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.medium }
+    var selectionIndicatorSize: CGFloat { isIPad ? 36 : 32 }
+    var isSelected: Bool { viewModel.selection == .total }
 
     var totalBetSizeColumn: some View {
-        VStack(spacing: spacing) {
+        VStack(spacing: labelSpacing) {
             Text(betSizeLabel)
                 .font(AppConstants.Typography.label)
+                .foregroundColor(AppColors.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
             TextFieldView(
                 placeholder: placeholder,
                 focusableField: .totalBetSize
@@ -38,9 +56,12 @@ private extension TotalRowView {
     }
 
     var profitPercentageColumn: some View {
-        VStack(spacing: spacing) {
+        VStack(spacing: labelSpacing) {
             Text(profitPercentageLabel)
                 .font(AppConstants.Typography.label)
+                .foregroundColor(AppColors.textSecondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
             TextView(
                 text: viewModel.total.profitPercentage,
                 isPercent: true,

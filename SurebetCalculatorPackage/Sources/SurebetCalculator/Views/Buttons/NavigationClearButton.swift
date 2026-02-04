@@ -13,6 +13,14 @@ struct NavigationClearButton: View {
         } label: {
             Image(systemName: "trash")
                 .font(font)
+                .foregroundColor(AppColors.textSecondary)
+                .padding(padding)
+                .background(AppColors.surface)
+                .clipShape(Circle())
+                .overlay {
+                    Circle()
+                        .stroke(AppColors.border, lineWidth: 1)
+                }
                 .accessibilityLabel(SurebetCalculatorLocalizationKey.clearAll.localized)
         }
         .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.clearButton)
@@ -20,6 +28,10 @@ struct NavigationClearButton: View {
 
     var font: Font {
         isIPad ? .body : .callout
+    }
+
+    var padding: CGFloat {
+        isIPad ? AppConstants.Padding.small : 6
     }
 }
 

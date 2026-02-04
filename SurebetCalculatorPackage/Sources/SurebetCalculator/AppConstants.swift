@@ -74,6 +74,12 @@ public enum AppConstants {
             Device.isIPad ? .title : .body
         }
 
+        /// Шрифт для числовых значений (моноширинные цифры)
+        @MainActor
+        static var numeric: Font {
+            body.monospacedDigit()
+        }
+
         /// Шрифт для заголовков страниц (title для iPhone, largeTitle для iPad)
         @MainActor
         static var title: Font {

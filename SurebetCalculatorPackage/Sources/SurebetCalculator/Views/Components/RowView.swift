@@ -11,13 +11,22 @@ struct RowView: View {
     // MARK: - Body
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: .zero) {
+        HStack(spacing: columnSpacing) {
             ToggleButton(row: .row(rowId))
-            HStack(spacing: spacing) {
-                coefficient
-                betSize
-                income
-            }
+                .frame(width: selectionIndicatorSize)
+            coefficient
+                .frame(maxWidth: .infinity)
+            betSize
+                .frame(maxWidth: .infinity)
+            income
+                .frame(maxWidth: .infinity)
+        }
+        .padding(rowPadding)
+        .background(isSelected ? AppColors.surfaceElevated : AppColors.surface)
+        .cornerRadius(rowCornerRadius)
+        .overlay {
+            RoundedRectangle(cornerRadius: rowCornerRadius)
+                .stroke(isSelected ? AppColors.accent : AppColors.borderMuted, lineWidth: 1)
         }
     }
 }
@@ -27,47 +36,32 @@ struct RowView: View {
 private extension RowView {
     var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized }
     var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized }
-    var incomeText: String { SurebetCalculatorLocalizationKey.income.localized }
-    var spacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
+    var rowPadding: CGFloat { isIPad ? AppConstants.Padding.small : AppConstants.Padding.small }
+    var rowCornerRadius: CGFloat { isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.medium }
+    var selectionIndicatorSize: CGFloat { isIPad ? 36 : 32 }
+    var isSelected: Bool { viewModel.selection == .row(rowId) }
 
     var betSize: some View {
-        VStack(spacing: spacing) {
-            if displayIndex == 0 {
-                Text(betSizeText)
-                    .font(AppConstants.Typography.label)
-            }
-            TextFieldView(
-                placeholder: betSizeText,
-                focusableField: .rowBetSize(rowId)
-            )
-        }
+        TextFieldView(
+            placeholder: betSizeText,
+            focusableField: .rowBetSize(rowId)
+        )
     }
 
     var coefficient: some View {
-        VStack(spacing: spacing) {
-            if displayIndex == 0 {
-                Text(coefficientText)
-                    .font(AppConstants.Typography.label)
-            }
-            TextFieldView(
-                placeholder: coefficientText,
-                focusableField: .rowCoefficient(rowId)
-            )
-        }
+        TextFieldView(
+            placeholder: coefficientText,
+            focusableField: .rowCoefficient(rowId)
+        )
     }
 
     var income: some View {
-        VStack(spacing: spacing) {
-            if displayIndex == 0 {
-                Text(incomeText)
-                    .font(AppConstants.Typography.label)
-            }
-            TextView(
-                text: viewModel.row(for: rowId)?.income ?? "0",
-                isPercent: false,
-                accessibilityId: AccessibilityIdentifiers.Row.incomeText(displayIndex)
-            )
-        }
+        TextView(
+            text: viewModel.row(for: rowId)?.income ?? "0",
+            isPercent: false,
+            accessibilityId: AccessibilityIdentifiers.Row.incomeText(displayIndex)
+        )
     }
 }
 

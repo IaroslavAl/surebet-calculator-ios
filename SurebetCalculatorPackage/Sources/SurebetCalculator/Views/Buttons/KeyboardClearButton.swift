@@ -12,7 +12,7 @@ struct KeyboardClearButton: View {
             viewModel.send(.clearFocusableField)
         } label: {
             Text(SurebetCalculatorLocalizationKey.clear.localized)
-                .foregroundColor(AppColors.primaryRed)
+                .foregroundColor(AppColors.error)
         }
         .accessibilityIdentifier(AccessibilityIdentifiers.Keyboard.clearButton)
     }

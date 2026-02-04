@@ -16,9 +16,14 @@ struct TextFieldView: View {
             .textFieldStyle(
                 .calculatorStyle(
                     isEnabled: !isDisabled,
-                    isValid: isValid
+                    isValid: isValid,
+                    isFocused: isFieldFocused
                 )
             )
+            .font(AppConstants.Typography.numeric)
+            .foregroundColor(isDisabled ? AppColors.textMuted : AppColors.textPrimary)
+            .tint(AppColors.accent)
+            .opacity(isDisabled ? 0.7 : 1)
             .focused($isFocused, equals: focusableField)
             .disabled(isDisabled)
             .onTapGesture {
@@ -48,6 +53,10 @@ private extension TextFieldView {
 
     var isDisabled: Bool {
         viewModel.isFieldDisabled(focusableField)
+    }
+
+    var isFieldFocused: Bool {
+        isFocused == focusableField
     }
 
     var text: String {
