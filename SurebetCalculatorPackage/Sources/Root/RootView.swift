@@ -49,6 +49,8 @@ private extension RootView {
             SurebetCalculator.view(analytics: calculatorAnalytics)
         }
         .navigationViewStyle(.stack)
+        .allowsHitTesting(!viewModel.shouldShowOnboardingWithAnimation)
+        .accessibilityHidden(viewModel.shouldShowOnboardingWithAnimation)
     }
 
     @ViewBuilder
