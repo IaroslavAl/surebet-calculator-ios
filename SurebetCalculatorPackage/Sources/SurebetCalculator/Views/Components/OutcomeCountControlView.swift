@@ -21,12 +21,14 @@ struct OutcomeCountControlView: View {
                 counterButton(
                     systemName: "minus",
                     isDisabled: isAtMin,
+                    accessibilityId: AccessibilityIdentifiers.Calculator.rowCountDecreaseButton,
                     action: { viewModel.send(.removeRow) }
                 )
                 valuePill
                 counterButton(
                     systemName: "plus",
                     isDisabled: isAtMax,
+                    accessibilityId: AccessibilityIdentifiers.Calculator.rowCountIncreaseButton,
                     action: { viewModel.send(.addRow) }
                 )
             }
@@ -39,9 +41,6 @@ struct OutcomeCountControlView: View {
             RoundedRectangle(cornerRadius: cornerRadius)
                 .stroke(AppColors.border, lineWidth: 1)
         }
-        .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.rowCountPicker)
-        .accessibilityElement(children: .combine)
-        .accessibilityValue("\(viewModel.selectedNumberOfRows.rawValue)")
     }
 }
 
@@ -67,14 +66,19 @@ private extension OutcomeCountControlView {
                 RoundedRectangle(cornerRadius: AppConstants.CornerRadius.small)
                     .stroke(AppColors.borderMuted, lineWidth: 1)
             }
+            .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.rowCountValue)
     }
 
     func counterButton(
         systemName: String,
         isDisabled: Bool,
+        accessibilityId: String,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
+        Button {
+            action()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        } label: {
             Image(systemName: systemName)
                 .font(.system(size: isIPad ? 18 : 12, weight: .semibold))
                 .foregroundColor(isDisabled ? AppColors.textMuted : AppColors.textPrimary)
@@ -87,12 +91,7 @@ private extension OutcomeCountControlView {
                 }
         }
         .disabled(isDisabled)
-        .simultaneousGesture(
-            TapGesture().onEnded {
-                guard !isDisabled else { return }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            }
-        )
+        .accessibilityIdentifier(accessibilityId)
     }
 
     var minRowCount: Int {

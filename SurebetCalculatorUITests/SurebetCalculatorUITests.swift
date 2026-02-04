@@ -205,7 +205,7 @@ final class SurebetCalculatorUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.5)
         let betSizeValue = totalBetSize.value as? String ?? ""
         XCTAssertTrue(
-            betSizeValue.isEmpty || betSizeValue == "Total bet size",
+            betSizeValue.isEmpty || betSizeValue == "Total stake",
             "Поле должно быть очищено, получено: '\(betSizeValue)'"
         )
     }
@@ -302,7 +302,7 @@ final class SurebetCalculatorUITests: XCTestCase {
             Thread.sleep(forTimeInterval: 0.3)
             let betSizeValue = totalBetSize.value as? String ?? ""
             XCTAssertTrue(
-                betSizeValue.isEmpty || betSizeValue == "Total bet size",
+                betSizeValue.isEmpty || betSizeValue == "Total stake",
                 "Поле должно быть очищено"
             )
         }
@@ -357,12 +357,27 @@ final class SurebetCalculatorUITests: XCTestCase {
     }
 
     private func selectRowCount(_ value: Int) {
-        let picker = app.pickers[Identifiers.Calculator.rowCountPicker]
-        XCTAssertTrue(picker.waitForExistence(timeout: 2), "Пикер количества исходов должен существовать")
+        let decreaseControl = app.descendants(matching: .any)[Identifiers.Calculator.rowCountDecreaseButton]
+        let increaseControl = app.descendants(matching: .any)[Identifiers.Calculator.rowCountIncreaseButton]
+        let valueLabel = app.descendants(matching: .any)[Identifiers.Calculator.rowCountValue]
+        XCTAssertTrue(decreaseControl.waitForExistence(timeout: 2), "Кнопка уменьшения должна существовать")
+        XCTAssertTrue(increaseControl.waitForExistence(timeout: 2), "Кнопка увеличения должна существовать")
+        XCTAssertTrue(valueLabel.waitForExistence(timeout: 2), "Текущее значение должно существовать")
 
-        let wheel = picker.pickerWheels.element
-        XCTAssertTrue(wheel.exists, "Колесо пикера должно существовать")
-        wheel.adjust(toPickerWheelValue: "\(value)")
+        var current = Int(valueLabel.label) ?? 0
+        var guardCounter = 0
+        while current < value && guardCounter < 30 {
+            increaseControl.tap()
+            current = Int(valueLabel.label) ?? current
+            guardCounter += 1
+        }
+        while current > value && guardCounter < 60 {
+            decreaseControl.tap()
+            current = Int(valueLabel.label) ?? current
+            guardCounter += 1
+        }
+
+        XCTAssertEqual(current, value, "Количество исходов должно быть \(value)")
     }
 
     /// Форматирует число в строку для ввода в текстовое поле с учётом текущей локали.
@@ -390,6 +405,9 @@ private enum Identifiers {
         static let view = "calculator_view"
         static let clearButton = "calculator_clear_button"
         static let rowCountPicker = "calculator_row_count_picker"
+        static let rowCountDecreaseButton = "calculator_row_count_decrease_button"
+        static let rowCountIncreaseButton = "calculator_row_count_increase_button"
+        static let rowCountValue = "calculator_row_count_value"
     }
 
     enum TotalRow {

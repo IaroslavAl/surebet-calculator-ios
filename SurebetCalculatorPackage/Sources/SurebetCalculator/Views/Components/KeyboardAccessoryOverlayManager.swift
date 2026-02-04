@@ -76,8 +76,16 @@ final class KeyboardAccessoryOverlayManager {
     }
 
     private func registerObservers() {
-        let willShow = NotificationCenter.default.addObserver(
-            forName: UIResponder.keyboardWillShowNotification,
+        observers = [
+            addKeyboardObserver(for: UIResponder.keyboardWillShowNotification),
+            addKeyboardObserver(for: UIResponder.keyboardWillChangeFrameNotification),
+            addKeyboardObserver(for: UIResponder.keyboardWillHideNotification)
+        ]
+    }
+
+    private func addKeyboardObserver(for name: Notification.Name) -> NSObjectProtocol {
+        NotificationCenter.default.addObserver(
+            forName: name,
             object: nil,
             queue: .main
         ) { [weak self] notification in
@@ -90,7 +98,7 @@ final class KeyboardAccessoryOverlayManager {
             let curveRaw = notification.userInfo?[
                 UIResponder.keyboardAnimationCurveUserInfoKey
             ] as? Int ?? Layout.animationFallbackCurve
-            MainActor.assumeIsolated {
+            Task { @MainActor in
                 self?.handleKeyboardVisibility(
                     frame: frame,
                     duration: duration,
@@ -98,54 +106,6 @@ final class KeyboardAccessoryOverlayManager {
                 )
             }
         }
-
-        let willChange = NotificationCenter.default.addObserver(
-            forName: UIResponder.keyboardWillChangeFrameNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            guard let frame = notification.userInfo?[
-                UIResponder.keyboardFrameEndUserInfoKey
-            ] as? CGRect else { return }
-            let duration = notification.userInfo?[
-                UIResponder.keyboardAnimationDurationUserInfoKey
-            ] as? Double ?? Layout.animationFallbackDuration
-            let curveRaw = notification.userInfo?[
-                UIResponder.keyboardAnimationCurveUserInfoKey
-            ] as? Int ?? Layout.animationFallbackCurve
-            MainActor.assumeIsolated {
-                self?.handleKeyboardVisibility(
-                    frame: frame,
-                    duration: duration,
-                    curveRaw: curveRaw
-                )
-            }
-        }
-
-        let willHide = NotificationCenter.default.addObserver(
-            forName: UIResponder.keyboardWillHideNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            guard let frame = notification.userInfo?[
-                UIResponder.keyboardFrameEndUserInfoKey
-            ] as? CGRect else { return }
-            let duration = notification.userInfo?[
-                UIResponder.keyboardAnimationDurationUserInfoKey
-            ] as? Double ?? Layout.animationFallbackDuration
-            let curveRaw = notification.userInfo?[
-                UIResponder.keyboardAnimationCurveUserInfoKey
-            ] as? Int ?? Layout.animationFallbackCurve
-            MainActor.assumeIsolated {
-                self?.handleKeyboardVisibility(
-                    frame: frame,
-                    duration: duration,
-                    curveRaw: curveRaw
-                )
-            }
-        }
-
-        observers = [willShow, willChange, willHide]
     }
 
     private func handleKeyboardVisibility(frame: CGRect, duration: Double, curveRaw: Int) {
@@ -179,38 +139,60 @@ final class KeyboardAccessoryOverlayManager {
         curveRaw: Int,
         isVisibleOverride: Bool? = nil
     ) {
-        guard let keyboardGuideView, let containerView else { return }
+        guard let context = makeVisibilityContext(isVisibleOverride: isVisibleOverride) else { return }
+        applyVisibility(context: context, animated: animated, duration: duration, curveRaw: curveRaw)
+    }
+
+    private struct VisibilityContext {
+        let containerView: UIView
+        let isVisible: Bool
+    }
+
+    private func makeVisibilityContext(isVisibleOverride: Bool?) -> VisibilityContext? {
+        guard let keyboardGuideView, let containerView else { return nil }
         keyboardGuideView.layoutIfNeeded()
         let layoutFrame = keyboardGuideView.keyboardLayoutGuide.layoutFrame
         let isVisible = isVisibleOverride ?? (layoutFrame.height > 0)
+        return VisibilityContext(containerView: containerView, isVisible: isVisible)
+    }
 
-        toolbarView.isUserInteractionEnabled = isVisible
-        let curve = UIView.AnimationCurve(rawValue: curveRaw) ?? .easeOut
-        let options = UIView.AnimationOptions(rawValue: UInt(curve.rawValue << 16))
-
-        let updates = {
-            if isVisible {
+    private func applyVisibility(
+        context: VisibilityContext,
+        animated: Bool,
+        duration: Double,
+        curveRaw: Int
+    ) {
+        toolbarView.isUserInteractionEnabled = context.isVisible
+        let updates = { [weak self] in
+            guard let self else { return }
+            if context.isVisible {
                 self.toolbarView.alpha = 1
             }
-            containerView.layoutIfNeeded()
+            context.containerView.layoutIfNeeded()
         }
 
         if animated && duration > 0 {
             UIView.animate(
                 withDuration: duration,
                 delay: 0,
-                options: [options, .beginFromCurrentState],
+                options: [animationOptions(for: curveRaw), .beginFromCurrentState],
                 animations: updates
-            ) { _ in
-                if !isVisible {
+            ) { [weak self] _ in
+                guard let self else { return }
+                if !context.isVisible {
                     self.toolbarView.alpha = 0
                 }
             }
         } else {
             updates()
-            if !isVisible {
+            if !context.isVisible {
                 toolbarView.alpha = 0
             }
         }
+    }
+
+    private func animationOptions(for curveRaw: Int) -> UIView.AnimationOptions {
+        let curve = UIView.AnimationCurve(rawValue: curveRaw) ?? .easeOut
+        return UIView.AnimationOptions(rawValue: UInt(curve.rawValue << 16))
     }
 }
