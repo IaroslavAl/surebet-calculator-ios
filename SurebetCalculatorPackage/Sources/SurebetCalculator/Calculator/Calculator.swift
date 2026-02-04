@@ -94,7 +94,7 @@ private extension Calculator {
     var hasValidCoefficients: Bool {
         activeRowIds
             .compactMap { rowsById[$0]?.coefficient }
-            .allSatisfy { $0.formatToDouble() ?? 0 > 0 }
+            .allSatisfy { $0.formatToDouble() ?? 0 >= 1 }
     }
 
     /// Определяет метод вычислений на основе валидности текущего ввода.
