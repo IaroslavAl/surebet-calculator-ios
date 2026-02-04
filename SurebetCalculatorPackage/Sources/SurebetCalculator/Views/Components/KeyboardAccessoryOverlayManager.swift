@@ -10,7 +10,8 @@ final class KeyboardAccessoryOverlayManager {
     private let toolbarView = KeyboardAccessoryToolbarView()
     private var observers: [NSObjectProtocol] = []
     private weak var hostWindow: UIWindow?
-    private weak var hostView: UIView?
+    private weak var containerView: UIView?
+    private weak var keyboardGuideView: UIView?
     private var constraints: [NSLayoutConstraint] = []
 
     init() {
@@ -41,30 +42,33 @@ final class KeyboardAccessoryOverlayManager {
         constraints.removeAll()
         toolbarView.removeFromSuperview()
         hostWindow = nil
-        hostView = nil
+        containerView = nil
+        keyboardGuideView = nil
     }
 
     private func install(hostWindow: UIWindow) {
-        let baseView = hostWindow.rootViewController?.view ?? hostWindow
-        if self.hostWindow === hostWindow, toolbarView.superview === baseView { return }
+        let guideView = hostWindow.rootViewController?.view ?? hostWindow
+        let containerView = hostWindow
+        if self.hostWindow === hostWindow, toolbarView.superview === containerView { return }
         teardown()
         self.hostWindow = hostWindow
-        self.hostView = baseView
+        self.containerView = containerView
+        keyboardGuideView = guideView
         toolbarView.translatesAutoresizingMaskIntoConstraints = false
-        baseView.addSubview(toolbarView)
+        containerView.addSubview(toolbarView)
 
         let bottomConstraint = toolbarView.bottomAnchor.constraint(
-            equalTo: baseView.keyboardLayoutGuide.topAnchor,
+            equalTo: guideView.keyboardLayoutGuide.topAnchor,
             constant: -AppConstants.Padding.small
         )
         constraints = [
-            toolbarView.leadingAnchor.constraint(equalTo: baseView.leadingAnchor),
-            toolbarView.trailingAnchor.constraint(equalTo: baseView.trailingAnchor),
+            toolbarView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            toolbarView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
             toolbarView.heightAnchor.constraint(equalToConstant: toolbarView.intrinsicContentSize.height),
             bottomConstraint
         ]
         NSLayoutConstraint.activate(constraints)
-        baseView.layoutIfNeeded()
+        containerView.layoutIfNeeded()
 
         updateVisibilityFromKeyboard(animated: false, duration: 0, curveRaw: Layout.animationFallbackCurve)
         registerObservers()
@@ -85,11 +89,13 @@ final class KeyboardAccessoryOverlayManager {
             let curveRaw = notification.userInfo?[
                 UIResponder.keyboardAnimationCurveUserInfoKey
             ] as? Int ?? Layout.animationFallbackCurve
-            self?.handleKeyboardVisibility(
-                frame: frame,
-                duration: duration,
-                curveRaw: curveRaw
-            )
+            MainActor.assumeIsolated {
+                self?.handleKeyboardVisibility(
+                    frame: frame,
+                    duration: duration,
+                    curveRaw: curveRaw
+                )
+            }
         }
 
         let willChange = NotificationCenter.default.addObserver(
@@ -106,11 +112,13 @@ final class KeyboardAccessoryOverlayManager {
             let curveRaw = notification.userInfo?[
                 UIResponder.keyboardAnimationCurveUserInfoKey
             ] as? Int ?? Layout.animationFallbackCurve
-            self?.handleKeyboardVisibility(
-                frame: frame,
-                duration: duration,
-                curveRaw: curveRaw
-            )
+            MainActor.assumeIsolated {
+                self?.handleKeyboardVisibility(
+                    frame: frame,
+                    duration: duration,
+                    curveRaw: curveRaw
+                )
+            }
         }
 
         let willHide = NotificationCenter.default.addObserver(
@@ -127,11 +135,13 @@ final class KeyboardAccessoryOverlayManager {
             let curveRaw = notification.userInfo?[
                 UIResponder.keyboardAnimationCurveUserInfoKey
             ] as? Int ?? Layout.animationFallbackCurve
-            self?.handleKeyboardVisibility(
-                frame: frame,
-                duration: duration,
-                curveRaw: curveRaw
-            )
+            MainActor.assumeIsolated {
+                self?.handleKeyboardVisibility(
+                    frame: frame,
+                    duration: duration,
+                    curveRaw: curveRaw
+                )
+            }
         }
 
         observers = [willShow, willChange, willHide]
@@ -168,9 +178,9 @@ final class KeyboardAccessoryOverlayManager {
         curveRaw: Int,
         isVisibleOverride: Bool? = nil
     ) {
-        guard let hostView else { return }
-        hostView.layoutIfNeeded()
-        let layoutFrame = hostView.keyboardLayoutGuide.layoutFrame
+        guard let keyboardGuideView, let containerView else { return }
+        keyboardGuideView.layoutIfNeeded()
+        let layoutFrame = keyboardGuideView.keyboardLayoutGuide.layoutFrame
         let isVisible = isVisibleOverride ?? (layoutFrame.height > 0)
 
         toolbarView.isUserInteractionEnabled = isVisible
@@ -181,7 +191,7 @@ final class KeyboardAccessoryOverlayManager {
             if isVisible {
                 self.toolbarView.alpha = 1
             }
-            hostView.layoutIfNeeded()
+            containerView.layoutIfNeeded()
         }
 
         if animated && duration > 0 {
