@@ -70,7 +70,8 @@ final class KeyboardAccessoryOverlayManager {
         NSLayoutConstraint.activate(constraints)
         containerView.layoutIfNeeded()
 
-        updateVisibilityFromKeyboard(animated: false, duration: 0, curveRaw: Layout.animationFallbackCurve)
+        toolbarView.alpha = 0
+        toolbarView.isUserInteractionEnabled = false
         registerObservers()
     }
 
