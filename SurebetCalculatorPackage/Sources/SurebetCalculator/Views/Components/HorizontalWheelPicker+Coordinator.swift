@@ -155,6 +155,26 @@ extension HorizontalWheelPicker.Coordinator {
 }
 
 extension HorizontalWheelPicker.Coordinator {
+    func handleLayoutChange(in collectionView: UICollectionView) {
+        guard !isUserDragging, !isDecelerating else { return }
+        let inset = max(0, (collectionView.bounds.width - parent.itemWidth) / 2)
+        if updateInsetIfNeeded(inset: inset, boundsWidth: collectionView.bounds.width) {
+            collectionView.contentInset = UIEdgeInsets(top: 0, left: inset, bottom: 0, right: inset)
+        }
+        if let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout,
+           updateLayoutIfNeeded(
+               itemWidth: parent.itemWidth,
+               itemHeight: parent.itemHeight,
+               itemSpacing: parent.itemSpacing
+           ) {
+            layout.itemSize = CGSize(width: parent.itemWidth, height: parent.itemHeight)
+            layout.minimumLineSpacing = parent.itemSpacing
+            layout.invalidateLayout()
+        }
+        centerOnSelection(in: collectionView)
+        updateVisibleCells(in: collectionView)
+    }
+
     func scrollToSelectionIfNeeded(in collectionView: UICollectionView, animated: Bool) {
         if isUserDragging {
             updateVisibleCells(in: collectionView)
@@ -214,6 +234,8 @@ extension HorizontalWheelPicker.Coordinator {
             lastItemWidth = itemWidth
             lastItemHeight = itemHeight
             lastItemSpacing = itemSpacing
+            lastSelection = nil
+            hasCentered = false
             return true
         }
         return false
@@ -223,6 +245,8 @@ extension HorizontalWheelPicker.Coordinator {
         if lastBoundsWidth != boundsWidth || lastInset != inset {
             lastBoundsWidth = boundsWidth
             lastInset = inset
+            lastSelection = nil
+            hasCentered = false
             return true
         }
         return false

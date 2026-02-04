@@ -17,13 +17,20 @@ struct HorizontalWheelPicker: UIViewRepresentable {
         layout.scrollDirection = .horizontal
         layout.minimumLineSpacing = itemSpacing
 
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        let collectionView = HorizontalWheelPickerCollectionView(
+            frame: .zero,
+            collectionViewLayout: layout
+        )
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.decelerationRate = .normal
         collectionView.allowsSelection = true
         collectionView.dataSource = context.coordinator
         collectionView.delegate = context.coordinator
+        collectionView.onLayout = { [weak collectionView, weak coordinator = context.coordinator] in
+            guard let collectionView, let coordinator else { return }
+            coordinator.handleLayoutChange(in: collectionView)
+        }
         collectionView.register(
             HorizontalWheelPickerNumberCell.self,
             forCellWithReuseIdentifier: HorizontalWheelPickerNumberCell.reuseId
@@ -81,5 +88,18 @@ struct HorizontalWheelPicker: UIViewRepresentable {
             context.coordinator.scrollToSelectionIfNeeded(in: uiView, animated: false)
         }
         context.coordinator.updateVisibleCells(in: uiView)
+    }
+}
+
+final class HorizontalWheelPickerCollectionView: UICollectionView {
+    var onLayout: (() -> Void)?
+    private var lastBoundsSize: CGSize = .zero
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let currentSize = bounds.size
+        guard currentSize != lastBoundsSize else { return }
+        lastBoundsSize = currentSize
+        onLayout?()
     }
 }
