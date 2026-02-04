@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct RowView: View {
     // MARK: - Properties
@@ -45,14 +46,16 @@ private extension RowView {
 
     var betSize: some View {
         TextFieldView(
-            placeholder: betSizeText,
+            placeholder: "",
+            label: betSizeText,
             focusableField: .rowBetSize(rowId)
         )
     }
 
     var coefficient: some View {
         TextFieldView(
-            placeholder: coefficientText,
+            placeholder: "",
+            label: coefficientText,
             focusableField: .rowCoefficient(rowId)
         )
     }
@@ -71,6 +74,7 @@ private extension RowView {
             .contentShape(.rect)
             .onTapGesture {
                 guard viewModel.selection != .row(rowId) else { return }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 viewModel.send(.selectRow(.row(rowId)))
             }
     }

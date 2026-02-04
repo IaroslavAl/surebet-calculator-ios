@@ -7,13 +7,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bet size"
+            "value" : "Stake"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Размер ставки"
+            "value" : "Ставка"
           }
         }
       }
@@ -58,7 +58,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Coefficient"
+            "value" : "Odds"
           }
         },
         "ru" : {
@@ -92,13 +92,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Payout"
+            "value" : "Profit"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выигрыш"
+            "value" : "Прибыль"
           }
         }
       }
@@ -160,13 +160,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Total bet size"
+            "value" : "Total stake"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Общий размер ставки"
+            "value" : "Общая ставка"
           }
         }
       }

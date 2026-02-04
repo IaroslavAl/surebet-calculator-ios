@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct NavigationClearButton: View {
     // MARK: - Properties
@@ -9,6 +10,7 @@ struct NavigationClearButton: View {
 
     var body: some View {
         Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
             viewModel.send(.clearAll)
         } label: {
             Image(systemName: "trash")

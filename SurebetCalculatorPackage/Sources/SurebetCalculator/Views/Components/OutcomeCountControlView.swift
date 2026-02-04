@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct OutcomeCountControlView: View {
     // MARK: - Properties
@@ -75,7 +76,7 @@ private extension OutcomeCountControlView {
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: isIPad ? 18 : 12, weight: .semibold))
                 .foregroundColor(isDisabled ? AppColors.textMuted : AppColors.textPrimary)
                 .frame(width: controlHeight, height: controlHeight)
                 .background(AppColors.surfaceInput)
@@ -86,6 +87,12 @@ private extension OutcomeCountControlView {
                 }
         }
         .disabled(isDisabled)
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                guard !isDisabled else { return }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
+        )
     }
 
     var minRowCount: Int {

@@ -2,9 +2,9 @@ import UIKit
 
 final class KeyboardAccessoryToolbarView: UIView {
     private enum Layout {
-        static let buttonSizePhone: CGFloat = 34
+        static let buttonSizePhone: CGFloat = 36
         static let buttonSizePad: CGFloat = 44
-        static let sidePadding: CGFloat = 8
+        static let sidePadding: CGFloat = 16
         static let verticalPadding: CGFloat = 0
         static let borderWidth: CGFloat = 1
         static let hitSlop: CGFloat = 8
@@ -61,10 +61,12 @@ final class KeyboardAccessoryToolbarView: UIView {
     }
 
     @objc private func handleClearTap() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         clearAction?()
     }
 
     @objc private func handleDoneTap() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         doneAction?()
     }
 
@@ -108,6 +110,7 @@ final class KeyboardAccessoryToolbarView: UIView {
 
     private func applyStyle() {
         let buttonSize = currentButtonSize
+        let symbolConfig = currentSymbolConfiguration
         let backgroundColor = UIColor.secondarySystemBackground
         let borderColor = UIColor.separator.withAlphaComponent(0.8).cgColor
         let tintColor = UIColor.label
@@ -116,6 +119,9 @@ final class KeyboardAccessoryToolbarView: UIView {
         clearHeightConstraint?.constant = buttonSize
         doneWidthConstraint?.constant = buttonSize
         doneHeightConstraint?.constant = buttonSize
+
+        clearButton.setPreferredSymbolConfiguration(symbolConfig, forImageIn: .normal)
+        doneButton.setPreferredSymbolConfiguration(symbolConfig, forImageIn: .normal)
 
         clearButton.backgroundColor = backgroundColor
         clearButton.tintColor = tintColor
@@ -134,5 +140,10 @@ final class KeyboardAccessoryToolbarView: UIView {
 
     private var currentButtonSize: CGFloat {
         traitCollection.userInterfaceIdiom == .pad ? Layout.buttonSizePad : Layout.buttonSizePhone
+    }
+
+    private var currentSymbolConfiguration: UIImage.SymbolConfiguration {
+        let size: CGFloat = traitCollection.userInterfaceIdiom == .pad ? 20 : 16
+        return UIImage.SymbolConfiguration(pointSize: size, weight: .semibold)
     }
 }

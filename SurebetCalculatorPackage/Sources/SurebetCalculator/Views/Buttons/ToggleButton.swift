@@ -71,11 +71,11 @@ private extension ToggleButton {
     }
 
     var size: CGFloat {
-        isIPad ? 28 : 24
+        isIPad ? 32 : 24
     }
 
     var iconSize: CGFloat {
-        isIPad ? 12 : 10
+        isIPad ? 14 : 10
     }
 
     var tapAreaSize: CGFloat {

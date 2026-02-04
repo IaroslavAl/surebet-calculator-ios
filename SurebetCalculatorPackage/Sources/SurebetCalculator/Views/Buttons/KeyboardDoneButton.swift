@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct KeyboardDoneButton: View {
     // MARK: - Properties
@@ -9,6 +10,7 @@ struct KeyboardDoneButton: View {
 
     var body: some View {
         Button(text) {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
             viewModel.send(.hideKeyboard)
         }
         .accessibilityIdentifier(AccessibilityIdentifiers.Keyboard.doneButton)

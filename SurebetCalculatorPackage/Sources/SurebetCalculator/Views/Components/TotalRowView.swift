@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct TotalRowView: View {
     // MARK: - Properties
@@ -34,7 +35,6 @@ struct TotalRowView: View {
 private extension TotalRowView {
     var betSizeLabel: String { SurebetCalculatorLocalizationKey.totalBetSize.localized }
     var profitPercentageLabel: String { SurebetCalculatorLocalizationKey.profitPercentage.localized }
-    var placeholder: String { SurebetCalculatorLocalizationKey.totalBetSize.localized }
     var labelSpacing: CGFloat { AppConstants.Padding.small }
     var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
     var cardPadding: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
@@ -50,7 +50,8 @@ private extension TotalRowView {
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             TextFieldView(
-                placeholder: placeholder,
+                placeholder: "",
+                label: betSizeLabel,
                 focusableField: .totalBetSize
             )
         }
@@ -77,6 +78,7 @@ private extension TotalRowView {
             .contentShape(.rect)
             .onTapGesture {
                 guard viewModel.selection != .total else { return }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 viewModel.send(.selectRow(.total))
             }
     }

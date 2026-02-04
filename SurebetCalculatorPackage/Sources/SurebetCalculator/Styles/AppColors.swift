@@ -8,7 +8,7 @@ enum AppColors {
     /// Базовый фон приложения
     static var background: Color {
         dynamicColor(
-            light: UIColor(red: 244 / 255, green: 247 / 255, blue: 244 / 255, alpha: 1),
+            light: UIColor(red: 237 / 255, green: 241 / 255, blue: 237 / 255, alpha: 1),
             dark: UIColor(red: 14 / 255, green: 18 / 255, blue: 16 / 255, alpha: 1)
         )
     }
@@ -16,7 +16,7 @@ enum AppColors {
     /// Основная поверхность (карточки, контейнеры)
     static var surface: Color {
         dynamicColor(
-            light: UIColor(red: 1, green: 1, blue: 1, alpha: 1),
+            light: UIColor(red: 252 / 255, green: 253 / 255, blue: 252 / 255, alpha: 1),
             dark: UIColor(red: 23 / 255, green: 27 / 255, blue: 24 / 255, alpha: 1)
         )
     }
@@ -24,7 +24,7 @@ enum AppColors {
     /// Поверхность с легким выделением (summary, активные блоки)
     static var surfaceElevated: Color {
         dynamicColor(
-            light: UIColor(red: 249 / 255, green: 251 / 255, blue: 249 / 255, alpha: 1),
+            light: UIColor(red: 248 / 255, green: 250 / 255, blue: 248 / 255, alpha: 1),
             dark: UIColor(red: 30 / 255, green: 35 / 255, blue: 32 / 255, alpha: 1)
         )
     }
@@ -32,7 +32,7 @@ enum AppColors {
     /// Поверхность для ввода
     static var surfaceInput: Color {
         dynamicColor(
-            light: UIColor(red: 241 / 255, green: 246 / 255, blue: 242 / 255, alpha: 1),
+            light: UIColor(red: 238 / 255, green: 243 / 255, blue: 238 / 255, alpha: 1),
             dark: UIColor(red: 35 / 255, green: 42 / 255, blue: 38 / 255, alpha: 1)
         )
     }
@@ -40,7 +40,7 @@ enum AppColors {
     /// Поверхность для результата
     static var surfaceResult: Color {
         dynamicColor(
-            light: UIColor(red: 232 / 255, green: 239 / 255, blue: 234 / 255, alpha: 1),
+            light: UIColor(red: 245 / 255, green: 248 / 255, blue: 245 / 255, alpha: 1),
             dark: UIColor(red: 30 / 255, green: 36 / 255, blue: 33 / 255, alpha: 1)
         )
     }
@@ -50,7 +50,7 @@ enum AppColors {
     /// Базовый бордер
     static var border: Color {
         dynamicColor(
-            light: UIColor(red: 214 / 255, green: 227 / 255, blue: 216 / 255, alpha: 1),
+            light: UIColor(red: 190 / 255, green: 205 / 255, blue: 194 / 255, alpha: 1),
             dark: UIColor(red: 46 / 255, green: 54 / 255, blue: 50 / 255, alpha: 1)
         )
     }
@@ -58,7 +58,7 @@ enum AppColors {
     /// Более мягкий бордер
     static var borderMuted: Color {
         dynamicColor(
-            light: UIColor(red: 229 / 255, green: 237 / 255, blue: 230 / 255, alpha: 1),
+            light: UIColor(red: 210 / 255, green: 221 / 255, blue: 212 / 255, alpha: 1),
             dark: UIColor(red: 36 / 255, green: 43 / 255, blue: 39 / 255, alpha: 1)
         )
     }
@@ -107,7 +107,7 @@ enum AppColors {
     /// Основной цвет текста
     static var textPrimary: Color {
         dynamicColor(
-            light: UIColor(red: 29 / 255, green: 36 / 255, blue: 31 / 255, alpha: 1),
+            light: UIColor(red: 21 / 255, green: 28 / 255, blue: 23 / 255, alpha: 1),
             dark: UIColor(red: 233 / 255, green: 241 / 255, blue: 234 / 255, alpha: 1)
         )
     }
@@ -115,7 +115,7 @@ enum AppColors {
     /// Вторичный цвет текста
     static var textSecondary: Color {
         dynamicColor(
-            light: UIColor(red: 84 / 255, green: 100 / 255, blue: 90 / 255, alpha: 1),
+            light: UIColor(red: 74 / 255, green: 88 / 255, blue: 79 / 255, alpha: 1),
             dark: UIColor(red: 181 / 255, green: 195 / 255, blue: 187 / 255, alpha: 1)
         )
     }
@@ -123,7 +123,7 @@ enum AppColors {
     /// Приглушенный текст
     static var textMuted: Color {
         dynamicColor(
-            light: UIColor(red: 122 / 255, green: 138 / 255, blue: 128 / 255, alpha: 1),
+            light: UIColor(red: 103 / 255, green: 118 / 255, blue: 108 / 255, alpha: 1),
             dark: UIColor(red: 140 / 255, green: 154 / 255, blue: 146 / 255, alpha: 1)
         )
     }

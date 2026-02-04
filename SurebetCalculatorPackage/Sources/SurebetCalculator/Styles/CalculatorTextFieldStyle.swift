@@ -14,10 +14,6 @@ struct CalculatorTextFieldStyle: TextFieldStyle {
             .background(backgroundColor)
             .cornerRadius(cornerRadius)
             .keyboardType(.decimalPad)
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(borderColor, lineWidth: strokeLineWidth)
-            }
             .animation(AppConstants.Animations.quickInteraction, value: isValid)
             .animation(AppConstants.Animations.quickInteraction, value: isEnabled)
             .animation(AppConstants.Animations.quickInteraction, value: isFocused)
@@ -33,22 +29,6 @@ private extension CalculatorTextFieldStyle {
     }
     var cornerRadius: CGFloat {
         Device.isIPadUnsafe ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
-    }
-    var strokeLineWidth: CGFloat {
-        let base: CGFloat = Device.isIPadUnsafe ? 1.4 : 1.1
-        if !isEnabled {
-            return 1
-        }
-        return isFocused ? base + 0.4 : base
-    }
-    var borderColor: Color {
-        if !isEnabled {
-            return AppColors.borderMuted
-        }
-        if !isValid {
-            return AppColors.error
-        }
-        return isFocused ? AppColors.accent : AppColors.border
     }
     var backgroundColor: Color {
         if !isEnabled {
