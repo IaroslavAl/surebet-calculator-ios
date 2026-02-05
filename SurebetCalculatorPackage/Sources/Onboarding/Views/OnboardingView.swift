@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 @MainActor
 struct OnboardingView: View {
@@ -30,7 +31,7 @@ struct OnboardingView: View {
         }
         .padding(.bottom, padding)
         .background {
-            OnboardingColors.background.ignoresSafeArea()
+            DesignSystem.Color.onboardingBackground.ignoresSafeArea()
         }
         .onChange(of: viewModel.onboardingIsShown) {
             onboardingIsShown = $0
@@ -44,7 +45,7 @@ struct OnboardingView: View {
 
 private extension OnboardingView {
     var padding: CGFloat {
-        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingLarge
+        isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large
     }
 
     var topBar: some View {

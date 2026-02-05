@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct OnboardingPageView: View {
     // MARK: - Properties
@@ -17,22 +18,22 @@ struct OnboardingPageView: View {
                 .accessibilityLabel(OnboardingLocalizationKey.image.localized)
             Spacer()
             Text(page.description)
-                .font(OnboardingConstants.Typography.title)
-                .foregroundColor(OnboardingColors.textPrimary)
+                .font(DesignSystem.Typography.title)
+                .foregroundColor(DesignSystem.Color.onboardingTextPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
-                .minimumScaleFactor(OnboardingConstants.minimumTextScaleFactor)
+                .minimumScaleFactor(DesignSystem.Typography.minimumScaleFactor)
             Spacer()
         }
         .padding(.horizontal, contentPadding)
     }
 
     var contentPadding: CGFloat {
-        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingLarge
+        isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large
     }
 
     var imagePadding: CGFloat {
-        isIPad ? OnboardingConstants.paddingExtraExtraLarge : .zero
+        isIPad ? DesignSystem.Spacing.extraExtraLarge : .zero
     }
 }
 

@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct OnboardingCloseButton: View {
     // MARK: - Properties
@@ -27,19 +28,19 @@ private extension OnboardingCloseButton {
 
     var label: some View {
         Image(systemName: imageName)
-            .font(OnboardingConstants.Typography.icon)
-            .foregroundColor(OnboardingColors.closeButton)
+            .font(DesignSystem.Typography.icon)
+            .foregroundColor(DesignSystem.Color.onboardingCloseButton)
             .padding(padding)
-            .background(OnboardingColors.surface)
+            .background(DesignSystem.Color.onboardingSurface)
             .clipShape(Circle())
             .overlay {
                 Circle()
-                    .stroke(OnboardingColors.border, lineWidth: 1)
+                    .stroke(DesignSystem.Color.onboardingBorder, lineWidth: 1)
             }
     }
 
     var padding: CGFloat {
-        isIPad ? OnboardingConstants.paddingSmall : 6
+        isIPad ? DesignSystem.Spacing.small : DesignSystem.Spacing.extraSmall
     }
 }
 

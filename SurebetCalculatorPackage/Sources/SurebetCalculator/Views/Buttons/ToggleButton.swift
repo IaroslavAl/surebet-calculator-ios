@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct ToggleButton: View {
     // MARK: - Properties
@@ -12,7 +13,7 @@ struct ToggleButton: View {
     var body: some View {
         Button(action: actionWithImpactFeedback, label: label)
             .buttonStyle(.scale)
-            .animation(AppConstants.Animations.quickInteraction, value: isON)
+            .animation(DesignSystem.Animation.quickInteraction, value: isON)
             .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
@@ -31,18 +32,18 @@ private extension ToggleButton {
         }
     }
 
-    var transition: AnyTransition { AppConstants.Animations.scaleWithOpacity }
+    var transition: AnyTransition { DesignSystem.Animation.scaleWithOpacity }
 
     func label() -> some View {
         ZStack {
             Circle()
-                .fill(isON ? AppColors.accentSoft : AppColors.surface)
+                .fill(isON ? DesignSystem.Color.accentSoft : DesignSystem.Color.surface)
             Circle()
-                .stroke(isON ? AppColors.accent : AppColors.borderMuted, lineWidth: 1.2)
+                .stroke(isON ? DesignSystem.Color.accent : DesignSystem.Color.borderMuted, lineWidth: 1.2)
             if isON {
                 Image(systemName: "checkmark")
                     .font(.system(size: iconSize, weight: .semibold))
-                    .foregroundColor(AppColors.accent)
+                    .foregroundColor(DesignSystem.Color.accent)
             }
         }
         .frame(width: size, height: size)
@@ -52,7 +53,7 @@ private extension ToggleButton {
     }
 
     func actionWithImpactFeedback() {
-        withAnimation(AppConstants.Animations.quickInteraction) {
+        withAnimation(DesignSystem.Animation.quickInteraction) {
             viewModel.send(.selectRow(row))
         }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -79,7 +80,7 @@ private extension ToggleButton {
     }
 
     var tapAreaSize: CGFloat {
-        isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact
+        isIPad ? DesignSystem.Size.controlRegularHeight : DesignSystem.Size.controlCompactHeight
     }
 }
 

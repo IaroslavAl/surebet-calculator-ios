@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct OnboardingPage: Identifiable, Sendable {
     let image: String

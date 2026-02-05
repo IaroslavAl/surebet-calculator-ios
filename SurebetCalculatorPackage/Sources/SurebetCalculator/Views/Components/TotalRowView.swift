@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 import UIKit
 
 struct TotalRowView: View {
@@ -22,7 +23,7 @@ struct TotalRowView: View {
         .cornerRadius(cardCornerRadius)
         .overlay {
             RoundedRectangle(cornerRadius: cardCornerRadius)
-                .stroke(isSelected ? AppColors.accent : AppColors.borderMuted, lineWidth: 1)
+                .stroke(isSelected ? DesignSystem.Color.accent : DesignSystem.Color.borderMuted, lineWidth: 1)
         }
     }
 }
@@ -32,18 +33,18 @@ struct TotalRowView: View {
 private extension TotalRowView {
     var betSizeLabel: String { SurebetCalculatorLocalizationKey.totalBetSize.localized }
     var profitPercentageLabel: String { SurebetCalculatorLocalizationKey.profitPercentage.localized }
-    var labelSpacing: CGFloat { AppConstants.Padding.small }
-    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
-    var cardPadding: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
-    var cardCornerRadius: CGFloat { isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.medium }
+    var labelSpacing: CGFloat { DesignSystem.Spacing.small }
+    var columnSpacing: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
+    var cardPadding: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
+    var cardCornerRadius: CGFloat { isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.medium }
     var selectionIndicatorSize: CGFloat { isIPad ? 48 : 44 }
     var isSelected: Bool { viewModel.selection == .total }
 
     var totalBetSizeColumn: some View {
         VStack(spacing: labelSpacing) {
             Text(betSizeLabel)
-                .font(AppConstants.Typography.label)
-                .foregroundColor(AppColors.textSecondary)
+                .font(DesignSystem.Typography.label)
+                .foregroundColor(DesignSystem.Color.textSecondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             TextFieldView(
@@ -57,8 +58,8 @@ private extension TotalRowView {
     var profitPercentageColumn: some View {
         VStack(spacing: labelSpacing) {
             Text(profitPercentageLabel)
-                .font(AppConstants.Typography.label)
-                .foregroundColor(AppColors.textSecondary)
+                .font(DesignSystem.Typography.label)
+                .foregroundColor(DesignSystem.Color.textSecondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             TextView(
@@ -73,9 +74,9 @@ private extension TotalRowView {
     var background: some View {
         Group {
             if isSelected {
-                AppColors.surfaceElevated
+                DesignSystem.Color.surfaceElevated
             } else {
-                AppColors.surface
+                DesignSystem.Color.surface
             }
         }
         .contentShape(.rect)
@@ -84,7 +85,7 @@ private extension TotalRowView {
 
     func actionWithImpactFeedback() {
         guard viewModel.selection != .total else { return }
-        withAnimation(AppConstants.Animations.quickInteraction) {
+        withAnimation(DesignSystem.Animation.quickInteraction) {
             viewModel.send(.selectRow(.total))
         }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()

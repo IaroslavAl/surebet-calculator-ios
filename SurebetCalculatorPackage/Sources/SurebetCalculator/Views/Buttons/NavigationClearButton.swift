@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 import UIKit
 
 struct NavigationClearButton: View {
@@ -15,7 +16,7 @@ struct NavigationClearButton: View {
         } label: {
             Image(systemName: "trash")
                 .font(font)
-                .foregroundColor(AppColors.textSecondary)
+                .foregroundColor(DesignSystem.Color.textSecondary)
                 .accessibilityLabel(SurebetCalculatorLocalizationKey.clearAll.localized)
         }
         .buttonStyle(.plain)

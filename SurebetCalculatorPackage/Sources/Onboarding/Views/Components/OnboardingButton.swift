@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct OnboardingButton: View {
     // MARK: - Properties
@@ -31,7 +32,7 @@ private extension OnboardingButton {
         return OnboardingLocalizationKey.next.localized
     }
     var cornerRadius: CGFloat {
-        isIPad ? OnboardingConstants.cornerRadiusExtraLarge : OnboardingConstants.cornerRadiusMedium
+        isIPad ? DesignSystem.Radius.extraLarge : DesignSystem.Radius.medium
     }
 
     func action() {
@@ -40,22 +41,22 @@ private extension OnboardingButton {
 
     var label: some View {
         Text(text)
-            .font(OnboardingConstants.Typography.button)
-            .foregroundColor(OnboardingColors.buttonText)
+            .font(DesignSystem.Typography.button)
+            .foregroundColor(DesignSystem.Color.onboardingButtonText)
             .bold()
             .frame(maxWidth: .infinity)
             .padding(padding)
-            .background(OnboardingColors.buttonBackground)
+            .background(DesignSystem.Color.onboardingButtonBackground)
             .cornerRadius(cornerRadius)
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(OnboardingColors.buttonBorder, lineWidth: 1)
+                    .stroke(DesignSystem.Color.onboardingButtonBorder, lineWidth: 1)
             }
-            .animation(OnboardingConstants.Animations.quickInteraction, value: viewModel.currentPage)
+            .animation(DesignSystem.Animation.quickInteraction, value: viewModel.currentPage)
     }
 
     var padding: CGFloat {
-        isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingLarge
+        isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large
     }
 }
 

@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct CalculatorTextFieldStyle: TextFieldStyle {
     let isEnabled: Bool
@@ -14,27 +15,27 @@ struct CalculatorTextFieldStyle: TextFieldStyle {
             .background(backgroundColor)
             .cornerRadius(cornerRadius)
             .keyboardType(.decimalPad)
-            .animation(AppConstants.Animations.quickInteraction, value: isValid)
-            .animation(AppConstants.Animations.quickInteraction, value: isEnabled)
-            .animation(AppConstants.Animations.quickInteraction, value: isFocused)
+            .animation(DesignSystem.Animation.quickInteraction, value: isValid)
+            .animation(DesignSystem.Animation.quickInteraction, value: isEnabled)
+            .animation(DesignSystem.Animation.quickInteraction, value: isFocused)
     }
 }
 
 private extension CalculatorTextFieldStyle {
     var padding: CGFloat {
-        Device.isIPadUnsafe ? AppConstants.Padding.large : AppConstants.Padding.small
+        Device.isIPadUnsafe ? DesignSystem.Spacing.large : DesignSystem.Spacing.small
     }
     var frameHeight: CGFloat {
-        Device.isIPadUnsafe ? AppConstants.Heights.regular : AppConstants.Heights.compact
+        Device.isIPadUnsafe ? DesignSystem.Size.controlRegularHeight : DesignSystem.Size.controlCompactHeight
     }
     var cornerRadius: CGFloat {
-        Device.isIPadUnsafe ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
+        Device.isIPadUnsafe ? DesignSystem.Radius.large : DesignSystem.Radius.small
     }
     var backgroundColor: Color {
         if !isEnabled {
-            return AppColors.surfaceResult
+            return DesignSystem.Color.surfaceResult
         }
-        return isValid ? AppColors.surfaceInput : AppColors.errorBackground
+        return isValid ? DesignSystem.Color.surfaceInput : DesignSystem.Color.errorBackground
     }
 }
 

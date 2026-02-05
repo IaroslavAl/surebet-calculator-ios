@@ -35,9 +35,9 @@ final class SurebetCalculatorViewModel: ObservableObject {
         if let rowsById, let orderedRowIds {
             resolvedRows = (rowsById: rowsById, orderedRowIds: orderedRowIds)
         } else {
-            resolvedRows = Row.createRows(AppConstants.Calculator.maxRowCount)
+            resolvedRows = Row.createRows(CalculatorConstants.maxRowCount)
         }
-        let maxRows = min(resolvedRows.orderedRowIds.count, AppConstants.Calculator.maxRowCount)
+        let maxRows = min(resolvedRows.orderedRowIds.count, CalculatorConstants.maxRowCount)
         let clampedSelected = min(selectedNumberOfRows.rawValue, maxRows)
 
         self.total = total
@@ -100,9 +100,9 @@ extension SurebetCalculatorViewModel {
     }
 
     var availableRowCounts: [NumberOfRows] {
-        let maxCount = min(orderedRowIds.count, AppConstants.Calculator.maxRowCount)
+        let maxCount = min(orderedRowIds.count, CalculatorConstants.maxRowCount)
         return NumberOfRows.allCases.filter { count in
-            count.rawValue >= AppConstants.Calculator.minRowCount && count.rawValue <= maxCount
+            count.rawValue >= CalculatorConstants.minRowCount && count.rawValue <= maxCount
         }
     }
 
@@ -135,7 +135,7 @@ extension SurebetCalculatorViewModel {
 
 private extension SurebetCalculatorViewModel {
     var maxRowCount: Int {
-        min(orderedRowIds.count, AppConstants.Calculator.maxRowCount)
+        min(orderedRowIds.count, CalculatorConstants.maxRowCount)
     }
 
     func select(_ row: Selection) {
@@ -168,7 +168,7 @@ private extension SurebetCalculatorViewModel {
     }
 
     func removeRow() {
-        if selectedNumberOfRows.rawValue > AppConstants.Calculator.minRowCount {
+        if selectedNumberOfRows.rawValue > CalculatorConstants.minRowCount {
             let updated = NumberOfRows(rawValue: selectedNumberOfRows.rawValue - 1) ?? selectedNumberOfRows
             setNumberOfRows(updated)
         }
@@ -178,7 +178,7 @@ private extension SurebetCalculatorViewModel {
         let maxCount = maxRowCount
         let clampedRaw = min(numberOfRows.rawValue, maxCount)
         let clamped = NumberOfRows(
-            rawValue: max(clampedRaw, AppConstants.Calculator.minRowCount)
+            rawValue: max(clampedRaw, CalculatorConstants.minRowCount)
         ) ?? selectedNumberOfRows
         guard clamped != selectedNumberOfRows else { return }
 
@@ -375,7 +375,7 @@ private extension SurebetCalculatorViewModel {
     func logCalculationPerformedDebounced() {
         calculationAnalyticsTask?.cancel()
         calculationAnalyticsTask = Task {
-            await delay.sleep(nanoseconds: AppConstants.Delays.calculationAnalytics)
+            await delay.sleep(nanoseconds: CalculatorConstants.calculationAnalyticsDelay)
             guard !Task.isCancelled else { return }
 
             let profitPercentage = total.profitPercentage

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import DesignSystem
 
 struct FullscreenBannerView: View {
     // MARK: - Properties
@@ -22,7 +23,7 @@ struct FullscreenBannerView: View {
 
     var body: some View {
         ZStack {
-            BannerColors.fullscreenBackground
+            DesignSystem.Color.bannerFullscreenBackground
             bannerImage
         }
         .onAppear {
@@ -55,7 +56,7 @@ private extension FullscreenBannerView {
         Image(systemName: "xmark.circle.fill")
             .resizable()
             .frame(width: BannerConstants.closeButtonSize, height: BannerConstants.closeButtonSize)
-            .foregroundStyle(BannerColors.closeButtonFullscreen)
+            .foregroundStyle(DesignSystem.Color.bannerCloseButtonFullscreen)
             .padding(BannerConstants.closeButtonPadding)
             .contentShape(.rect)
             .onTapGesture {

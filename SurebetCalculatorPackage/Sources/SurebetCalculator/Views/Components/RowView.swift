@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 import UIKit
 
 struct RowView: View {
@@ -27,7 +28,7 @@ struct RowView: View {
         .cornerRadius(rowCornerRadius)
         .overlay {
             RoundedRectangle(cornerRadius: rowCornerRadius)
-                .stroke(isSelected ? AppColors.accent : AppColors.borderMuted, lineWidth: 1)
+                .stroke(isSelected ? DesignSystem.Color.accent : DesignSystem.Color.borderMuted, lineWidth: 1)
         }
     }
 }
@@ -37,9 +38,9 @@ struct RowView: View {
 private extension RowView {
     var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized }
     var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized }
-    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
-    var rowPadding: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
-    var rowCornerRadius: CGFloat { isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.medium }
+    var columnSpacing: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
+    var rowPadding: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
+    var rowCornerRadius: CGFloat { isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.medium }
     var selectionIndicatorSize: CGFloat { isIPad ? 48 : 44 }
     var isSelected: Bool { viewModel.selection == .row(rowId) }
 
@@ -71,9 +72,9 @@ private extension RowView {
     var background: some View {
         Group {
             if isSelected {
-                AppColors.surfaceElevated
+                DesignSystem.Color.surfaceElevated
             } else {
-                AppColors.surface
+                DesignSystem.Color.surface
             }
         }
         .contentShape(.rect)
@@ -82,7 +83,7 @@ private extension RowView {
 
     func actionWithImpactFeedback() {
         guard viewModel.selection != .row(rowId) else { return }
-        withAnimation(AppConstants.Animations.quickInteraction) {
+        withAnimation(DesignSystem.Animation.quickInteraction) {
             viewModel.send(.selectRow(.row(rowId)))
         }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()

@@ -1,5 +1,6 @@
 import SurebetCalculator
 import SwiftUI
+import DesignSystem
 
 enum MenuLayout {
     case regular
@@ -14,9 +15,9 @@ enum MenuLayout {
     var headerSpacing: CGFloat {
         switch self {
         case .regular:
-            return AppConstants.Padding.small
+            return DesignSystem.Spacing.small
         case .compact, .ultraCompact:
-            return AppConstants.Padding.small
+            return DesignSystem.Spacing.small
         }
     }
 }
