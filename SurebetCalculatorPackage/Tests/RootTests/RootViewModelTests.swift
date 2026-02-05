@@ -431,7 +431,7 @@ struct RootViewModelTests {
         let viewModel = createViewModel()
 
         // Then
-        let title = viewModel.requestReviewTitle
+        let title = viewModel.requestReviewTitle(locale: Locale(identifier: "en"))
         #expect(!title.isEmpty)
         #expect(title != "review_request_title")
     }

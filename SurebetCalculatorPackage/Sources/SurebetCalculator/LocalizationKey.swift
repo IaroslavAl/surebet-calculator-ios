@@ -13,8 +13,12 @@ enum SurebetCalculatorLocalizationKey: String {
     case navigationTitle = "calculator_navigation_title"
     case outcomesCount = "calculator_outcomes_count"
 
-    /// Локализованная строка для ключа
-    var localized: String {
-        String(localized: String.LocalizationValue(stringLiteral: rawValue), bundle: .module)
+    /// Локализованная строка для ключа.
+    func localized(_ locale: Locale) -> String {
+        String(
+            localized: String.LocalizationValue(stringLiteral: rawValue),
+            bundle: .module,
+            locale: locale
+        )
     }
 }

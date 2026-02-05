@@ -6,16 +6,19 @@ final class OnboardingViewModel: ObservableObject {
 
     @Published private(set) var currentPage: Int
     @Published private(set) var onboardingIsShown: Bool
-    let pages: [OnboardingPage]
+    @Published private(set) var pages: [OnboardingPage]
 
     private let analytics: OnboardingAnalytics
 
     // MARK: - Initialization
 
-    init(analytics: OnboardingAnalytics = NoopOnboardingAnalytics()) {
+    init(
+        locale: Locale = .current,
+        analytics: OnboardingAnalytics = NoopOnboardingAnalytics()
+    ) {
         self.currentPage = 0
         self.onboardingIsShown = false
-        self.pages = OnboardingPage.createPages()
+        self.pages = OnboardingPage.createPages(locale: locale)
         self.analytics = analytics
 
         logOnboardingStarted()
@@ -28,6 +31,7 @@ final class OnboardingViewModel: ObservableObject {
         case setCurrentPage(Int)
         case dismiss
         case skip
+        case updateLocale(Locale)
     }
 
     func send(_ action: ViewAction) {
@@ -38,6 +42,8 @@ final class OnboardingViewModel: ObservableObject {
             dismiss()
         case .skip:
             skip()
+        case let .updateLocale(locale):
+            updateLocale(locale)
         }
     }
 }
@@ -66,6 +72,10 @@ private extension OnboardingViewModel {
     func completeOnboarding() {
         analytics.onboardingCompleted(pagesViewed: currentPage + 1)
         onboardingIsShown = true
+    }
+
+    func updateLocale(_ locale: Locale) {
+        pages = OnboardingPage.createPages(locale: locale)
     }
 
     // MARK: - Analytics

@@ -90,9 +90,9 @@ final class RootViewModel: ObservableObject {
         onboardingIsShown
     }
 
-    /// Заголовок для запроса отзыва
-    var requestReviewTitle: String {
-        RootLocalizationKey.reviewRequestTitle.localized
+    /// Заголовок для запроса отзыва.
+    func requestReviewTitle(locale: Locale) -> String {
+        RootLocalizationKey.reviewRequestTitle.localized(locale)
     }
 
     /// Проверяет, доступен ли fullscreen баннер для показа

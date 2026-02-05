@@ -6,6 +6,7 @@ struct KeyboardClearButton: View {
     // MARK: - Properties
 
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    @Environment(\.locale) private var locale
 
     // MARK: - Body
 
@@ -14,7 +15,7 @@ struct KeyboardClearButton: View {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             viewModel.send(.clearFocusableField)
         } label: {
-            Text(SurebetCalculatorLocalizationKey.clear.localized)
+            Text(SurebetCalculatorLocalizationKey.clear.localized(locale))
                 .foregroundColor(DesignSystem.Color.error)
         }
         .accessibilityIdentifier(AccessibilityIdentifiers.Keyboard.clearButton)

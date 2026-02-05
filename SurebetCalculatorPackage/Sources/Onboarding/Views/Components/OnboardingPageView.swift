@@ -5,6 +5,7 @@ struct OnboardingPageView: View {
     // MARK: - Properties
 
     let page: OnboardingPage
+    @Environment(\.locale) private var locale
 
     // MARK: - Body
 
@@ -15,7 +16,7 @@ struct OnboardingPageView: View {
                 .scaledToFit()
                 .padding(.vertical)
                 .padding(.horizontal, imagePadding)
-                .accessibilityLabel(OnboardingLocalizationKey.image.localized)
+                .accessibilityLabel(OnboardingLocalizationKey.image.localized(locale))
             Spacer()
             Text(page.description)
                 .font(DesignSystem.Typography.title)
@@ -39,9 +40,9 @@ struct OnboardingPageView: View {
 
 #Preview {
     OnboardingPageView(
-        page: OnboardingPage.createPages().first ?? .init(
+        page: OnboardingPage.createPages(locale: Locale.current).first ?? .init(
             image: "onboarding1",
-            description: OnboardingLocalizationKey.page1Description.localized
+            description: OnboardingLocalizationKey.page1Description.localized(Locale.current)
         )
     )
 }

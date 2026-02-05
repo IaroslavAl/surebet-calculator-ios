@@ -5,6 +5,7 @@ struct KeyboardDoneButton: View {
     // MARK: - Properties
 
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    @Environment(\.locale) private var locale
 
     // MARK: - Body
 
@@ -20,7 +21,7 @@ struct KeyboardDoneButton: View {
 // MARK: - Private Computed Properties
 
 private extension KeyboardDoneButton {
-    var text: String { SurebetCalculatorLocalizationKey.done.localized }
+    var text: String { SurebetCalculatorLocalizationKey.done.localized(locale) }
 }
 
 #Preview {

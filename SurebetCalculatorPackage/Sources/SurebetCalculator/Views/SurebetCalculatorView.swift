@@ -6,6 +6,7 @@ struct SurebetCalculatorView: View {
 
     @StateObject
     private var viewModel: SurebetCalculatorViewModel
+    @Environment(\.locale) private var locale
 
     @FocusState
     private var isFocused
@@ -116,10 +117,10 @@ private extension SurebetCalculatorView {
 // MARK: - Private Computed Properties
 
 private extension SurebetCalculatorView {
-    var navigationTitle: String { SurebetCalculatorLocalizationKey.navigationTitle.localized }
-    var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized }
-    var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized }
-    var payoutText: String { SurebetCalculatorLocalizationKey.income.localized }
+    var navigationTitle: String { SurebetCalculatorLocalizationKey.navigationTitle.localized(locale) }
+    var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized(locale) }
+    var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized(locale) }
+    var payoutText: String { SurebetCalculatorLocalizationKey.income.localized(locale) }
     var sectionSpacing: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.medium }
     var rowsSpacing: CGFloat { isIPad ? DesignSystem.Spacing.medium : DesignSystem.Spacing.small }
     var columnSpacing: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }

@@ -20,6 +20,7 @@
 ## Модули (кратко)
 - `Root` — entry point и координация
 - `MainMenu` — экран меню
+- `Settings` — настройки темы и языка
 - `SurebetCalculator` — бизнес‑логика калькулятора
 - `Banner` — баннеры (сеть, кэш, UI)
 - `Onboarding` — онбординг

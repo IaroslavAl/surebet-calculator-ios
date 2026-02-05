@@ -144,7 +144,7 @@ private extension TextFieldView {
 #Preview {
     TextFieldView(
         placeholder: "",
-        label: SurebetCalculatorLocalizationKey.totalBetSize.localized,
+        label: SurebetCalculatorLocalizationKey.totalBetSize.localized(Locale.current),
         focusableField: .totalBetSize
     )
     .padding()

@@ -1,13 +1,13 @@
-import SurebetCalculator
 import SwiftUI
 import DesignSystem
 
 struct MenuPlaceholderView: View {
     // MARK: - Properties
 
-    let title: String
-    let message: String
+    let titleKey: MainMenuLocalizationKey
+    let messageKey: MainMenuLocalizationKey
     let systemImage: String
+    @Environment(\.locale) private var locale
 
     // MARK: - Body
 
@@ -31,6 +31,8 @@ struct MenuPlaceholderView: View {
 // MARK: - Private Computed Properties
 
 private extension MenuPlaceholderView {
+    var title: String { titleKey.localized(locale) }
+    var message: String { messageKey.localized(locale) }
     var sectionSpacing: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
     var horizontalPadding: CGFloat { DesignSystem.Spacing.large }
     var verticalPadding: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
@@ -77,8 +79,8 @@ private extension MenuPlaceholderView {
 #Preview {
     NavigationStack {
         MenuPlaceholderView(
-            title: "Settings",
-            message: "Placeholder text",
+            titleKey: .menuSettingsTitle,
+            messageKey: .menuSettingsDescription,
             systemImage: "gearshape"
         )
     }

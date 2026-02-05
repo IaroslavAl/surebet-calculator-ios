@@ -6,8 +6,12 @@ enum RootLocalizationKey: String {
     case reviewButtonNo = "review_button_no"
     case reviewButtonYes = "review_button_yes"
 
-    /// Локализованная строка для ключа
-    var localized: String {
-        String(localized: String.LocalizationValue(stringLiteral: rawValue), bundle: .module)
+    /// Локализованная строка для ключа.
+    func localized(_ locale: Locale) -> String {
+        String(
+            localized: String.LocalizationValue(stringLiteral: rawValue),
+            bundle: .module,
+            locale: locale
+        )
     }
 }

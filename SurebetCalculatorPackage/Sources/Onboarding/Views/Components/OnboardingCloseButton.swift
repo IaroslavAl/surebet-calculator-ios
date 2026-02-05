@@ -5,6 +5,7 @@ struct OnboardingCloseButton: View {
     // MARK: - Properties
 
     @EnvironmentObject private var viewModel: OnboardingViewModel
+    @Environment(\.locale) private var locale
 
     // MARK: - Body
 
@@ -12,7 +13,7 @@ struct OnboardingCloseButton: View {
         Button(action: action) {
             label
         }
-        .accessibilityLabel(OnboardingLocalizationKey.closeOnboarding.localized)
+        .accessibilityLabel(OnboardingLocalizationKey.closeOnboarding.localized(locale))
         .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.closeButton)
     }
 }

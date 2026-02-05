@@ -6,6 +6,7 @@ struct OutcomeCountControlView: View {
     // MARK: - Properties
 
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    @Environment(\.locale) private var locale
 
     // MARK: - Body
 
@@ -48,7 +49,7 @@ struct OutcomeCountControlView: View {
 // MARK: - Private Methods
 
 private extension OutcomeCountControlView {
-    var label: String { SurebetCalculatorLocalizationKey.outcomesCount.localized }
+    var label: String { SurebetCalculatorLocalizationKey.outcomesCount.localized(locale) }
     var spacing: CGFloat { DesignSystem.Spacing.small }
     var horizontalPadding: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.medium }
     var verticalPadding: CGFloat { isIPad ? DesignSystem.Spacing.medium : DesignSystem.Spacing.small }

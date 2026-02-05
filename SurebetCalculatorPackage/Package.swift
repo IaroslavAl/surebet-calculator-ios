@@ -96,7 +96,21 @@ let package = Package(
             name: "MainMenu",
             dependencies: [
                 "DesignSystem",
+                "Settings",
                 "SurebetCalculator",
+            ],
+            resources: [.process("Resources")],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
+        .target(
+            name: "Settings",
+            dependencies: [
+                "DesignSystem",
             ],
             resources: [.process("Resources")],
             plugins: [
@@ -114,6 +128,7 @@ let package = Package(
                 "DesignSystem",
                 "MainMenu",
                 "Onboarding",
+                "Settings",
                 "ReviewHandler",
                 "SurebetCalculator",
                 .product(

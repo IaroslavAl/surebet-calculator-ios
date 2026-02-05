@@ -5,6 +5,7 @@ struct OnboardingButton: View {
     // MARK: - Properties
 
     @EnvironmentObject private var viewModel: OnboardingViewModel
+    @Environment(\.locale) private var locale
 
     // MARK: - Body
 
@@ -24,12 +25,12 @@ private extension OnboardingButton {
         let firstPage = OnboardingConstants.firstPageIndex
         let lastPage = viewModel.pages.index(before: viewModel.pages.endIndex)
         if viewModel.currentPage == firstPage {
-            return OnboardingLocalizationKey.moreDetails.localized
+            return OnboardingLocalizationKey.moreDetails.localized(locale)
         }
         if viewModel.currentPage == lastPage {
-            return OnboardingLocalizationKey.close.localized
+            return OnboardingLocalizationKey.close.localized(locale)
         }
-        return OnboardingLocalizationKey.next.localized
+        return OnboardingLocalizationKey.next.localized(locale)
     }
     var cornerRadius: CGFloat {
         isIPad ? DesignSystem.Radius.extraLarge : DesignSystem.Radius.medium

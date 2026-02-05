@@ -6,6 +6,7 @@ struct RowView: View {
     // MARK: - Properties
 
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    @Environment(\.locale) private var locale
 
     let rowId: RowID
     let displayIndex: Int
@@ -36,8 +37,8 @@ struct RowView: View {
 // MARK: - Private Computed Properties
 
 private extension RowView {
-    var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized }
-    var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized }
+    var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized(locale) }
+    var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized(locale) }
     var columnSpacing: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
     var rowPadding: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
     var rowCornerRadius: CGFloat { isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.medium }
