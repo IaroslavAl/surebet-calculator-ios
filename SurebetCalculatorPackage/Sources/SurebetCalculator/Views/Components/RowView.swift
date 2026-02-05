@@ -23,13 +23,12 @@ struct RowView: View {
                 .frame(maxWidth: .infinity)
         }
         .padding(rowPadding)
-        .background(isSelected ? AppColors.surfaceElevated : AppColors.surface)
+        .background(background)
         .cornerRadius(rowCornerRadius)
         .overlay {
             RoundedRectangle(cornerRadius: rowCornerRadius)
                 .stroke(isSelected ? AppColors.accent : AppColors.borderMuted, lineWidth: 1)
         }
-        .background(selectionTapArea)
     }
 }
 
@@ -69,14 +68,24 @@ private extension RowView {
         )
     }
 
-    var selectionTapArea: some View {
-        Color.clear
-            .contentShape(.rect)
-            .onTapGesture {
-                guard viewModel.selection != .row(rowId) else { return }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                viewModel.send(.selectRow(.row(rowId)))
+    var background: some View {
+        Group {
+            if isSelected {
+                AppColors.surfaceElevated
+            } else {
+                AppColors.surface
             }
+        }
+        .contentShape(.rect)
+        .onTapGesture(perform: actionWithImpactFeedback)
+    }
+
+    func actionWithImpactFeedback() {
+        guard viewModel.selection != .row(rowId) else { return }
+        withAnimation(AppConstants.Animations.quickInteraction) {
+            viewModel.send(.selectRow(.row(rowId)))
+        }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 }
 

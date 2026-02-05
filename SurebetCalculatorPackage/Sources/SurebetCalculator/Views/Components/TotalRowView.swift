@@ -9,24 +9,21 @@ struct TotalRowView: View {
     // MARK: - Body
 
     var body: some View {
-        HStack(spacing: columnSpacing) {
+        HStack(alignment: .bottom, spacing: columnSpacing) {
             ToggleButton(row: .total)
                 .frame(width: selectionIndicatorSize)
-            HStack(spacing: columnSpacing) {
-                totalBetSizeColumn
-                    .frame(maxWidth: .infinity)
-                profitPercentageColumn
-                    .frame(maxWidth: .infinity)
-            }
+            totalBetSizeColumn
+                .frame(maxWidth: .infinity)
+            profitPercentageColumn
+                .frame(maxWidth: .infinity)
         }
         .padding(cardPadding)
-        .background(isSelected ? AppColors.surfaceElevated : AppColors.surface)
+        .background(background)
         .cornerRadius(cardCornerRadius)
         .overlay {
             RoundedRectangle(cornerRadius: cardCornerRadius)
                 .stroke(isSelected ? AppColors.accent : AppColors.borderMuted, lineWidth: 1)
         }
-        .background(selectionTapArea)
     }
 }
 
@@ -73,14 +70,24 @@ private extension TotalRowView {
         }
     }
 
-    var selectionTapArea: some View {
-        Color.clear
-            .contentShape(.rect)
-            .onTapGesture {
-                guard viewModel.selection != .total else { return }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                viewModel.send(.selectRow(.total))
+    var background: some View {
+        Group {
+            if isSelected {
+                AppColors.surfaceElevated
+            } else {
+                AppColors.surface
             }
+        }
+        .contentShape(.rect)
+        .onTapGesture(perform: actionWithImpactFeedback)
+    }
+
+    func actionWithImpactFeedback() {
+        guard viewModel.selection != .total else { return }
+        withAnimation(AppConstants.Animations.quickInteraction) {
+            viewModel.send(.selectRow(.total))
+        }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 }
 

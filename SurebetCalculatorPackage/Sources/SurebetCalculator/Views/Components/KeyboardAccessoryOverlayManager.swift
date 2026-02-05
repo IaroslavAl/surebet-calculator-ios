@@ -98,7 +98,7 @@ final class KeyboardAccessoryOverlayManager {
             let curveRaw = notification.userInfo?[
                 UIResponder.keyboardAnimationCurveUserInfoKey
             ] as? Int ?? Layout.animationFallbackCurve
-            Task { @MainActor in
+            MainActor.assumeIsolated {
                 self?.handleKeyboardVisibility(
                     frame: frame,
                     duration: duration,

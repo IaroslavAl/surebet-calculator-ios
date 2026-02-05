@@ -79,7 +79,7 @@ private extension ToggleButton {
     }
 
     var tapAreaSize: CGFloat {
-        isIPad ? 48 : 44
+        isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact
     }
 }
 
