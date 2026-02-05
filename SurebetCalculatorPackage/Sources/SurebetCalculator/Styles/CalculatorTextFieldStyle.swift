@@ -3,6 +3,7 @@ import SwiftUI
 struct CalculatorTextFieldStyle: TextFieldStyle {
     let isEnabled: Bool
     let isValid: Bool
+    let isFocused: Bool
 
     // swiftlint:disable:next identifier_name
     func _body(configuration: TextField<Self._Label>) -> some View {
@@ -13,35 +14,40 @@ struct CalculatorTextFieldStyle: TextFieldStyle {
             .background(backgroundColor)
             .cornerRadius(cornerRadius)
             .keyboardType(.decimalPad)
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(strokeColor, lineWidth: strokeLineWidth)
-            }
             .animation(AppConstants.Animations.quickInteraction, value: isValid)
             .animation(AppConstants.Animations.quickInteraction, value: isEnabled)
+            .animation(AppConstants.Animations.quickInteraction, value: isFocused)
     }
 }
 
 private extension CalculatorTextFieldStyle {
-    var padding: CGFloat { AppConstants.Padding.small }
+    var padding: CGFloat {
+        Device.isIPadUnsafe ? AppConstants.Padding.large : AppConstants.Padding.small
+    }
     var frameHeight: CGFloat {
         Device.isIPadUnsafe ? AppConstants.Heights.regular : AppConstants.Heights.compact
     }
     var cornerRadius: CGFloat {
         Device.isIPadUnsafe ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
     }
-    var strokeLineWidth: CGFloat { Device.isIPadUnsafe ? 1.5 : 1 }
-    var strokeColor: Color { isEnabled ? AppColors.primaryGreen : .clear }
     var backgroundColor: Color {
-        isValid ? AppColors.textFieldBackground : AppColors.errorBackground
+        if !isEnabled {
+            return AppColors.surfaceResult
+        }
+        return isValid ? AppColors.surfaceInput : AppColors.errorBackground
     }
 }
 
 extension TextFieldStyle where Self == CalculatorTextFieldStyle {
     static func calculatorStyle(
         isEnabled: Bool,
-        isValid: Bool
+        isValid: Bool,
+        isFocused: Bool
     ) -> CalculatorTextFieldStyle {
-        CalculatorTextFieldStyle(isEnabled: isEnabled, isValid: isValid)
+        CalculatorTextFieldStyle(
+            isEnabled: isEnabled,
+            isValid: isValid,
+            isFocused: isFocused
+        )
     }
 }

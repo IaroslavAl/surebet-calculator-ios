@@ -7,7 +7,18 @@ struct TextFieldView: View {
     @FocusState private var isFocused: FocusableField?
 
     let placeholder: String
+    let label: String
     let focusableField: FocusableField
+
+    init(
+        placeholder: String,
+        label: String? = nil,
+        focusableField: FocusableField
+    ) {
+        self.placeholder = placeholder
+        self.label = label ?? placeholder
+        self.focusableField = focusableField
+    }
 
     // MARK: - Body
 
@@ -16,11 +27,21 @@ struct TextFieldView: View {
             .textFieldStyle(
                 .calculatorStyle(
                     isEnabled: !isDisabled,
-                    isValid: isValid
+                    isValid: isValid,
+                    isFocused: isFieldFocused
                 )
             )
+            .font(AppConstants.Typography.numeric)
+            .foregroundColor(isDisabled ? AppColors.textMuted : AppColors.textPrimary)
+            .tint(AppColors.accent)
+            .opacity(isDisabled ? 0.7 : 1)
+            .contentShape(.rect)
             .focused($isFocused, equals: focusableField)
             .disabled(isDisabled)
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(borderColor, lineWidth: borderLineWidth)
+            }
             .onTapGesture {
                 viewModel.send(.setFocus(focusableField))
             }
@@ -33,12 +54,35 @@ struct TextFieldView: View {
                 }
             }
             .accessibilityIdentifier(accessibilityIdentifier)
+            .accessibilityLabel(label)
     }
 }
 
 // MARK: - Private Computed Properties
 
 private extension TextFieldView {
+    var cornerRadius: CGFloat {
+        isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
+    }
+
+    var borderLineWidth: CGFloat {
+        let base: CGFloat = Device.isIPadUnsafe ? 1.4 : 1.1
+        if isDisabled {
+            return 1
+        }
+        return isFieldFocused ? base + 0.4 : base
+    }
+
+    var borderColor: Color {
+        if isDisabled {
+            return AppColors.borderMuted
+        }
+        if !isValid {
+            return AppColors.error
+        }
+        return isFieldFocused ? AppColors.accent : AppColors.border
+    }
+
     var bindingText: Binding<String> {
         Binding(
             get: { text },
@@ -48,6 +92,10 @@ private extension TextFieldView {
 
     var isDisabled: Bool {
         viewModel.isFieldDisabled(focusableField)
+    }
+
+    var isFieldFocused: Bool {
+        isFocused == focusableField
     }
 
     var text: String {
@@ -94,7 +142,8 @@ private extension TextFieldView {
 
 #Preview {
     TextFieldView(
-        placeholder: SurebetCalculatorLocalizationKey.totalBetSize.localized,
+        placeholder: "",
+        label: SurebetCalculatorLocalizationKey.totalBetSize.localized,
         focusableField: .totalBetSize
     )
     .padding()

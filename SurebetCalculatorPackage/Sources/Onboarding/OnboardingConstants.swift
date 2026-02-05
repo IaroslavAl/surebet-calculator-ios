@@ -51,7 +51,7 @@ enum OnboardingConstants {
         /// Шрифт для иконок (title для iPhone, largeTitle для iPad)
         @MainActor
         static var icon: Font {
-            Device.isIPad ? .largeTitle : .title
+            .system(size: Device.isIPad ? 20 : 16, weight: .semibold)
         }
     }
 

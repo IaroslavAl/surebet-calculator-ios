@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,6 +11,7 @@
 		A328EB302C14B36900143A27 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C4620673297BFACC00E70051 /* Assets.xcassets */; };
 		A328EB372C14C10C00143A27 /* Root in Frameworks */ = {isa = PBXBuildFile; productRef = A328EB362C14C10C00143A27 /* Root */; };
 		C4620670297BFAC900E70051 /* SurebetCalculatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C462066F297BFAC900E70051 /* SurebetCalculatorApp.swift */; };
+		D434C3DC2F33F87100D29F29 /* surebet-calculator-ui-tests.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = D434C3DB2F33F87100D29F29 /* surebet-calculator-ui-tests.xctestplan */; };
 		F1234567890123456789AB01 /* SurebetCalculatorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1234567890123456789AB00 /* SurebetCalculatorUITests.swift */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		C462066F297BFAC900E70051 /* SurebetCalculatorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurebetCalculatorApp.swift; sourceTree = "<group>"; };
 		C4620673297BFACC00E70051 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C4620676297BFACC00E70051 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		D434C3DB2F33F87100D29F29 /* surebet-calculator-ui-tests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "surebet-calculator-ui-tests.xctestplan"; sourceTree = "<group>"; };
 		F1234567890123456789AB00 /* SurebetCalculatorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurebetCalculatorUITests.swift; sourceTree = "<group>"; };
 		F1234567890123456789AB03 /* SurebetCalculatorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SurebetCalculatorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1234567890123456789AB04 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -94,6 +96,7 @@
 		C462066E297BFAC900E70051 /* SurebetCalculator */ = {
 			isa = PBXGroup;
 			children = (
+				D434C3DB2F33F87100D29F29 /* surebet-calculator-ui-tests.xctestplan */,
 				C462066F297BFAC900E70051 /* SurebetCalculatorApp.swift */,
 				A328EB312C14B46500143A27 /* Info.plist */,
 				A328EB382C14C8BB00143A27 /* Resources */,
@@ -188,7 +191,7 @@
 			);
 			mainGroup = C4620663297BFAC900E70051;
 			packageReferences = (
-				A328EB392C20000100143A27 /* SurebetCalculatorPackage */,
+				A328EB392C20000100143A27 /* XCLocalSwiftPackageReference "SurebetCalculatorPackage" */,
 			);
 			productRefGroup = C462066D297BFAC900E70051 /* Products */;
 			projectDirPath = "";
@@ -207,6 +210,7 @@
 			files = (
 				A328EB302C14B36900143A27 /* Assets.xcassets in Resources */,
 				A328EB2F2C14B36600143A27 /* Preview Assets.xcassets in Resources */,
+				D434C3DC2F33F87100D29F29 /* surebet-calculator-ui-tests.xctestplan in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -529,20 +533,20 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCSwiftPackageProductDependency section */
-		A328EB362C14C10C00143A27 /* Root */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A328EB392C20000100143A27 /* SurebetCalculatorPackage */;
-			productName = Root;
-		};
-/* End XCSwiftPackageProductDependency section */
-
 /* Begin XCLocalSwiftPackageReference section */
-		A328EB392C20000100143A27 /* SurebetCalculatorPackage */ = {
+		A328EB392C20000100143A27 /* XCLocalSwiftPackageReference "SurebetCalculatorPackage" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = SurebetCalculatorPackage;
 		};
 /* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A328EB362C14C10C00143A27 /* Root */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A328EB392C20000100143A27 /* XCLocalSwiftPackageReference "SurebetCalculatorPackage" */;
+			productName = Root;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C4620664297BFAC900E70051 /* Project object */;
 }

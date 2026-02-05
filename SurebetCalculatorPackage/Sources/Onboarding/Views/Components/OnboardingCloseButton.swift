@@ -11,7 +11,6 @@ struct OnboardingCloseButton: View {
         Button(action: action) {
             label
         }
-        .frame(maxWidth: isIPad ? nil : .infinity, alignment: .leading)
         .accessibilityLabel(OnboardingLocalizationKey.closeOnboarding.localized)
         .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.closeButton)
     }
@@ -30,6 +29,17 @@ private extension OnboardingCloseButton {
         Image(systemName: imageName)
             .font(OnboardingConstants.Typography.icon)
             .foregroundColor(OnboardingColors.closeButton)
+            .padding(padding)
+            .background(OnboardingColors.surface)
+            .clipShape(Circle())
+            .overlay {
+                Circle()
+                    .stroke(OnboardingColors.border, lineWidth: 1)
+            }
+    }
+
+    var padding: CGFloat {
+        isIPad ? OnboardingConstants.paddingSmall : 6
     }
 }
 

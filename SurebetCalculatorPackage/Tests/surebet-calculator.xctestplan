@@ -25,8 +25,8 @@
     {
       "target" : {
         "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "AnalyticsManagerTests",
-        "name" : "AnalyticsManagerTests"
+        "identifier" : "RootTests",
+        "name" : "RootTests"
       }
     },
     {
@@ -34,6 +34,20 @@
         "containerPath" : "container:SurebetCalculatorPackage",
         "identifier" : "SurebetCalculatorTests",
         "name" : "SurebetCalculatorTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:SurebetCalculatorPackage",
+        "identifier" : "AnalyticsManagerTests",
+        "name" : "AnalyticsManagerTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:SurebetCalculatorPackage",
+        "identifier" : "BannerTests",
+        "name" : "BannerTests"
       }
     },
     {
@@ -48,20 +62,6 @@
         "containerPath" : "container:SurebetCalculatorPackage",
         "identifier" : "ReviewHandlerTests",
         "name" : "ReviewHandlerTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "RootTests",
-        "name" : "RootTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "BannerTests",
-        "name" : "BannerTests"
       }
     }
   ],

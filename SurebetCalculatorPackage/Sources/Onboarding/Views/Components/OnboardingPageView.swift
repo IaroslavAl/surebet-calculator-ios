@@ -18,6 +18,7 @@ struct OnboardingPageView: View {
             Spacer()
             Text(page.description)
                 .font(OnboardingConstants.Typography.title)
+                .foregroundColor(OnboardingColors.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
                 .minimumScaleFactor(OnboardingConstants.minimumTextScaleFactor)

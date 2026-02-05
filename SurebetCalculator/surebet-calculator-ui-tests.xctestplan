@@ -1,0 +1,34 @@
+{
+  "configurations" : [
+    {
+      "id" : "7F66E489-9C0D-4E0D-8D63-5B2292035B9E",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "AppMetrica_Key",
+        "value" : "f7e1f335-475a-4b6c-ba4a-77988745bc7a"
+      }
+    ],
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:surebet-calculator.xcodeproj",
+      "identifier" : "C462066B297BFAC900E70051",
+      "name" : "surebet-calculator"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:surebet-calculator.xcodeproj",
+        "identifier" : "F1234567890123456789AB07",
+        "name" : "SurebetCalculatorUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

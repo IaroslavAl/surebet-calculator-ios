@@ -18,10 +18,7 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: .zero) {
-            OnboardingCloseButton()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, padding)
-                .padding(.top, padding)
+            topBar
             OnboardingTabView()
             VStack(spacing: .zero) {
                 OnboardingIndex()
@@ -48,6 +45,16 @@ struct OnboardingView: View {
 private extension OnboardingView {
     var padding: CGFloat {
         isIPad ? OnboardingConstants.paddingExtraLarge : OnboardingConstants.paddingLarge
+    }
+
+    var topBar: some View {
+        HStack {
+            Spacer()
+            OnboardingCloseButton()
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.horizontal, padding)
+        .padding(.top, padding)
     }
 }
 

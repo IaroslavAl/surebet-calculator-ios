@@ -8,6 +8,9 @@ public enum AccessibilityIdentifiers: Sendable {
         public static let view = "calculator_view"
         public static let clearButton = "calculator_clear_button"
         public static let rowCountPicker = "calculator_row_count_picker"
+        public static let rowCountDecreaseButton = "calculator_row_count_decrease_button"
+        public static let rowCountIncreaseButton = "calculator_row_count_increase_button"
+        public static let rowCountValue = "calculator_row_count_value"
     }
 
     // MARK: - Total Row
