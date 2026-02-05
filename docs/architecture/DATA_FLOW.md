@@ -12,22 +12,15 @@ View (SwiftUI) → ViewModel (@MainActor, ObservableObject) → Service (Protoco
 
 ### Роли компонентов
 
-| Слой | Ответственность | Property Wrappers |
-|------|-----------------|-------------------|
-| **View** | UI-рендеринг, передача действий | `@StateObject`, `@EnvironmentObject` |
-| **ViewModel** | Состояние, бизнес-логика | `@Published private(set)`, `@AppStorage` |
-| **Service** | Логика + side-effects | Protocol + `Sendable` (value type preferred) |
-
-### Политика сервисов (value type vs class)
-- **Struct/value type** — чистые вычисления без shared mutable state, предсказуемая логика.
-- **Class** — допустимы для SDK/UI/side-effects/кэша/долгоживущих хэндлеров и идентичности объекта.
-- **Изоляция состояния** — actor для разделяемого mutable состояния, очередь для legacy-кода, immutable snapshots для передачи данных между потоками.
-
----
+| Слой | Ответственность | Типичные свойства |
+|---|---|---|
+| **View** | UI‑рендеринг, отправка действий | `@StateObject`, `@EnvironmentObject` |
+| **ViewModel** | Состояние, бизнес‑логика | `@Published private(set)`, `@AppStorage` |
+| **Service** | Логика + side‑effects | Protocol + `Sendable` |
 
 ## ViewAction Pattern
 
-Все действия пользователя проходят через единый `send(_ action:)`:
+Все пользовательские действия проходят через `send(_:)`:
 
 ```swift
 enum ViewAction {
@@ -43,153 +36,48 @@ func send(_ action: ViewAction) {
     case .addRow: addRow()
     case let .setTextFieldText(field, text):
         set(field, text: text)
-        calculate()  // → Service
+        calculate()
     case .clearAll: clearAll()
     }
 }
 ```
 
-**Преимущества:** единая точка входа, типобезопасность, тестируемость.
-
----
-
 ## Dependency Injection
 
-Constructor Injection с дефолтными значениями:
+Constructor Injection с дефолтами:
 
 ```swift
 init(
     analyticsService: AnalyticsService = AnalyticsManager(),
     reviewService: ReviewService = ReviewHandler()
-) {
-    self.analyticsService = analyticsService
-    self.reviewService = reviewService
-}
+)
 ```
 
-**Правила:**
-- Параметр = протокол, дефолт = реализация
-- `private let` для хранения
-- Тесты передают Mock
-
----
+Правило: параметр — протокол, дефолт — реализация.
 
 ## State Management
 
 | Wrapper | Где | Когда |
-|---------|-----|-------|
+|---|---|---|
 | `@Published private(set)` | ViewModel | Состояние для UI |
-| `@StateObject` | Корневой View | Создание/владение ViewModel |
-| `@ObservedObject` | ViewModifier | Наблюдение без владения |
+| `@StateObject` | Корневой View | Владение VM |
 | `@EnvironmentObject` | Child View | Доступ через иерархию |
-| `@AppStorage` | ViewModel | Персистентное (UserDefaults) |
-| `@Binding` | Child View | Двусторонняя связь |
-| `@FocusState` | View | Управление фокусом |
+| `@AppStorage` | ViewModel | Персистентное состояние |
+| `@FocusState` | View | Фокус полей |
 
-**Binding из ViewModel:**
-```swift
-Binding(
-    get: { viewModel.isOnboardingShown },
-    set: { viewModel.updateOnboardingShown($0) }
-)
-```
+Binding из ViewModel — через `Binding(get:set:)` (см. `docs/rules/CODING_STANDARDS.md`).
 
----
+## Banner Flow (кратко)
+- На старте приложения — `fetchBanner()`.
+- Кэшируется модель баннера и изображение в `UserDefaults`.
+- `isBannerFullyCached` истинно только если кэш есть и для модели, и для изображения.
+- При сетевой ошибке кэш очищается целиком.
 
-## Banner Network Flow
-
-```
-App Launch → .task { Banner.fetchBanner() }
-    ↓
-GET /banner → BannerModel → UserDefaults
-    ↓
-GET imageURL → Data → UserDefaults
-    ↓
-Banner.isBannerFullyCached → true
-    ↓
-FullscreenBannerView ← UIImage(data:)
-```
-
-### Стратегия кэширования
-
-| Событие | Действие |
-|---------|----------|
-| Новый `imageURL` | Скачать изображение |
-| URL не изменился | Использовать кэш |
-| Ошибка сети | Очистить весь кэш |
-
-```swift
-func isBannerFullyCached() -> Bool {
-    getBannerFromDefaults() != nil && getStoredBannerImageData() != nil
-}
-```
-
----
-
-## Analytics Flow
-
-### Типобезопасные события
-
-Все события аналитики определены в `AnalyticsEvent` enum:
-
-```swift
-// Использование типобезопасного события
-analyticsService.log(event: .reviewResponse(enjoyingApp: true))
-analyticsService.log(event: .bannerClicked(bannerId: "123", bannerType: .fullscreen))
-analyticsService.log(event: .calculatorRowAdded(rowCount: 3))
-```
-
-### Каталог событий
-
-| Категория | Событие | Где | Параметры |
-|-----------|---------|-----|-----------|
-| **Onboarding** | `onboarding_started` | OnboardingViewModel | — |
-| | `onboarding_page_viewed` | OnboardingViewModel | `page_index: Int`, `page_title: String` |
-| | `onboarding_completed` | OnboardingViewModel | `pages_viewed: Int` |
-| | `onboarding_skipped` | OnboardingViewModel | `last_page_index: Int` |
-| **Calculator** | `calculator_row_added` | SurebetCalculatorViewModel | `row_count: Int` |
-| | `calculator_row_removed` | SurebetCalculatorViewModel | `row_count: Int` |
-| | `calculator_cleared` | SurebetCalculatorViewModel | — |
-| | `calculation_performed` | SurebetCalculatorViewModel | `row_count: Int`, `profit_percentage: Double` |
-| **Banner** | `banner_viewed` | BannerView, FullscreenBannerView | `banner_id: String`, `banner_type: String` |
-| | `banner_clicked` | BannerView, FullscreenBannerView | `banner_id: String`, `banner_type: String` |
-| | `banner_closed` | BannerView, FullscreenBannerView | `banner_id: String`, `banner_type: String` |
-| **Review** | `review_prompt_shown` | RootViewModel | — |
-| | `review_response` | RootViewModel | `enjoying_app: Bool` |
-| **App** | `app_opened` | RootViewModel | `session_number: Int` |
-
-### Правила
-
-- **DI через init:** Всегда используй `AnalyticsService` протокол через DI, не статические методы
-- **Типобезопасность:** Используй `AnalyticsEvent` enum вместо строковых названий
-- **Параметры:** Все параметры типобезопасны через `AnalyticsParameterValue`
-- **Release only:** `#if !DEBUG` — события логируются только в Release сборке
-- **Названия:** События в snake_case для AppMetrica (автоматически из enum)
-
----
+## Analytics Flow (кратко)
+- Источник правды: `AnalyticsEvent` в `AnalyticsManager`.
+- Логирование только в Release (`#if !DEBUG`).
+- Параметры — типобезопасные (`AnalyticsParameterValue`).
 
 ## Navigation
-
-Условный рендеринг вместо NavigationPath:
-
-```swift
-var body: some View {
-    Group {
-        if viewModel.isOnboardingShown {
-            calculatorView
-        } else {
-            onboardingView
-        }
-    }
-}
-```
-
-**Overlays:**
-```swift
-.overlay {
-    if viewModel.fullscreenBannerIsPresented {
-        Banner.fullscreenBannerView(isPresented: $viewModel.fullscreenBannerIsPresented)
-            .transition(.move(edge: .bottom))
-    }
-}
-```
+- Навигация через условный рендеринг в Root.
+- Полноэкранные баннеры — через `.overlay` и `.transition(.move(edge: .bottom))`.

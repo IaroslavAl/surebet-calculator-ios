@@ -1,47 +1,46 @@
 # AGENTS.md — SurebetCalculator
 
-## TL;DR
-Проект: iOS 16+ / Swift 6 (strict concurrency), архитектура MVVM + Services + DI, SPM monorepo.
-Источники правды по правилам и архитектуре см. в docs/*.
-Если есть противоречия — приоритет у `docs/rules/*` и `docs/architecture/*`.
+## Назначение
+Краткий оперативный гайд для ИИ‑агента. Детальные правила и архитектура — в `docs/*`.
 
-## Как проверять изменения (обязательно)
-1) Сборка:
-   xcodebuild -project surebet-calculator.xcodeproj -scheme surebet-calculator \
-     -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9' build
+## Приоритет источников
+1. `docs/rules/*`
+2. `docs/architecture/*`
+3. `docs/testing/*`
+4. `docs/system/SYSTEM_CONTEXT.md`
+5. `README.md`
 
-2) Тесты (если менялись тесты или VM/Services):
-   xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator \
-     -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9'
+## Быстрые факты
+- iOS 16+, Swift 6 (strict concurrency)
+- Архитектура: MVVM + Services + DI
+- SPM монорепо: `SurebetCalculatorPackage/`
+- Тесты: Swift Testing (`import Testing`)
 
-Критерий: TEST SUCCEEDED.
+## Обязательная проверка изменений
+```bash
+xcodebuild -project surebet-calculator.xcodeproj -scheme surebet-calculator \
+  -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9' build
 
-Важно: для пакетов со SwiftLintBuildToolPlugin не использовать `swift build`,
-а использовать xcodebuild -resolvePackageDependencies / сборку схемы.
+# Если менялись тесты или ViewModel/Services
+xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator \
+  -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9'
+```
+Критерий успеха: `TEST SUCCEEDED`.
 
-## Код-стиль и архитектура (коротко)
-- ViewModel: @MainActor final class ObservableObject
-- @Published всегда private(set)
-- Модели: Sendable
-- Сервисные протоколы: Sendable
-- Локализация: только String(localized:), без хардкода
-- Большие View дробить на компоненты
+Важно: для пакетов со `SwiftLintBuildToolPlugin` не использовать `swift build`. Проверка — через `xcodebuild -resolvePackageDependencies` или сборку схемы.
 
-## Тесты
-- Framework: Swift Testing (import Testing)
-- Если VM @MainActor — тесты тоже @MainActor
-- Shared state (UserDefaults) — @Suite(.serialized)
-- Запрещено использовать Thread.sleep/Task.sleep в тестах
-- MockURLProtocol: потокобезопасный registry по full URL, без глобального handler
+## Критические правила (минимум)
+- ViewModel: `@MainActor final class ObservableObject`, точка входа — `send(_:)`.
+- `@Published` всегда `private(set)`.
+- Модели и сервисные протоколы — `Sendable`.
+- UI‑строки — только `String(localized:)`.
+- Большие `View` дробить на компоненты.
+- В тестах запрещён `Thread.sleep`/`Task.sleep`.
 
-## Документация
-- Язык: русский
-- Для публичного API: Swift Doc (///) с объяснением “почему”, а не “что”
-
-## Ссылки (источники правды)
-- System context: docs/system/SYSTEM_CONTEXT.md
-- Coding standards: docs/rules/CODING_STANDARDS.md
-- Testing strategy: docs/testing/TESTING_STRATEGY.md
-- Lessons learned: docs/rules/PROJECT_LESSONS.md
-- Data flow: docs/architecture/DATA_FLOW.md
-- Modules: docs/architecture/MODULES.md
+## Куда смотреть
+- Системная карта: `docs/system/SYSTEM_CONTEXT.md`
+- Код‑стиль: `docs/rules/CODING_STANDARDS.md`
+- Архитектура и потоки: `docs/architecture/DATA_FLOW.md`
+- Модули и зависимости: `docs/architecture/MODULES.md`
+- Тестирование: `docs/testing/TESTING_STRATEGY.md`
+- Уроки проекта: `docs/rules/PROJECT_LESSONS.md`

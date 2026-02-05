@@ -1,6 +1,6 @@
-# Modules
+# Модули
 
-## Dependency Graph
+## Граф зависимостей
 
 ```mermaid
 graph TD
@@ -10,238 +10,105 @@ graph TD
     Root --> ReviewHandler
     Root --> AnalyticsManager
     Root --> AppMetricaCore
-    
+
     SurebetCalculator --> Banner
-    
+
     Banner --> AnalyticsManager
     Banner --> SDWebImageSwiftUI
-    
+
     AnalyticsManager --> AppMetricaCore
 ```
 
----
-
-## Module Summary
+## Сводка модулей
 
 | Модуль | Зависимости | Назначение |
-|--------|-------------|------------|
-| `Root` | Все внутренние + AppMetricaCore | Entry point, координация |
-| `SurebetCalculator` | Banner | Бизнес-логика калькулятора |
-| `Banner` | AnalyticsManager, SDWebImageSwiftUI | Баннеры (загрузка, кэш, UI) |
+|---|---|---|
+| `Root` | Все внутренние + AppMetricaCore | Entry point и координация |
+| `SurebetCalculator` | Banner | Бизнес‑логика калькулятора |
+| `Banner` | AnalyticsManager, SDWebImageSwiftUI | Баннеры (сеть, кэш, UI) |
 | `Onboarding` | — | Онбординг пользователей |
 | `ReviewHandler` | — | Запрос отзывов (SKStoreReviewController) |
 | `AnalyticsManager` | AppMetricaCore | Типобезопасная аналитика |
 
----
-
 ## Root
 
-Entry point приложения. Координирует все модули.
+**Публичный API:** `Root.view()`.
 
-```swift
-public enum Root {
-    @MainActor
-    public static func view() -> some View
-}
-
-// Реэкспорт AppMetrica для App
-public typealias AppMetrica = AppMetricaCore.AppMetrica
-public typealias AppMetricaConfiguration = AppMetricaCore.AppMetricaConfiguration
-```
-
-**Структура:**
-```
-Root/
-├── Root.swift          # Public API
-├── RootView.swift      # Условный рендеринг
-├── RootViewModel.swift # @AppStorage, условия показа
-└── Resources/Localizable.xcstrings
-```
-
----
+**Важно:**
+- Создаёт `AnalyticsManager` и `ReviewHandler`, прокидывает адаптеры аналитики в модули Onboarding/Calculator.
+- RootView всегда держит базовый экран в иерархии (`ZStack`), а онбординг — в overlay с transition.
+- Ключи `@AppStorage`:
+  - `onboardingIsShown` — был ли показан онбординг.
+  - `1.7.0` — был ли показан запрос отзыва для версии.
+  - `numberOfOpenings` — счётчик запусков.
+- Показ запроса отзыва (Release‑only): после задержки 1 секунда, если onboarding завершён, открытий ≥ 2, запрос ещё не показывали.
+- Fullscreen‑баннер: показывается только если onboarding завершён, запрос отзыва уже был, и число открытий кратно 3, плюс `Banner.isBannerFullyCached == true`.
+- Баннер запрашивается один раз за запуск (`Task` с защитой от повторов).
 
 ## SurebetCalculator
 
-Основная бизнес-логика калькулятора ставок.
+**Публичный API:** `SurebetCalculator.view(analytics:)`.
 
-```swift
-public enum SurebetCalculator {
-    @MainActor
-    public static func view() -> some View
-}
-```
-
-**Ключевые компоненты:**
-
-| Файл | Назначение |
-|------|------------|
-| `SurebetCalculatorViewModel` | Состояние, ViewAction, calculate() |
-| `CalculationService` | Протокол вычислений |
-| `DefaultCalculationService` | Реализация → Calculator |
-| `Calculator` | Алгоритмы расчёта ставок |
-
-**Модели:** `Row`, `TotalRow`, `RowType`, `FocusableField`, `CalculationMethod`
-
----
+**Важно:**
+- Количество исходов: 2…20 (`NumberOfRows`).
+- Метод расчёта выбирается автоматически по `selection`:
+  - `.total` — пересчёт всех строк из итоговой ставки.
+  - `.row(id)` — пересчёт итоговой ставки и остальных строк.
+  - `.none` + валидные ставки по строкам — пересчёт итоговой ставки из суммы.
+- Невалидный ввод не трогает поля ввода, но сбрасывает производные (`income`, `profitPercentage`).
+- Коэффициенты должны быть ≥ 1, иначе расчёт не выполняется.
+- Аналитика расчёта дебаунсится на 1 секунду.
 
 ## Banner
 
-Система баннеров: загрузка, кэширование, отображение.
+**Публичный API:**
+- `Banner.bannerView` — inline баннер.
+- `Banner.fullscreenBannerView(isPresented:)` — fullscreen баннер.
+- `Banner.fetchBanner()` и `Banner.isBannerFullyCached`.
 
-```swift
-public enum Banner {
-    // Views
-    public static var bannerView: some View
-    @MainActor
-    public static func fullscreenBannerView(isPresented: Binding<Bool>) -> some View
-    
-    // Network
-    public static func fetchBanner() async throws
-    
-    // Cache
-    public static var isBannerFullyCached: Bool
-}
-```
-
-**BannerService Protocol:**
-```swift
-protocol BannerService: Sendable {
-    func fetchBannerAndImage() async throws
-    func fetchBanner() async throws -> BannerModel
-    func saveBannerToDefaults(_ banner: BannerModel)
-    func getBannerFromDefaults() -> BannerModel?
-    func getStoredBannerImageData() -> Data?
-    func isBannerFullyCached() -> Bool
-}
-```
-
----
+**Важно:**
+- Inline баннер: статические image URL по устройству, закрытие скрывает компонент, клики ведут на affiliate URL.
+- Fullscreen баннер: данные и изображение берутся из кэша (`UserDefaults`).
+- `Service` делает `GET /banner` по `BannerConstants.apiBaseURL`, кэширует JSON и изображение.
+- Если `imageURL` пустой/изменился/данных нет — картинка скачивается заново.
+- Любая ошибка или пустые данные очищают кэш полностью.
+- После тапа по баннеру: открытие URL и закрытие с задержкой 500ms.
+- `PresentationBinding` используется, чтобы VM не зависела от SwiftUI `Binding`.
 
 ## Onboarding
 
-Онбординг новых пользователей (3 страницы).
+**Публичный API:** `Onboarding.view(onboardingIsShown:analytics:)`.
 
-```swift
-public enum Onboarding {
-    @MainActor
-    public static func view(onboardingIsShown: Binding<Bool>) -> some View
-}
-```
-
-**OnboardingViewModel:**
-```swift
-enum ViewAction {
-    case setCurrentPage(Int)
-    case dismiss
-}
-```
-
----
+**Важно:**
+- 3 страницы, изображения зависят от устройства (iPhone/iPad).
+- События аналитики: start, page viewed, completed, skipped.
+- `skip` и `dismiss` устанавливают `onboardingIsShown = true`.
 
 ## ReviewHandler
 
-Запрос отзывов через SKStoreReviewController.
+**Публичный API:** `ReviewHandler.requestReview()` (async).
 
-```swift
-@MainActor
-public final class ReviewHandler: ReviewService {
-    public func requestReview() async
-}
-
-@MainActor
-public protocol ReviewService: Sendable {
-    func requestReview() async
-}
-```
-
----
+**Важно:**
+- Использует `SKStoreReviewController` и `Delay` для тестируемости.
+- Перед показом — задержка 1 секунда.
 
 ## AnalyticsManager
 
-Типобезопасная обёртка над AppMetrica с каталогом событий.
+**Публичный API:** `AnalyticsService`, `AnalyticsManager`, `AnalyticsEvent`.
 
-```swift
-// Протокол сервиса аналитики
-public protocol AnalyticsService: Sendable {
-    /// Логирует типобезопасное событие
-    func log(event: AnalyticsEvent)
-    
-    /// Логирует событие с параметрами (deprecated)
-    func log(name: String, parameters: [String: AnalyticsParameterValue]?)
-}
+**Важно:**
+- Все события типобезопасны через `AnalyticsEvent` и `AnalyticsParameterValue`.
+- Логирование включено только в Release (`#if !DEBUG`).
 
-// Типобезопасный каталог событий
-public enum AnalyticsEvent: Sendable, Equatable {
-    case onboardingStarted
-    case onboardingPageViewed(pageIndex: Int, pageTitle: String)
-    case calculatorRowAdded(rowCount: Int)
-    case bannerClicked(bannerId: String, bannerType: BannerType)
-    // ... и другие события
-}
+## Внешние зависимости
 
-// Типобезопасные значения параметров
-public enum AnalyticsParameterValue: Sendable, Equatable {
-    case string(String)
-    case int(Int)
-    case double(Double)
-    case bool(Bool)
-}
+Единственный источник версий: `SurebetCalculatorPackage/Package.swift`.
 
-// Реализация
-public struct AnalyticsManager: AnalyticsService, Sendable {
-    public func log(event: AnalyticsEvent) {
-        log(name: event.name, parameters: event.parameters)
-    }
-}
-```
+- AppMetrica SDK — аналитика
+- SDWebImageSwiftUI — загрузка изображений
+- SwiftLint (Build Tool Plugin)
 
-**Использование:**
-```swift
-// Рекомендуемый способ (типобезопасный)
-analyticsService.log(event: .bannerClicked(bannerId: "123", bannerType: .fullscreen))
-
-// Deprecated (для обратной совместимости)
-analyticsService.log(name: "custom_event", parameters: ["key": .string("value")])
-```
-
----
-
-## External Dependencies
-
-**Единственный источник версий:** `SurebetCalculatorPackage/Package.swift`.
-
-| Библиотека | Модуль | Назначение |
-|------------|--------|------------|
-| AppMetrica SDK | AnalyticsManager, Root | Аналитика |
-| SDWebImageSwiftUI | Banner | Загрузка изображений |
-| SwiftLint | Все | Линтер (Build Tool Plugin) |
-
----
-
-## Adding New Module
-
-```swift
-// 1. Package.swift
-.target(
-    name: "NewModule",
-    dependencies: ["Banner"],  // при необходимости
-    resources: [.process("Resources")],
-    plugins: [.plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")]
-),
-
-// 2. Добавить в Root dependencies
-.target(name: "Root", dependencies: [..., "NewModule"])
-
-// 3. Sources/NewModule/NewModule.swift
-public enum NewModule {
-    @MainActor
-    public static func view() -> some View {
-        NewModuleView()
-    }
-}
-```
-
-**Правила:**
-- Один экспортируемый продукт — `Root`
-- Public API через enum + `static func view()`
-- Циклические зависимости запрещены (DAG)
+## Добавление нового модуля (кратко)
+1. Добавить target в `Package.swift`, включая SwiftLint plugin.
+2. Подключить модуль в зависимостях `Root`.
+3. Создать `Sources/NewModule/NewModule.swift` с public API.

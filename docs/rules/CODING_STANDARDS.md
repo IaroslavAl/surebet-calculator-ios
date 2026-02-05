@@ -1,36 +1,44 @@
 # Coding Standards
 
+Документ‑источник правил код‑стиля. Не дублирует тестовые и архитектурные детали.
+
 ## Swift 6 Concurrency
 
 | Паттерн | Применение | Пример |
-|---------|-----------|--------|
-| `@MainActor class` | ViewModel | `@MainActor final class RootViewModel: ObservableObject` |
-| `@MainActor protocol` | UI-сервисы | `@MainActor protocol ReviewService: Sendable` |
+|---|---|---|
+| `@MainActor final class` | ViewModel | `@MainActor final class RootViewModel: ObservableObject` |
+| `@MainActor protocol` | UI‑сервисы | `@MainActor protocol ReviewService: Sendable` |
 | `Sendable struct` | Модели, pure services | `struct Row: Equatable, Sendable` |
-| `@MainActor class` / `actor` | Сервисы с UI/side-effects/кэшем | `@MainActor final class ReviewHandler: ReviewService` |
-| `@unchecked Sendable` | Struct с URLSession/UserDefaults | `struct Service: BannerService, @unchecked Sendable` |
-| `nonisolated(unsafe)` | Read-only системные свойства | `nonisolated(unsafe) static var isIPad` |
+| `actor` | Shared mutable state | `actor Cache { }` |
+| `@unchecked Sendable` | Для URLSession/UserDefaults | `struct Service: @unchecked Sendable` |
+| `nonisolated(unsafe)` | Только для UIDevice workaround | `nonisolated(unsafe) static var isIPad` |
 
-**Правила:**
-- Все ViewModel — `@MainActor final class: ObservableObject`
-- Единственная точка входа во ViewModel из View и тестов — `send(_:)`. Все остальные методы ViewModel должны быть `private`/`fileprivate` и вызываться только внутри ViewModel.
-- Для раннего выхода (early return) предпочитать `guard` (когда это повышает читаемость), избегать каскада `if { return }`.
-- View не создают ViewModel с зависимостями; сборка и DI выполняются в factory/entry-point или родительском модуле.
-- В unit/integration тестах запрещено использовать `Thread.sleep`/`Task.sleep`. Использовать ожидание состояния/вызовов (polling + timeout при необходимости) или DI времени (Delay/Clock) с immediate/fake реализацией.
-- В UI тестах запрещено использовать `Thread.sleep`. Использовать `waitForExistence(timeout:)` или `XCTNSPredicateExpectation`/`XCTWaiter`.
-- Все модели данных — `Sendable`
-- Все сервисные протоколы — `Sendable`
-- Реализации сервисов: value type preferred; class допустимы при SDK/UI/side-effects/кэше (см. `docs/architecture/DATA_FLOW.md`)
-- `nonisolated(unsafe)` только для UIDevice workaround
+**Ключевые правила:**
+- Все ViewModel — `@MainActor final class: ObservableObject`.
+- Модели и сервисные протоколы — `Sendable`.
+- Реализации сервисов: value type по умолчанию, `class/actor` только при SDK/UI/side‑effects/кэше.
 
----
+## ViewModel и DI
+- Единственная точка входа во ViewModel из View и тестов — `send(_:)`.
+- Все прочие методы ViewModel должны быть `private`/`fileprivate`.
+- View не создаёт ViewModel с зависимостями; сборка — в factory/entry‑point.
+- `@Published` всегда `private(set)`.
+
+## Bindings
+- Binding из ViewModel — через `Binding(get:set:)`, не `$viewModel.prop`.
+- Не передавать Binding в ViewModel как `wrappedValue` и `set`.
+- Для presentation state допускается адаптер на уровне entry‑point.
+
+## Локализация
+- Только String Catalogs (`.xcstrings`).
+- В UI использовать `String(localized:)`.
+- Хардкод строк запрещён.
 
 ## Naming Conventions
 
 ### Файлы
-
 | Категория | Паттерн | Пример |
-|-----------|---------|--------|
+|---|---|---|
 | Public API модуля | `ModuleName.swift` | `Banner.swift` |
 | ViewModel | `ModuleNameViewModel.swift` | `RootViewModel.swift` |
 | View | `ModuleNameView.swift` | `SurebetCalculatorView.swift` |
@@ -40,37 +48,18 @@
 | Mock | `MockServiceName.swift` | `MockCalculationService.swift` |
 
 ### Типы и свойства
+- Boolean: префиксы `is/has/should/can`.
+- Коллекции — множественное число.
+- Методы — глагол в начале.
 
-```swift
-// Boolean — is/has/should/can prefix
-var isON: Bool
-var shouldShowOnboarding: Bool
-
-// Коллекции — множественное число
-var rows: [Row]
-
-// @Published — ВСЕГДА private(set)
-@Published private(set) var total: TotalRow
-
-// Методы — глагол в начале
-func send(_ action: ViewAction)
-func calculate()
-```
-
----
-
-## Folder Structure
-
+## Структура модулей (рекомендуемая)
 ```
 Sources/ModuleName/
-├── ModuleName.swift           # Public API (enum с static func view())
+├── ModuleName.swift
 ├── ModuleNameConstants.swift
 ├── Models/
 ├── ViewModels/
 ├── Views/
-│   ├── Buttons/
-│   └── Components/
-├── Calculator/                # Бизнес-логика (optional)
 ├── Extensions/
 ├── Styles/
 └── Resources/
@@ -78,137 +67,26 @@ Sources/ModuleName/
     └── Localizable.xcstrings
 ```
 
----
-
-## MARK Sections
-
-**ViewModel:**
-```swift
-// MARK: - Properties
-// MARK: - Initialization
-// MARK: - Public Methods
-// MARK: - Private Methods (через private extension)
-```
-
-**View:**
-```swift
-// MARK: - Properties
-// MARK: - Body
-// MARK: - Private Methods (через private extension)
-```
-
----
-
 ## Code Style
+- `private extension` для приватной логики в `Sources/`.
+- Инициализаторы с параметрами на отдельных строках.
+- Константы группировать через `enum/struct`.
+- WORKAROUND комментарии формата `// WORKAROUND: описание + ссылка`.
 
-| Правило | Пример |
-|---------|--------|
-| `private extension` вместо private методов (production) | `private extension SomeView { }` |
-| Init с параметрами на отдельных строках | `init(\n  param1,\n  param2\n)` |
-| Enum для констант | `AppConstants.Padding.large` |
-| WORKAROUND комментарии | `// WORKAROUND: описание + ссылка` |
-
----
-
-## Scope: Production vs Tests
-
-**Production (Sources):** приватная логика — через `private extension`.
-```swift
-final class FeatureViewModel {
-    func send(_ action: Action) { ... }
-}
-
-private extension FeatureViewModel {
-    func calculate() { ... }
-}
-```
-
-**Tests (Tests):** допускается `private func` для helper-методов.
-```swift
-@MainActor
-struct FeatureTests {
-    private func makeViewModel() -> FeatureViewModel { FeatureViewModel() }
-}
-```
-
-**Scope-правило:** `private extension` обязательно для `Sources/`, но не требуется для `Tests/`. В тестах предпочитаем простые `private func` helpers, чтобы не раздувать шаблон. См. `docs/testing/TESTING_STRATEGY.md`.
-
----
-
-## Bindings
-
-- **Правило:** Binding из ViewModel — через `Binding(get:set:)`, не `$viewModel.prop`.
-- **Правило:** Не прокидывать Binding в ViewModel как `wrappedValue` + `set` из View; используйте Binding напрямую на уровне factory/entry-point или управляйте состоянием через `send(Action)`.
-- **Правило:** Для presentation state допускается адаптер уровня entry-point (например, `PresentationBinding`), чтобы ViewModel не зависела от SwiftUI.
-
-```swift
-Binding(
-    get: { viewModel.isOnboardingShown },
-    set: { viewModel.updateOnboardingShown($0) }
-)
-```
-
----
-
-## Localization
-
-- **Формат:** String Catalogs (`.xcstrings`)
-- **Языки:** EN (source), RU
-- **API:** `String(localized: "Key")`
-
-```swift
-// Правильно
-Text(String(localized: "Done"))
-
-// Неправильно — хардкод
-Text("Done")
-```
-
----
+**MARK‑порядок:**
+- ViewModel: `Properties → Initialization → Public Methods → Private Methods`.
+- View: `Properties → Body → Private Methods`.
 
 ## Git Conventions
 
-### Ветки
-```
-<тип>/<описание-через-дефисы>
+**Ветки:** `<тип>/<описание-через-дефисы>`
+- `feature/add-user-settings`
+- `fix/calculator-total-calculation`
+- `docs/update-readme`
 
-feature/add-user-settings
-fix/calculator-total-calculation
-refactor/extract-banner-service
-docs/update-readme
-test/add-viewmodel-tests
-```
+**Коммиты (Conventional Commits):** `<тип>: <описание на русском>`
+- Описание: с маленькой буквы, без точки, повелительное наклонение, до 50 символов.
 
-### Коммиты (Conventional Commits)
-```
-<тип>: <описание на русском>
-
-feat: добавить экран настроек
-fix: исправить расчёт итоговой суммы
-refactor: вынести логику баннера в сервис
-docs: обновить README
-test: добавить тесты для RootViewModel
-```
-
-**Правила:**
-- Описание с маленькой буквы
-- Без точки в конце
-- Повелительное наклонение
-- До 50 символов
-
----
-
-## Documentation
-
-- **Язык:** Русский
-- **Формат:** Swift Doc (`///`)
-- **Содержание:** Описывать *почему*, а не *что*
-
-```swift
-/// Сервис работы с баннерами.
-/// Обеспечивает инверсию зависимостей для тестирования.
-public protocol BannerService: Sendable {
-    /// Загружает баннер и изображение с сервера.
-    func fetchBannerAndImage() async throws
-}
-```
+## Документация
+- Вся документация и комментарии — на русском.
+- Публичный API документировать через Swift Doc (`///`) с объяснением «почему».
