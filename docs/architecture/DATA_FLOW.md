@@ -79,5 +79,5 @@ Binding из ViewModel — через `Binding(get:set:)` (см. `docs/rules/COD
 - Параметры — типобезопасные (`AnalyticsParameterValue`).
 
 ## Navigation
-- Навигация через условный рендеринг в Root.
+- Базовый экран — `MainMenu.view(...)` внутри `RootView`, онбординг накладывается через overlay.
 - Полноэкранные баннеры — через `.overlay` и `.transition(.move(edge: .bottom))`.

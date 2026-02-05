@@ -80,10 +80,24 @@ let package = Package(
             ]
         ),
         .target(
+            name: "MainMenu",
+            dependencies: [
+                "SurebetCalculator",
+            ],
+            resources: [.process("Resources")],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
+        .target(
             name: "Root",
             dependencies: [
                 "AnalyticsManager",
                 "Banner",
+                "MainMenu",
                 "Onboarding",
                 "ReviewHandler",
                 "SurebetCalculator",

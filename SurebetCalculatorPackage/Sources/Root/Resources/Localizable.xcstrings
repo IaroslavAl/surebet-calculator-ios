@@ -1,57 +1,57 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "review_request_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Do you enjoy using the app?"
+  "sourceLanguage": "en",
+  "strings": {
+    "review_request_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do you enjoy using the app?"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нравится приложение?"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нравится приложение?"
           }
         }
       }
     },
-    "review_button_no" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No"
+    "review_button_no": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нет"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет"
           }
         }
       }
     },
-    "review_button_yes" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yes"
+    "review_button_yes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Да"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Да"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

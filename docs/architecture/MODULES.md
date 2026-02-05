@@ -6,10 +6,13 @@
 graph TD
     Root --> SurebetCalculator
     Root --> Banner
+    Root --> MainMenu
     Root --> Onboarding
     Root --> ReviewHandler
     Root --> AnalyticsManager
     Root --> AppMetricaCore
+
+    MainMenu --> SurebetCalculator
 
     SurebetCalculator --> Banner
 
@@ -24,6 +27,7 @@ graph TD
 | Модуль | Зависимости | Назначение |
 |---|---|---|
 | `Root` | Все внутренние + AppMetricaCore | Entry point и координация |
+| `MainMenu` | SurebetCalculator | Экран меню и маршрутизация по разделам |
 | `SurebetCalculator` | Banner | Бизнес‑логика калькулятора |
 | `Banner` | AnalyticsManager, SDWebImageSwiftUI | Баннеры (сеть, кэш, UI) |
 | `Onboarding` | — | Онбординг пользователей |
@@ -37,6 +41,7 @@ graph TD
 **Важно:**
 - Создаёт `AnalyticsManager` и `ReviewHandler`, прокидывает адаптеры аналитики в модули Onboarding/Calculator.
 - RootView всегда держит базовый экран в иерархии (`ZStack`), а онбординг — в overlay с transition.
+- Экран меню вынесен в модуль `MainMenu` и подключается через `MainMenu.view(calculatorAnalytics:)`.
 - Ключи `@AppStorage`:
   - `onboardingIsShown` — был ли показан онбординг.
   - `1.7.0` — был ли показан запрос отзыва для версии.
@@ -44,6 +49,14 @@ graph TD
 - Показ запроса отзыва (Release‑only): после задержки 1 секунда, если onboarding завершён, открытий ≥ 2, запрос ещё не показывали.
 - Fullscreen‑баннер: показывается только если onboarding завершён, запрос отзыва уже был, и число открытий кратно 3, плюс `Banner.isBannerFullyCached == true`.
 - Баннер запрашивается один раз за запуск (`Task` с защитой от повторов).
+
+## MainMenu
+
+**Публичный API:** `MainMenu.view(calculatorAnalytics:)`.
+
+**Важно:**
+- Отвечает за первый экран с пунктами меню и переходами на экран калькулятора и вспомогательные разделы.
+- Использует дизайн‑токены (`AppColors`, `AppConstants`) из `SurebetCalculator`.
 
 ## SurebetCalculator
 
@@ -110,5 +123,5 @@ graph TD
 
 ## Добавление нового модуля (кратко)
 1. Добавить target в `Package.swift`, включая SwiftLint plugin.
-2. Подключить модуль в зависимостях `Root`.
+2. Подключить модуль в зависимостях потребителя (например, `Root`).
 3. Создать `Sources/NewModule/NewModule.swift` с public API.

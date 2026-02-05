@@ -19,6 +19,7 @@
 
 ## Модули (кратко)
 - `Root` — entry point и координация
+- `MainMenu` — экран меню
 - `SurebetCalculator` — бизнес‑логика калькулятора
 - `Banner` — баннеры (сеть, кэш, UI)
 - `Onboarding` — онбординг
@@ -34,6 +35,7 @@
 | App entry | `SurebetCalculator/SurebetCalculatorApp.swift` |
 | Root UI | `SurebetCalculatorPackage/Sources/Root/RootView.swift` |
 | Root VM | `SurebetCalculatorPackage/Sources/Root/RootViewModel.swift` |
+| MainMenu UI | `SurebetCalculatorPackage/Sources/MainMenu/Views/MainMenuView.swift` |
 | Calculator logic | `SurebetCalculatorPackage/Sources/SurebetCalculator/Calculator/` |
 | Banner service | `SurebetCalculatorPackage/Sources/Banner/` |
 | Package config | `SurebetCalculatorPackage/Package.swift` |

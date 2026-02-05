@@ -25,6 +25,7 @@
 
 ## 🧩 Модули
 - `Root` — входная точка и координация модулей.
+- `MainMenu` — экран меню и переходы по разделам.
 - `SurebetCalculator` — калькулятор и бизнес‑логика.
 - `Banner` — inline/fullscreen баннеры, сеть и кэш.
 - `Onboarding` — онбординг.
@@ -57,6 +58,7 @@ xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator
 - Основные файлы:
   - `SurebetCalculatorPackage/Sources/SurebetCalculator/Resources/Localizable.xcstrings`
   - `SurebetCalculatorPackage/Sources/Onboarding/Resources/Localizable.xcstrings`
+  - `SurebetCalculatorPackage/Sources/MainMenu/Resources/Localizable.xcstrings`
   - `SurebetCalculatorPackage/Sources/Root/Resources/Localizable.xcstrings`
 
 ## 📚 Документация для разработки

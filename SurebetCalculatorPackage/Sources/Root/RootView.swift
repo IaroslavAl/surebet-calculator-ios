@@ -1,4 +1,5 @@
 import Banner
+import MainMenu
 import Onboarding
 import SurebetCalculator
 import SwiftUI
@@ -39,21 +40,19 @@ struct RootView: View {
 private extension RootView {
     var mainContent: some View {
         ZStack {
-            calculatorView
+            menuView
             onboardingView
         }
     }
 
-    var calculatorView: some View {
-        NavigationView {
-            SurebetCalculator.view(analytics: calculatorAnalytics)
+    var menuView: some View {
+        NavigationStack {
+            MainMenu.view(calculatorAnalytics: calculatorAnalytics)
         }
-        .navigationViewStyle(.stack)
         .allowsHitTesting(!viewModel.shouldShowOnboardingWithAnimation)
         .accessibilityHidden(viewModel.shouldShowOnboardingWithAnimation)
     }
 
-    @ViewBuilder
     var onboardingView: some View {
         Group {
             if viewModel.shouldShowOnboardingWithAnimation {

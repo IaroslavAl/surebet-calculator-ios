@@ -19,7 +19,7 @@ enum Device {
 
 extension View {
     /// Определяет, является ли текущее устройство iPad
-    var isIPad: Bool {
+    public var isIPad: Bool {
         Device.isIPadUnsafe
     }
 }
