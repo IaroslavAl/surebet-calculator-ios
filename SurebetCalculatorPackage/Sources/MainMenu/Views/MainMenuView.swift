@@ -1,5 +1,6 @@
 import SurebetCalculator
 import SwiftUI
+import DesignSystem
 
 struct MainMenuView: View {
     // MARK: - Properties
@@ -11,7 +12,7 @@ struct MainMenuView: View {
     var body: some View {
         let layout = MenuLayout.regular
         ZStack {
-            AppColors.background.ignoresSafeArea()
+            DesignSystem.Color.background.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: sectionSpacing(layout)) {
                     header()
@@ -43,15 +44,15 @@ private extension MainMenuView {
     var menuFeedbackSubtitle: String { MainMenuLocalizationKey.menuFeedbackSubtitle.localized }
     var menuDisableAdsTitle: String { MainMenuLocalizationKey.menuDisableAdsTitle.localized }
     var menuDisableAdsSubtitle: String { MainMenuLocalizationKey.menuDisableAdsSubtitle.localized }
-    
+
     func header() -> some View {
-        VStack(alignment: .leading, spacing: AppConstants.Padding.small) {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
             Text(menuTitle)
-                .font(AppConstants.Typography.title)
-                .foregroundColor(AppColors.textPrimary)
+                .font(DesignSystem.Typography.title)
+                .foregroundColor(DesignSystem.Color.textPrimary)
             Text(menuSubtitle)
-                .font(AppConstants.Typography.description)
-                .foregroundColor(AppColors.textSecondary)
+                .font(DesignSystem.Typography.description)
+                .foregroundColor(DesignSystem.Color.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -145,40 +146,40 @@ private extension MainMenuView {
     func sectionSpacing(_ layout: MenuLayout) -> CGFloat {
         switch layout {
         case .regular:
-            return isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large
+            return isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large
         case .compact:
-            return isIPad ? AppConstants.Padding.large : AppConstants.Padding.medium
+            return isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.medium
         case .ultraCompact:
-            return isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small
+            return isIPad ? DesignSystem.Spacing.medium : DesignSystem.Spacing.small
         }
     }
 
     func cardSpacing(_ layout: MenuLayout) -> CGFloat {
         switch layout {
         case .regular:
-            return AppConstants.Padding.medium
+            return DesignSystem.Spacing.medium
         case .compact, .ultraCompact:
-            return AppConstants.Padding.small
+            return DesignSystem.Spacing.small
         }
     }
 
     func horizontalPadding(_ layout: MenuLayout) -> CGFloat {
         switch layout {
         case .regular, .compact:
-            return AppConstants.Padding.large
+            return DesignSystem.Spacing.large
         case .ultraCompact:
-            return AppConstants.Padding.medium
+            return DesignSystem.Spacing.medium
         }
     }
 
     func verticalPadding(_ layout: MenuLayout) -> CGFloat {
         switch layout {
         case .regular:
-            return isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large
+            return isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large
         case .compact:
-            return AppConstants.Padding.medium
+            return DesignSystem.Spacing.medium
         case .ultraCompact:
-            return AppConstants.Padding.small
+            return DesignSystem.Spacing.small
         }
     }
 

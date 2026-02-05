@@ -1,5 +1,6 @@
 import SDWebImageSwiftUI
 import SwiftUI
+import DesignSystem
 
 struct BannerView: View {
     // MARK: - Properties
@@ -47,7 +48,7 @@ private extension BannerView {
                 width: BannerConstants.inlineCloseButtonSize,
                 height: BannerConstants.inlineCloseButtonSize
             )
-            .foregroundStyle(BannerColors.closeButtonInline)
+            .foregroundStyle(DesignSystem.Color.bannerCloseButtonInline)
             .padding(BannerConstants.inlineCloseButtonPadding)
             .contentShape(.rect)
             .onTapGesture {

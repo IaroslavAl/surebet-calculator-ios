@@ -1,3 +1,4 @@
+import DesignSystem
 import UIKit
 
 @MainActor
@@ -59,7 +60,7 @@ final class KeyboardAccessoryOverlayManager {
 
         let bottomConstraint = toolbarView.bottomAnchor.constraint(
             equalTo: guideView.keyboardLayoutGuide.topAnchor,
-            constant: -AppConstants.Padding.small
+            constant: -DesignSystem.Spacing.small
         )
         constraints = [
             toolbarView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),

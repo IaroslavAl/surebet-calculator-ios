@@ -2,7 +2,6 @@ import AnalyticsManager
 import Banner
 import Foundation
 import ReviewHandler
-import SurebetCalculator
 import SwiftUI
 
 /// ViewModel для управления состоянием и бизнес-логикой RootView
@@ -123,7 +122,7 @@ private extension RootViewModel {
     func requestReviewIfNeeded() {
 #if !DEBUG
         Task {
-            await delay.sleep(nanoseconds: AppConstants.Delays.reviewRequest)
+            await delay.sleep(nanoseconds: RootConstants.reviewRequestDelay)
             if !requestReviewWasShown, numberOfOpenings >= 2, onboardingIsShown {
                 alertIsPresented = true
                 requestReviewWasShown = true

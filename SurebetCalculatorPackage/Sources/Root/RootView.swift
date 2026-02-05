@@ -1,4 +1,5 @@
 import Banner
+import DesignSystem
 import MainMenu
 import Onboarding
 import SurebetCalculator
@@ -60,18 +61,18 @@ private extension RootView {
                     onboardingIsShown: onboardingBinding,
                     analytics: onboardingAnalytics
                 )
-                .transition(AppConstants.Animations.moveFromBottom)
+                .transition(DesignSystem.Animation.moveFromBottom)
             }
         }
         .zIndex(1)
-        .animation(AppConstants.Animations.smoothTransition, value: viewModel.shouldShowOnboardingWithAnimation)
+        .animation(DesignSystem.Animation.smoothTransition, value: viewModel.shouldShowOnboardingWithAnimation)
     }
 
     var onboardingBinding: Binding<Bool> {
         Binding(
             get: { viewModel.isOnboardingShown },
             set: { value in
-                withAnimation(AppConstants.Animations.smoothTransition) {
+                withAnimation(DesignSystem.Animation.smoothTransition) {
                     viewModel.send(.updateOnboardingShown(value))
                 }
             }
@@ -90,7 +91,7 @@ private struct LifecycleModifier: ViewModifier {
                 viewModel.send(.onAppear)
             }
             .onAppear {
-                withAnimation(AppConstants.Animations.smoothTransition) {
+                withAnimation(DesignSystem.Animation.smoothTransition) {
                     viewModel.send(.showOnboardingView)
                 }
             }
@@ -142,7 +143,7 @@ private struct FullscreenBannerOverlayModifier: ViewModifier {
             .overlay {
                 if viewModel.fullscreenBannerIsPresented {
                     Banner.fullscreenBannerView(isPresented: fullscreenBannerBinding)
-                        .transition(AppConstants.Animations.moveFromBottom)
+                        .transition(DesignSystem.Animation.moveFromBottom)
                 }
             }
     }
@@ -153,7 +154,7 @@ private struct AnimationModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .animation(AppConstants.Animations.smoothTransition, value: viewModel.fullscreenBannerIsPresented)
+            .animation(DesignSystem.Animation.smoothTransition, value: viewModel.fullscreenBannerIsPresented)
     }
 }
 

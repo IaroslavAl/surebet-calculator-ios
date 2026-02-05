@@ -28,6 +28,16 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "DesignSystem",
+            resources: [.process("Resources")],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
+        .target(
             name: "AnalyticsManager",
             dependencies: [
                 .product(
@@ -46,6 +56,7 @@ let package = Package(
             name: "Banner",
             dependencies: [
                 "AnalyticsManager",
+                "DesignSystem",
                 .product(
                     name: "SDWebImageSwiftUI",
                     package: "SDWebImageSwiftUI"
@@ -61,7 +72,9 @@ let package = Package(
         ),
         .target(
             name: "Onboarding",
-            dependencies: [],
+            dependencies: [
+                "DesignSystem",
+            ],
             resources: [.process("Resources")],
             plugins: [
                 .plugin(
@@ -82,6 +95,7 @@ let package = Package(
         .target(
             name: "MainMenu",
             dependencies: [
+                "DesignSystem",
                 "SurebetCalculator",
             ],
             resources: [.process("Resources")],
@@ -97,6 +111,7 @@ let package = Package(
             dependencies: [
                 "AnalyticsManager",
                 "Banner",
+                "DesignSystem",
                 "MainMenu",
                 "Onboarding",
                 "ReviewHandler",
@@ -118,6 +133,7 @@ let package = Package(
             name: "SurebetCalculator",
             dependencies: [
                 "Banner",
+                "DesignSystem",
             ],
             resources: [.process("Resources")],
             plugins: [

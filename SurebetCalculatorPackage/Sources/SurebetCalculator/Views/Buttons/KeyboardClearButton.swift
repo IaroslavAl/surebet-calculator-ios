@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 import UIKit
 
 struct KeyboardClearButton: View {
@@ -14,7 +15,7 @@ struct KeyboardClearButton: View {
             viewModel.send(.clearFocusableField)
         } label: {
             Text(SurebetCalculatorLocalizationKey.clear.localized)
-                .foregroundColor(AppColors.error)
+                .foregroundColor(DesignSystem.Color.error)
         }
         .accessibilityIdentifier(AccessibilityIdentifiers.Keyboard.clearButton)
     }

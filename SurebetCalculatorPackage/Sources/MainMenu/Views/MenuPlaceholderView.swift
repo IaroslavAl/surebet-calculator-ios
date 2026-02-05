@@ -1,5 +1,6 @@
 import SurebetCalculator
 import SwiftUI
+import DesignSystem
 
 struct MenuPlaceholderView: View {
     // MARK: - Properties
@@ -12,7 +13,7 @@ struct MenuPlaceholderView: View {
 
     var body: some View {
         ZStack {
-            AppColors.background.ignoresSafeArea()
+            DesignSystem.Color.background.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: sectionSpacing) {
                     header
@@ -30,17 +31,17 @@ struct MenuPlaceholderView: View {
 // MARK: - Private Computed Properties
 
 private extension MenuPlaceholderView {
-    var sectionSpacing: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
-    var horizontalPadding: CGFloat { AppConstants.Padding.large }
-    var verticalPadding: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
-    var cardCornerRadius: CGFloat { isIPad ? AppConstants.CornerRadius.extraLarge : AppConstants.CornerRadius.large }
+    var sectionSpacing: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
+    var horizontalPadding: CGFloat { DesignSystem.Spacing.large }
+    var verticalPadding: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
+    var cardCornerRadius: CGFloat { isIPad ? DesignSystem.Radius.extraLarge : DesignSystem.Radius.large }
 
     var header: some View {
-        VStack(spacing: AppConstants.Padding.medium) {
+        VStack(spacing: DesignSystem.Spacing.medium) {
             icon
             Text(title)
-                .font(AppConstants.Typography.title)
-                .foregroundColor(AppColors.textPrimary)
+                .font(DesignSystem.Typography.title)
+                .foregroundColor(DesignSystem.Color.textPrimary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -48,29 +49,29 @@ private extension MenuPlaceholderView {
     var icon: some View {
         Image(systemName: systemImage)
             .font(.system(size: iconSize, weight: .semibold))
-            .foregroundColor(AppColors.accent)
+            .foregroundColor(DesignSystem.Color.accent)
             .frame(width: iconContainerSize, height: iconContainerSize)
-            .background(AppColors.accentSoft)
+            .background(DesignSystem.Color.accentSoft)
             .clipShape(Circle())
     }
 
     var messageCard: some View {
         Text(message)
-            .font(AppConstants.Typography.description)
-            .foregroundColor(AppColors.textSecondary)
+            .font(DesignSystem.Typography.description)
+            .foregroundColor(DesignSystem.Color.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(cardPadding)
-            .background(AppColors.surface)
+            .background(DesignSystem.Color.surface)
             .cornerRadius(cardCornerRadius)
             .overlay {
                 RoundedRectangle(cornerRadius: cardCornerRadius)
-                    .stroke(AppColors.borderMuted, lineWidth: 1)
+                    .stroke(DesignSystem.Color.borderMuted, lineWidth: 1)
             }
     }
 
     var iconContainerSize: CGFloat { isIPad ? 88 : 64 }
     var iconSize: CGFloat { isIPad ? 38 : 28 }
-    var cardPadding: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
+    var cardPadding: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
 }
 
 #Preview {

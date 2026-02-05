@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 import UIKit
 
 struct OutcomeCountControlView: View {
@@ -11,8 +12,8 @@ struct OutcomeCountControlView: View {
     var body: some View {
         HStack(spacing: spacing) {
             Text(label)
-                .font(AppConstants.Typography.label)
-                .foregroundColor(AppColors.textSecondary)
+                .font(DesignSystem.Typography.label)
+                .foregroundColor(DesignSystem.Color.textSecondary)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
                 .layoutPriority(1)
@@ -35,11 +36,11 @@ struct OutcomeCountControlView: View {
         }
         .padding(.horizontal, horizontalPadding)
         .padding(.vertical, verticalPadding)
-        .background(AppColors.surface)
+        .background(DesignSystem.Color.surface)
         .cornerRadius(cornerRadius)
         .overlay {
             RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(AppColors.border, lineWidth: 1)
+                .stroke(DesignSystem.Color.border, lineWidth: 1)
         }
     }
 }
@@ -48,23 +49,23 @@ struct OutcomeCountControlView: View {
 
 private extension OutcomeCountControlView {
     var label: String { SurebetCalculatorLocalizationKey.outcomesCount.localized }
-    var spacing: CGFloat { AppConstants.Padding.small }
-    var horizontalPadding: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.medium }
-    var verticalPadding: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var cornerRadius: CGFloat { AppConstants.CornerRadius.medium }
+    var spacing: CGFloat { DesignSystem.Spacing.small }
+    var horizontalPadding: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.medium }
+    var verticalPadding: CGFloat { isIPad ? DesignSystem.Spacing.medium : DesignSystem.Spacing.small }
+    var cornerRadius: CGFloat { DesignSystem.Radius.medium }
     var controlHeight: CGFloat { isIPad ? 44 : 28 }
     var valueMinWidth: CGFloat { isIPad ? 48 : 32 }
 
     var valuePill: some View {
         Text("\(viewModel.selectedNumberOfRows.rawValue)")
-            .font(AppConstants.Typography.numeric)
-            .foregroundColor(AppColors.textPrimary)
+            .font(DesignSystem.Typography.numeric)
+            .foregroundColor(DesignSystem.Color.textPrimary)
             .frame(minWidth: valueMinWidth, minHeight: controlHeight)
-            .background(AppColors.surfaceInput)
-            .cornerRadius(AppConstants.CornerRadius.small)
+            .background(DesignSystem.Color.surfaceInput)
+            .cornerRadius(DesignSystem.Radius.small)
             .overlay {
-                RoundedRectangle(cornerRadius: AppConstants.CornerRadius.small)
-                    .stroke(AppColors.borderMuted, lineWidth: 1)
+                RoundedRectangle(cornerRadius: DesignSystem.Radius.small)
+                    .stroke(DesignSystem.Color.borderMuted, lineWidth: 1)
             }
             .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.rowCountValue)
     }
@@ -81,13 +82,13 @@ private extension OutcomeCountControlView {
         } label: {
             Image(systemName: systemName)
                 .font(.system(size: isIPad ? 18 : 12, weight: .semibold))
-                .foregroundColor(isDisabled ? AppColors.textMuted : AppColors.textPrimary)
+                .foregroundColor(isDisabled ? DesignSystem.Color.textMuted : DesignSystem.Color.textPrimary)
                 .frame(width: controlHeight, height: controlHeight)
-                .background(AppColors.surfaceInput)
+                .background(DesignSystem.Color.surfaceInput)
                 .clipShape(Circle())
                 .overlay {
                     Circle()
-                        .stroke(AppColors.borderMuted, lineWidth: 1)
+                        .stroke(DesignSystem.Color.borderMuted, lineWidth: 1)
                 }
         }
         .disabled(isDisabled)
@@ -95,11 +96,11 @@ private extension OutcomeCountControlView {
     }
 
     var minRowCount: Int {
-        viewModel.availableRowCounts.first?.rawValue ?? AppConstants.Calculator.minRowCount
+        viewModel.availableRowCounts.first?.rawValue ?? CalculatorConstants.minRowCount
     }
 
     var maxRowCount: Int {
-        viewModel.availableRowCounts.last?.rawValue ?? AppConstants.Calculator.maxRowCount
+        viewModel.availableRowCounts.last?.rawValue ?? CalculatorConstants.maxRowCount
     }
 
     var isAtMin: Bool {

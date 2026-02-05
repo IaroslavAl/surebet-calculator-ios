@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct TextView: View {
     // MARK: - Properties
@@ -12,15 +13,15 @@ struct TextView: View {
 
     var body: some View {
         Text(text)
-            .font(AppConstants.Typography.numeric)
+            .font(DesignSystem.Typography.numeric)
             .padding(textPadding)
             .frame(minWidth: 0, maxWidth: .infinity, minHeight: frameHeight, maxHeight: frameHeight)
-            .background(AppColors.surfaceResult)
+            .background(DesignSystem.Color.surfaceResult)
             .cornerRadius(cornerRadius)
             .foregroundColor(color)
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(isEmphasized ? AppColors.border : AppColors.borderMuted, lineWidth: 1)
+                    .stroke(isEmphasized ? DesignSystem.Color.border : DesignSystem.Color.borderMuted, lineWidth: 1)
             }
             .opacity(isEmphasized ? 1 : inactiveOpacity)
             .accessibilityIdentifier(accessibilityId ?? "")
@@ -31,15 +32,15 @@ struct TextView: View {
 
 private extension TextView {
     var textPadding: CGFloat {
-        isIPad ? AppConstants.Padding.large : AppConstants.Padding.small
+        isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small
     }
     var frameHeight: CGFloat {
-        isIPad ? AppConstants.Heights.regular : AppConstants.Heights.compact
+        isIPad ? DesignSystem.Size.controlRegularHeight : DesignSystem.Size.controlCompactHeight
     }
     var cornerRadius: CGFloat {
-        isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
+        isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.small
     }
-    var color: Color { text.isNumberNotNegative() ? AppColors.success : AppColors.error }
+    var color: Color { text.isNumberNotNegative() ? DesignSystem.Color.success : DesignSystem.Color.error }
     var inactiveOpacity: CGFloat { 0.7 }
 }
 

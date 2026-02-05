@@ -1,5 +1,6 @@
 import SurebetCalculator
 import SwiftUI
+import DesignSystem
 
 struct MenuCardLink<Destination: View>: View {
     let title: String
@@ -40,11 +41,11 @@ struct MenuCard: View {
             icon
             VStack(alignment: .leading, spacing: textSpacing) {
                 Text(title)
-                    .font(AppConstants.Typography.body.weight(.semibold))
+                    .font(DesignSystem.Typography.body.weight(.semibold))
                     .foregroundColor(style.titleColor)
                 if showsSubtitle {
                     Text(subtitle)
-                        .font(AppConstants.Typography.label)
+                        .font(DesignSystem.Typography.label)
                         .foregroundColor(style.subtitleColor)
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -52,7 +53,7 @@ struct MenuCard: View {
                         .allowsTightening(true)
                 }
             }
-            Spacer(minLength: AppConstants.Padding.small)
+            Spacer(minLength: DesignSystem.Spacing.small)
             Image(systemName: "chevron.right")
                 .font(.system(size: chevronSize, weight: .semibold))
                 .foregroundColor(style.chevronColor)
@@ -78,40 +79,40 @@ struct MenuCard: View {
     private var cardPadding: CGFloat {
         switch layout {
         case .regular:
-            return isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large
+            return isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large
         case .compact:
-            return isIPad ? AppConstants.Padding.large : AppConstants.Padding.medium
+            return isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.medium
         case .ultraCompact:
-            return isIPad ? AppConstants.Padding.large : AppConstants.Padding.small
+            return isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small
         }
     }
 
     private var cardCornerRadius: CGFloat {
         switch layout {
         case .regular:
-            return isIPad ? AppConstants.CornerRadius.extraLarge : AppConstants.CornerRadius.large
+            return isIPad ? DesignSystem.Radius.extraLarge : DesignSystem.Radius.large
         case .compact:
-            return isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.medium
+            return isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.medium
         case .ultraCompact:
-            return isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.medium
+            return isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.medium
         }
     }
 
     private var contentSpacing: CGFloat {
         switch layout {
         case .regular:
-            return AppConstants.Padding.medium
+            return DesignSystem.Spacing.medium
         case .compact, .ultraCompact:
-            return AppConstants.Padding.small
+            return DesignSystem.Spacing.small
         }
     }
 
     private var textSpacing: CGFloat {
         switch layout {
         case .regular:
-            return AppConstants.Padding.small
+            return DesignSystem.Spacing.small
         case .compact, .ultraCompact:
-            return AppConstants.Padding.small / 2
+            return DesignSystem.Spacing.small / 2
         }
     }
 
@@ -153,7 +154,7 @@ struct MenuCardButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
-            .animation(AppConstants.Animations.quickInteraction, value: configuration.isPressed)
+            .animation(DesignSystem.Animation.quickInteraction, value: configuration.isPressed)
     }
 }
 
@@ -165,58 +166,58 @@ enum MenuCardStyle {
     var background: Color {
         switch self {
         case .primary, .standard:
-            AppColors.surface
+            DesignSystem.Color.surface
         case .highlight:
-            AppColors.accentSoft
+            DesignSystem.Color.accentSoft
         }
     }
 
     var border: Color {
         switch self {
         case .primary, .highlight:
-            AppColors.accent
+            DesignSystem.Color.accent
         case .standard:
-            AppColors.borderMuted
+            DesignSystem.Color.borderMuted
         }
     }
 
     var iconBackground: Color {
         switch self {
         case .primary:
-            AppColors.accentSoft
+            DesignSystem.Color.accentSoft
         case .highlight:
-            AppColors.surface
+            DesignSystem.Color.surface
         case .standard:
-            AppColors.surfaceInput
+            DesignSystem.Color.surfaceInput
         }
     }
 
     var iconColor: Color {
         switch self {
         case .primary, .highlight:
-            AppColors.accent
+            DesignSystem.Color.accent
         case .standard:
-            AppColors.textSecondary
+            DesignSystem.Color.textSecondary
         }
     }
 
-    var titleColor: Color { AppColors.textPrimary }
+    var titleColor: Color { DesignSystem.Color.textPrimary }
 
     var subtitleColor: Color {
         switch self {
         case .highlight:
-            AppColors.textSecondary
+            DesignSystem.Color.textSecondary
         case .primary, .standard:
-            AppColors.textMuted
+            DesignSystem.Color.textMuted
         }
     }
 
     var chevronColor: Color {
         switch self {
         case .primary, .highlight:
-            AppColors.accent
+            DesignSystem.Color.accent
         case .standard:
-            AppColors.textMuted
+            DesignSystem.Color.textMuted
         }
     }
 }

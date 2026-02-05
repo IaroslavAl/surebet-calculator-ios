@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct OnboardingIndex: View {
     // MARK: - Properties
@@ -16,7 +17,7 @@ struct OnboardingIndex: View {
                     .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.pageIndicator(index))
             }
         }
-        .animation(OnboardingConstants.Animations.quickInteraction, value: viewModel.currentPage)
+        .animation(DesignSystem.Animation.quickInteraction, value: viewModel.currentPage)
         .padding(padding)
         .fixedSize()
     }
@@ -25,19 +26,19 @@ struct OnboardingIndex: View {
 // MARK: - Private Methods
 
 private extension OnboardingIndex {
-    var spacing: CGFloat { isIPad ? OnboardingConstants.paddingMedium : OnboardingConstants.paddingSmall }
-    var padding: CGFloat { isIPad ? OnboardingConstants.paddingExtraExtraLarge : OnboardingConstants.paddingExtraLarge }
+    var spacing: CGFloat { isIPad ? DesignSystem.Spacing.medium : DesignSystem.Spacing.small }
+    var padding: CGFloat { isIPad ? DesignSystem.Spacing.extraExtraLarge : DesignSystem.Spacing.extraLarge }
 
     func size(_ index: Int) -> CGFloat {
         if index == viewModel.currentPage {
-            isIPad ? OnboardingConstants.cornerRadiusExtraLarge : OnboardingConstants.cornerRadiusMedium
+            isIPad ? DesignSystem.Radius.extraLarge : DesignSystem.Radius.medium
         } else {
-            isIPad ? OnboardingConstants.cornerRadiusMedium : OnboardingConstants.paddingSmall
+            isIPad ? DesignSystem.Radius.medium : DesignSystem.Spacing.small
         }
     }
 
     func color(_ index: Int) -> Color {
-        index == viewModel.currentPage ? OnboardingColors.activeIndicator : OnboardingColors.inactiveIndicator
+        index == viewModel.currentPage ? DesignSystem.Color.onboardingIndicatorActive : DesignSystem.Color.onboardingIndicatorInactive
     }
 }
 

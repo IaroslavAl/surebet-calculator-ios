@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct OnboardingTabView: View {
     // MARK: - Properties
@@ -16,8 +17,8 @@ struct OnboardingTabView: View {
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
-        .animation(OnboardingConstants.Animations.smoothTransition, value: viewModel.currentPage)
-        .transition(OnboardingConstants.Animations.moveFromTrailing)
+        .animation(DesignSystem.Animation.smoothTransition, value: viewModel.currentPage)
+        .transition(DesignSystem.Animation.moveFromTrailing)
         .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.tabView)
     }
 }

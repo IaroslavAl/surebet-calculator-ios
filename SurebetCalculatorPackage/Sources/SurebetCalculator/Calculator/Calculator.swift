@@ -29,7 +29,7 @@ struct Calculator: Sendable {
             return validationResult
         }
 
-        if activeRowIds.count < AppConstants.Calculator.minRowCount {
+        if activeRowIds.count < CalculatorConstants.minRowCount {
             return .resetDerived(resetDerivedValues())
         }
 

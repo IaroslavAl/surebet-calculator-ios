@@ -25,6 +25,7 @@
 - `Onboarding` — онбординг
 - `ReviewHandler` — запрос отзывов
 - `AnalyticsManager` — типобезопасная аналитика
+- `DesignSystem` — дизайн‑токены и базовые UI‑компоненты
 
 Подробнее: `docs/architecture/MODULES.md`.
 

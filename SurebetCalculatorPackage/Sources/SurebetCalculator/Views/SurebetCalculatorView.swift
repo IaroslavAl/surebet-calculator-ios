@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct SurebetCalculatorView: View {
     // MARK: - Properties
@@ -19,7 +20,7 @@ struct SurebetCalculatorView: View {
 
     var body: some View {
         ZStack {
-            AppColors.background.ignoresSafeArea()
+            DesignSystem.Color.background.ignoresSafeArea()
             scrollableContent
         }
         .frame(maxWidth: .infinity)
@@ -27,7 +28,7 @@ struct SurebetCalculatorView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(content: toolbar)
         .frame(minHeight: .zero, maxHeight: .infinity, alignment: .top)
-        .font(AppConstants.Typography.body)
+        .font(DesignSystem.Typography.body)
         .environmentObject(viewModel)
         .animation(.default, value: viewModel.selectedNumberOfRows)
         .focused($isFocused)
@@ -96,8 +97,8 @@ private extension SurebetCalculatorView {
 
     func headerText(_ text: String) -> some View {
         Text(text)
-            .font(AppConstants.Typography.label)
-            .foregroundColor(AppColors.textSecondary)
+            .font(DesignSystem.Typography.label)
+            .foregroundColor(DesignSystem.Color.textSecondary)
             .lineLimit(2)
             .minimumScaleFactor(0.8)
             .frame(maxWidth: .infinity, alignment: .center)
@@ -119,14 +120,14 @@ private extension SurebetCalculatorView {
     var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized }
     var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized }
     var payoutText: String { SurebetCalculatorLocalizationKey.income.localized }
-    var sectionSpacing: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.medium }
-    var rowsSpacing: CGFloat { isIPad ? AppConstants.Padding.medium : AppConstants.Padding.small }
-    var columnSpacing: CGFloat { isIPad ? AppConstants.Padding.large : AppConstants.Padding.small }
-    var horizontalPadding: CGFloat { AppConstants.Padding.large }
+    var sectionSpacing: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.medium }
+    var rowsSpacing: CGFloat { isIPad ? DesignSystem.Spacing.medium : DesignSystem.Spacing.small }
+    var columnSpacing: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
+    var horizontalPadding: CGFloat { DesignSystem.Spacing.large }
     var selectionIndicatorSize: CGFloat { isIPad ? 48 : 44 }
     var keyboardAccessoryInset: CGFloat {
         guard viewModel.focus != nil else { return 0 }
-        return AppConstants.Heights.keyboardAccessoryToolbar + AppConstants.Padding.small
+        return DesignSystem.Size.keyboardAccessoryToolbarHeight + DesignSystem.Spacing.small
     }
 }
 

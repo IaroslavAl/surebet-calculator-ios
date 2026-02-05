@@ -10,14 +10,20 @@ graph TD
     Root --> Onboarding
     Root --> ReviewHandler
     Root --> AnalyticsManager
+    Root --> DesignSystem
     Root --> AppMetricaCore
 
     MainMenu --> SurebetCalculator
+    MainMenu --> DesignSystem
 
     SurebetCalculator --> Banner
+    SurebetCalculator --> DesignSystem
 
     Banner --> AnalyticsManager
     Banner --> SDWebImageSwiftUI
+    Banner --> DesignSystem
+
+    Onboarding --> DesignSystem
 
     AnalyticsManager --> AppMetricaCore
 ```
@@ -27,12 +33,13 @@ graph TD
 | Модуль | Зависимости | Назначение |
 |---|---|---|
 | `Root` | Все внутренние + AppMetricaCore | Entry point и координация |
-| `MainMenu` | SurebetCalculator | Экран меню и маршрутизация по разделам |
-| `SurebetCalculator` | Banner | Бизнес‑логика калькулятора |
-| `Banner` | AnalyticsManager, SDWebImageSwiftUI | Баннеры (сеть, кэш, UI) |
-| `Onboarding` | — | Онбординг пользователей |
+| `MainMenu` | SurebetCalculator, DesignSystem | Экран меню и маршрутизация по разделам |
+| `SurebetCalculator` | Banner, DesignSystem | Бизнес‑логика калькулятора |
+| `Banner` | AnalyticsManager, SDWebImageSwiftUI, DesignSystem | Баннеры (сеть, кэш, UI) |
+| `Onboarding` | DesignSystem | Онбординг пользователей |
 | `ReviewHandler` | — | Запрос отзывов (SKStoreReviewController) |
 | `AnalyticsManager` | AppMetricaCore | Типобезопасная аналитика |
+| `DesignSystem` | — | Дизайн‑токены, адаптация под iPad, базовые компоненты |
 
 ## Root
 
@@ -56,7 +63,7 @@ graph TD
 
 **Важно:**
 - Отвечает за первый экран с пунктами меню и переходами на экран калькулятора и вспомогательные разделы.
-- Использует дизайн‑токены (`AppColors`, `AppConstants`) из `SurebetCalculator`.
+- Использует дизайн‑токены из `DesignSystem`.
 
 ## SurebetCalculator
 

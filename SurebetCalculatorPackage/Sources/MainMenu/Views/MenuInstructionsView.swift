@@ -1,12 +1,13 @@
 import SurebetCalculator
 import SwiftUI
+import DesignSystem
 
 struct MenuInstructionsView: View {
     // MARK: - Body
 
     var body: some View {
         ZStack {
-            AppColors.background.ignoresSafeArea()
+            DesignSystem.Color.background.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: sectionSpacing) {
                     header
@@ -28,18 +29,18 @@ struct MenuInstructionsView: View {
 private extension MenuInstructionsView {
     var instructionsTitle: String { MainMenuLocalizationKey.menuInstructionsTitle.localized }
     var instructionsSubtitle: String { MainMenuLocalizationKey.instructionsSubtitle.localized }
-    var sectionSpacing: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
-    var horizontalPadding: CGFloat { AppConstants.Padding.large }
-    var verticalPadding: CGFloat { isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large }
+    var sectionSpacing: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
+    var horizontalPadding: CGFloat { DesignSystem.Spacing.large }
+    var verticalPadding: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
 
     var header: some View {
-        VStack(alignment: .leading, spacing: AppConstants.Padding.small) {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
             Text(instructionsTitle)
-                .font(AppConstants.Typography.title)
-                .foregroundColor(AppColors.textPrimary)
+                .font(DesignSystem.Typography.title)
+                .foregroundColor(DesignSystem.Color.textPrimary)
             Text(instructionsSubtitle)
-                .font(AppConstants.Typography.description)
-                .foregroundColor(AppColors.textSecondary)
+                .font(DesignSystem.Typography.description)
+                .foregroundColor(DesignSystem.Color.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -81,42 +82,42 @@ private struct InstructionCard: View {
     let step: InstructionStep
 
     var body: some View {
-        HStack(alignment: .top, spacing: AppConstants.Padding.medium) {
+        HStack(alignment: .top, spacing: DesignSystem.Spacing.medium) {
             icon
-            VStack(alignment: .leading, spacing: AppConstants.Padding.small) {
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
                 Text(step.title)
-                    .font(AppConstants.Typography.body.weight(.semibold))
-                    .foregroundColor(AppColors.textPrimary)
+                    .font(DesignSystem.Typography.body.weight(.semibold))
+                    .foregroundColor(DesignSystem.Color.textPrimary)
                 Text(step.message)
-                    .font(AppConstants.Typography.description)
-                    .foregroundColor(AppColors.textSecondary)
+                    .font(DesignSystem.Typography.description)
+                    .foregroundColor(DesignSystem.Color.textSecondary)
             }
             Spacer(minLength: 0)
         }
         .padding(cardPadding)
-        .background(AppColors.surface)
+        .background(DesignSystem.Color.surface)
         .cornerRadius(cardCornerRadius)
         .overlay {
             RoundedRectangle(cornerRadius: cardCornerRadius)
-                .stroke(AppColors.borderMuted, lineWidth: 1)
+                .stroke(DesignSystem.Color.borderMuted, lineWidth: 1)
         }
     }
 
     private var icon: some View {
         Image(systemName: step.systemImage)
             .font(.system(size: iconSize, weight: .semibold))
-            .foregroundColor(AppColors.accent)
+            .foregroundColor(DesignSystem.Color.accent)
             .frame(width: iconContainerSize, height: iconContainerSize)
-            .background(AppColors.accentSoft)
+            .background(DesignSystem.Color.accentSoft)
             .clipShape(Circle())
     }
 
     private var cardPadding: CGFloat {
-        isIPad ? AppConstants.Padding.extraLarge : AppConstants.Padding.large
+        isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large
     }
 
     private var cardCornerRadius: CGFloat {
-        isIPad ? AppConstants.CornerRadius.extraLarge : AppConstants.CornerRadius.large
+        isIPad ? DesignSystem.Radius.extraLarge : DesignSystem.Radius.large
     }
     private var iconContainerSize: CGFloat { isIPad ? 52 : 40 }
     private var iconSize: CGFloat { isIPad ? 22 : 16 }

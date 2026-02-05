@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignSystem
 
 struct TextFieldView: View {
     // MARK: - Properties
@@ -31,9 +32,9 @@ struct TextFieldView: View {
                     isFocused: isFieldFocused
                 )
             )
-            .font(AppConstants.Typography.numeric)
-            .foregroundColor(isDisabled ? AppColors.textMuted : AppColors.textPrimary)
-            .tint(AppColors.accent)
+            .font(DesignSystem.Typography.numeric)
+            .foregroundColor(isDisabled ? DesignSystem.Color.textMuted : DesignSystem.Color.textPrimary)
+            .tint(DesignSystem.Color.accent)
             .opacity(isDisabled ? 0.7 : 1)
             .contentShape(.rect)
             .focused($isFocused, equals: focusableField)
@@ -62,7 +63,7 @@ struct TextFieldView: View {
 
 private extension TextFieldView {
     var cornerRadius: CGFloat {
-        isIPad ? AppConstants.CornerRadius.large : AppConstants.CornerRadius.small
+        isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.small
     }
 
     var borderLineWidth: CGFloat {
@@ -75,12 +76,12 @@ private extension TextFieldView {
 
     var borderColor: Color {
         if isDisabled {
-            return AppColors.borderMuted
+            return DesignSystem.Color.borderMuted
         }
         if !isValid {
-            return AppColors.error
+            return DesignSystem.Color.error
         }
-        return isFieldFocused ? AppColors.accent : AppColors.border
+        return isFieldFocused ? DesignSystem.Color.accent : DesignSystem.Color.border
     }
 
     var bindingText: Binding<String> {
