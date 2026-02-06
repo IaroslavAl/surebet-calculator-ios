@@ -1,13 +1,17 @@
 import Root
+import Settings
 import SwiftUI
 
 @main
 struct SurebetCalculatorApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
+    @StateObject private var languageStore = AppLanguageStore()
 
     var body: some Scene {
         WindowGroup {
             Root.view()
+                .environment(\.locale, languageStore.locale)
+                .environmentObject(languageStore)
         }
     }
 }

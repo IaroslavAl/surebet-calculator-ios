@@ -14,7 +14,6 @@ struct RootView: View {
     private let onboardingAnalytics: OnboardingAnalytics
     private let calculatorAnalytics: CalculatorAnalytics
     @AppStorage(SettingsStorage.themeKey) private var themeRawValue = SettingsTheme.system.rawValue
-    @AppStorage(SettingsStorage.languageKey) private var languageRawValue = SettingsLanguage.system.rawValue
 
     // MARK: - Initialization
 
@@ -33,7 +32,6 @@ struct RootView: View {
     var body: some View {
         mainContent
             .preferredColorScheme(selectedTheme.preferredColorScheme)
-            .environment(\.locale, selectedLanguage.locale)
             .modifier(LifecycleModifier(viewModel: viewModel))
             .modifier(ReviewAlertModifier(viewModel: viewModel))
             .modifier(FullscreenBannerOverlayModifier(viewModel: viewModel))
@@ -46,10 +44,6 @@ struct RootView: View {
 private extension RootView {
     var selectedTheme: SettingsTheme {
         SettingsTheme(rawValue: themeRawValue) ?? .system
-    }
-
-    var selectedLanguage: SettingsLanguage {
-        SettingsLanguage(rawValue: languageRawValue) ?? .system
     }
 
     var mainContent: some View {

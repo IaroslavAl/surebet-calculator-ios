@@ -32,12 +32,17 @@ public enum SettingsLanguage: String, CaseIterable, Sendable {
 
 extension SettingsLanguage {
     /// Языки, доступные для выбора прямо сейчас.
-    /// Остальные языки станут доступны после полной локализации всех модулей.
     static var selectableLanguages: [SettingsLanguage] {
         [
             .system,
             .english,
-            .russian
+            .russian,
+            .german,
+            .greek,
+            .spanish,
+            .french,
+            .italian,
+            .portuguese
         ]
     }
 

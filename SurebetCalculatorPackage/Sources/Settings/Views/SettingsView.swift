@@ -7,6 +7,7 @@ struct SettingsView: View {
 
     @StateObject private var viewModel: SettingsViewModel
     @Environment(\.locale) private var locale
+    @EnvironmentObject private var languageStore: AppLanguageStore
 
     // MARK: - Initialization
 
@@ -106,7 +107,7 @@ private extension SettingsView {
                         SettingsOptionRow(
                             title: language.title(locale: locale),
                             badgeText: optionUnavailable,
-                            isSelected: viewModel.selectedLanguage == language,
+                            isSelected: languageStore.selectedLanguage == language,
                             isEnabled: language.isSelectable,
                             leading: {
                                 Group {
@@ -124,7 +125,7 @@ private extension SettingsView {
                                 .clipShape(Circle())
                             },
                             action: {
-                                viewModel.send(.selectLanguage(language))
+                                languageStore.setLanguage(language)
                             }
                         )
                     }
@@ -142,6 +143,7 @@ private extension SettingsView {
     NavigationStack {
         SettingsView(viewModel: SettingsViewModel())
     }
+    .environmentObject(AppLanguageStore())
 }
 
 #Preview("RU") {
@@ -149,4 +151,5 @@ private extension SettingsView {
         SettingsView(viewModel: SettingsViewModel())
             .environment(\.locale, Locale(identifier: "ru"))
     }
+    .environmentObject(AppLanguageStore())
 }
