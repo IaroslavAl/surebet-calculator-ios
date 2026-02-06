@@ -1,11 +1,13 @@
 import SurebetCalculator
 import SwiftUI
 import DesignSystem
+import Settings
 
 struct MainMenuView: View {
     // MARK: - Properties
 
     let calculatorAnalytics: CalculatorAnalytics
+    @Environment(\.locale) private var locale
 
     // MARK: - Body
 
@@ -31,19 +33,19 @@ struct MainMenuView: View {
 // MARK: - Private Computed Properties
 
 private extension MainMenuView {
-    var menuNavigationTitle: String { MainMenuLocalizationKey.menuNavigationTitle.localized }
-    var menuTitle: String { MainMenuLocalizationKey.menuTitle.localized }
-    var menuSubtitle: String { MainMenuLocalizationKey.menuSubtitle.localized }
-    var menuCalculatorTitle: String { MainMenuLocalizationKey.menuCalculatorTitle.localized }
-    var menuCalculatorSubtitle: String { MainMenuLocalizationKey.menuCalculatorSubtitle.localized }
-    var menuSettingsTitle: String { MainMenuLocalizationKey.menuSettingsTitle.localized }
-    var menuSettingsSubtitle: String { MainMenuLocalizationKey.menuSettingsSubtitle.localized }
-    var menuInstructionsTitle: String { MainMenuLocalizationKey.menuInstructionsTitle.localized }
-    var menuInstructionsSubtitle: String { MainMenuLocalizationKey.menuInstructionsSubtitle.localized }
-    var menuFeedbackTitle: String { MainMenuLocalizationKey.menuFeedbackTitle.localized }
-    var menuFeedbackSubtitle: String { MainMenuLocalizationKey.menuFeedbackSubtitle.localized }
-    var menuDisableAdsTitle: String { MainMenuLocalizationKey.menuDisableAdsTitle.localized }
-    var menuDisableAdsSubtitle: String { MainMenuLocalizationKey.menuDisableAdsSubtitle.localized }
+    var menuNavigationTitle: String { MainMenuLocalizationKey.menuNavigationTitle.localized(locale) }
+    var menuTitle: String { MainMenuLocalizationKey.menuTitle.localized(locale) }
+    var menuSubtitle: String { MainMenuLocalizationKey.menuSubtitle.localized(locale) }
+    var menuCalculatorTitle: String { MainMenuLocalizationKey.menuCalculatorTitle.localized(locale) }
+    var menuCalculatorSubtitle: String { MainMenuLocalizationKey.menuCalculatorSubtitle.localized(locale) }
+    var menuSettingsTitle: String { MainMenuLocalizationKey.menuSettingsTitle.localized(locale) }
+    var menuSettingsSubtitle: String { MainMenuLocalizationKey.menuSettingsSubtitle.localized(locale) }
+    var menuInstructionsTitle: String { MainMenuLocalizationKey.menuInstructionsTitle.localized(locale) }
+    var menuInstructionsSubtitle: String { MainMenuLocalizationKey.menuInstructionsSubtitle.localized(locale) }
+    var menuFeedbackTitle: String { MainMenuLocalizationKey.menuFeedbackTitle.localized(locale) }
+    var menuFeedbackSubtitle: String { MainMenuLocalizationKey.menuFeedbackSubtitle.localized(locale) }
+    var menuDisableAdsTitle: String { MainMenuLocalizationKey.menuDisableAdsTitle.localized(locale) }
+    var menuDisableAdsSubtitle: String { MainMenuLocalizationKey.menuDisableAdsSubtitle.localized(locale) }
 
     func header() -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
@@ -88,11 +90,7 @@ private extension MainMenuView {
             layout: layout,
             showsSubtitle: layout.showsSecondarySubtitle
         ) {
-            MenuPlaceholderView(
-                title: menuSettingsTitle,
-                message: MainMenuLocalizationKey.menuSettingsDescription.localized,
-                systemImage: "gearshape"
-            )
+            Settings.view()
         }
     }
 
@@ -119,8 +117,8 @@ private extension MainMenuView {
             showsSubtitle: layout.showsSecondarySubtitle
         ) {
             MenuPlaceholderView(
-                title: menuFeedbackTitle,
-                message: MainMenuLocalizationKey.menuFeedbackDescription.localized,
+                titleKey: .menuFeedbackTitle,
+                messageKey: .menuFeedbackDescription,
                 systemImage: "bubble.left.and.bubble.right"
             )
         }
@@ -136,8 +134,8 @@ private extension MainMenuView {
             showsSubtitle: layout.showsSecondarySubtitle
         ) {
             MenuPlaceholderView(
-                title: menuDisableAdsTitle,
-                message: MainMenuLocalizationKey.menuDisableAdsDescription.localized,
+                titleKey: .menuDisableAdsTitle,
+                messageKey: .menuDisableAdsDescription,
                 systemImage: "nosign"
             )
         }

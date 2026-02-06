@@ -7,6 +7,7 @@ struct OnboardingView: View {
 
     @StateObject private var viewModel: OnboardingViewModel
     @Binding var onboardingIsShown: Bool
+    @Environment(\.locale) private var locale
 
     // MARK: - Initialization
 
@@ -32,6 +33,12 @@ struct OnboardingView: View {
         .padding(.bottom, padding)
         .background {
             DesignSystem.Color.onboardingBackground.ignoresSafeArea()
+        }
+        .onAppear {
+            viewModel.send(.updateLocale(locale))
+        }
+        .onChange(of: locale) {
+            viewModel.send(.updateLocale($0))
         }
         .onChange(of: viewModel.onboardingIsShown) {
             onboardingIsShown = $0

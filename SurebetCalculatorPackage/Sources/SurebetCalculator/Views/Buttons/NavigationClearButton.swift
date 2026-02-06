@@ -6,6 +6,7 @@ struct NavigationClearButton: View {
     // MARK: - Properties
 
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    @Environment(\.locale) private var locale
 
     // MARK: - Body
 
@@ -17,7 +18,7 @@ struct NavigationClearButton: View {
             Image(systemName: "trash")
                 .font(font)
                 .foregroundColor(DesignSystem.Color.textSecondary)
-                .accessibilityLabel(SurebetCalculatorLocalizationKey.clearAll.localized)
+                .accessibilityLabel(SurebetCalculatorLocalizationKey.clearAll.localized(locale))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.clearButton)

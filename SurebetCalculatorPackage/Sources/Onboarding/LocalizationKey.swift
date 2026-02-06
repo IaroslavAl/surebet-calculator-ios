@@ -11,8 +11,12 @@ enum OnboardingLocalizationKey: String {
     case closeOnboarding = "onboarding_close_onboarding"
     case next = "onboarding_next"
 
-    /// Локализованная строка для ключа
-    var localized: String {
-        String(localized: String.LocalizationValue(stringLiteral: rawValue), bundle: .module)
+    /// Локализованная строка для ключа.
+    func localized(_ locale: Locale) -> String {
+        String(
+            localized: String.LocalizationValue(stringLiteral: rawValue),
+            bundle: .module,
+            locale: locale
+        )
     }
 }

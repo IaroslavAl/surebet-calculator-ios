@@ -73,6 +73,11 @@ Sources/ModuleName/
 - Константы группировать через `enum/struct`.
 - WORKAROUND комментарии формата `// WORKAROUND: описание + ссылка`.
 
+## TODO и техдолг
+- Используем только формат `TODO:` / `FIXME:` с кратким описанием причины.
+- Перед релизом и перед закрытием задачи проверяем `TODO` в изменённых файлах.
+- В проекте включено предупреждение SwiftLint для `todo`.
+
 **MARK‑порядок:**
 - ViewModel: `Properties → Initialization → Public Methods → Private Methods`.
 - View: `Properties → Body → Private Methods`.

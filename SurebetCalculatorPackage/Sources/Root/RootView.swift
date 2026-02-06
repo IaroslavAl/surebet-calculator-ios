@@ -2,6 +2,7 @@ import Banner
 import DesignSystem
 import MainMenu
 import Onboarding
+import Settings
 import SurebetCalculator
 import SwiftUI
 
@@ -12,6 +13,8 @@ struct RootView: View {
     @StateObject private var viewModel: RootViewModel
     private let onboardingAnalytics: OnboardingAnalytics
     private let calculatorAnalytics: CalculatorAnalytics
+    @AppStorage(SettingsStorage.themeKey) private var themeRawValue = SettingsTheme.system.rawValue
+    @AppStorage(SettingsStorage.languageKey) private var languageRawValue = SettingsLanguage.system.rawValue
 
     // MARK: - Initialization
 
@@ -29,6 +32,8 @@ struct RootView: View {
 
     var body: some View {
         mainContent
+            .preferredColorScheme(selectedTheme.preferredColorScheme)
+            .environment(\.locale, selectedLanguage.locale)
             .modifier(LifecycleModifier(viewModel: viewModel))
             .modifier(ReviewAlertModifier(viewModel: viewModel))
             .modifier(FullscreenBannerOverlayModifier(viewModel: viewModel))
@@ -39,6 +44,14 @@ struct RootView: View {
 // MARK: - Private Computed Properties
 
 private extension RootView {
+    var selectedTheme: SettingsTheme {
+        SettingsTheme(rawValue: themeRawValue) ?? .system
+    }
+
+    var selectedLanguage: SettingsLanguage {
+        SettingsLanguage(rawValue: languageRawValue) ?? .system
+    }
+
     var mainContent: some View {
         ZStack {
             menuView
@@ -109,6 +122,7 @@ private struct LifecycleModifier: ViewModifier {
 
 private struct ReviewAlertModifier: ViewModifier {
     @ObservedObject var viewModel: RootViewModel
+    @Environment(\.locale) private var locale
     private var alertIsPresentedBinding: Binding<Bool> {
         Binding(
             get: { viewModel.alertIsPresented },
@@ -118,11 +132,11 @@ private struct ReviewAlertModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .alert(viewModel.requestReviewTitle, isPresented: alertIsPresentedBinding) {
-                Button(RootLocalizationKey.reviewButtonNo.localized) {
+            .alert(viewModel.requestReviewTitle(locale: locale), isPresented: alertIsPresentedBinding) {
+                Button(RootLocalizationKey.reviewButtonNo.localized(locale)) {
                     viewModel.send(.handleReviewNo)
                 }
-                Button(RootLocalizationKey.reviewButtonYes.localized) {
+                Button(RootLocalizationKey.reviewButtonYes.localized(locale)) {
                     viewModel.send(.handleReviewYes)
                 }
             }

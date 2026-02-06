@@ -8,12 +8,14 @@ graph TD
     Root --> Banner
     Root --> MainMenu
     Root --> Onboarding
+    Root --> Settings
     Root --> ReviewHandler
     Root --> AnalyticsManager
     Root --> DesignSystem
     Root --> AppMetricaCore
 
     MainMenu --> SurebetCalculator
+    MainMenu --> Settings
     MainMenu --> DesignSystem
 
     SurebetCalculator --> Banner
@@ -24,6 +26,7 @@ graph TD
     Banner --> DesignSystem
 
     Onboarding --> DesignSystem
+    Settings --> DesignSystem
 
     AnalyticsManager --> AppMetricaCore
 ```
@@ -34,6 +37,7 @@ graph TD
 |---|---|---|
 | `Root` | Все внутренние + AppMetricaCore | Entry point и координация |
 | `MainMenu` | SurebetCalculator, DesignSystem | Экран меню и маршрутизация по разделам |
+| `Settings` | DesignSystem | Экран настроек и хранение темы/языка |
 | `SurebetCalculator` | Banner, DesignSystem | Бизнес‑логика калькулятора |
 | `Banner` | AnalyticsManager, SDWebImageSwiftUI, DesignSystem | Баннеры (сеть, кэш, UI) |
 | `Onboarding` | DesignSystem | Онбординг пользователей |

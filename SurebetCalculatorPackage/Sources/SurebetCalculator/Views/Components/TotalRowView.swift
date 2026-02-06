@@ -6,6 +6,7 @@ struct TotalRowView: View {
     // MARK: - Properties
 
     @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    @Environment(\.locale) private var locale
 
     // MARK: - Body
 
@@ -31,8 +32,8 @@ struct TotalRowView: View {
 // MARK: - Private Computed Properties
 
 private extension TotalRowView {
-    var betSizeLabel: String { SurebetCalculatorLocalizationKey.totalBetSize.localized }
-    var profitPercentageLabel: String { SurebetCalculatorLocalizationKey.profitPercentage.localized }
+    var betSizeLabel: String { SurebetCalculatorLocalizationKey.totalBetSize.localized(locale) }
+    var profitPercentageLabel: String { SurebetCalculatorLocalizationKey.profitPercentage.localized(locale) }
     var labelSpacing: CGFloat { DesignSystem.Spacing.small }
     var columnSpacing: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
     var cardPadding: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }

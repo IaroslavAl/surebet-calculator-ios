@@ -1,8 +1,11 @@
-import SurebetCalculator
 import SwiftUI
 import DesignSystem
 
 struct MenuInstructionsView: View {
+    // MARK: - Properties
+
+    @Environment(\.locale) private var locale
+
     // MARK: - Body
 
     var body: some View {
@@ -27,8 +30,8 @@ struct MenuInstructionsView: View {
 // MARK: - Private Computed Properties
 
 private extension MenuInstructionsView {
-    var instructionsTitle: String { MainMenuLocalizationKey.menuInstructionsTitle.localized }
-    var instructionsSubtitle: String { MainMenuLocalizationKey.instructionsSubtitle.localized }
+    var instructionsTitle: String { MainMenuLocalizationKey.menuInstructionsTitle.localized(locale) }
+    var instructionsSubtitle: String { MainMenuLocalizationKey.instructionsSubtitle.localized(locale) }
     var sectionSpacing: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
     var horizontalPadding: CGFloat { DesignSystem.Spacing.large }
     var verticalPadding: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
@@ -49,23 +52,23 @@ private extension MenuInstructionsView {
         [
             InstructionStep(
                 systemImage: "list.number",
-                title: MainMenuLocalizationKey.instructionsStepOneTitle.localized,
-                message: MainMenuLocalizationKey.instructionsStepOneBody.localized
+                title: MainMenuLocalizationKey.instructionsStepOneTitle.localized(locale),
+                message: MainMenuLocalizationKey.instructionsStepOneBody.localized(locale)
             ),
             InstructionStep(
                 systemImage: "percent",
-                title: MainMenuLocalizationKey.instructionsStepTwoTitle.localized,
-                message: MainMenuLocalizationKey.instructionsStepTwoBody.localized
+                title: MainMenuLocalizationKey.instructionsStepTwoTitle.localized(locale),
+                message: MainMenuLocalizationKey.instructionsStepTwoBody.localized(locale)
             ),
             InstructionStep(
                 systemImage: "target",
-                title: MainMenuLocalizationKey.instructionsStepThreeTitle.localized,
-                message: MainMenuLocalizationKey.instructionsStepThreeBody.localized
+                title: MainMenuLocalizationKey.instructionsStepThreeTitle.localized(locale),
+                message: MainMenuLocalizationKey.instructionsStepThreeBody.localized(locale)
             ),
             InstructionStep(
                 systemImage: "checkmark.seal",
-                title: MainMenuLocalizationKey.instructionsStepFourTitle.localized,
-                message: MainMenuLocalizationKey.instructionsStepFourBody.localized
+                title: MainMenuLocalizationKey.instructionsStepFourTitle.localized(locale),
+                message: MainMenuLocalizationKey.instructionsStepFourBody.localized(locale)
             )
         ]
     }

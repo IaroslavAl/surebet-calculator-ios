@@ -28,8 +28,12 @@ enum MainMenuLocalizationKey: String {
     case instructionsStepFourTitle = "instructions_step_four_title"
     case instructionsStepFourBody = "instructions_step_four_body"
 
-    /// Локализованная строка для ключа
-    var localized: String {
-        String(localized: String.LocalizationValue(stringLiteral: rawValue), bundle: .module)
+    /// Локализованная строка для ключа.
+    func localized(_ locale: Locale) -> String {
+        String(
+            localized: String.LocalizationValue(stringLiteral: rawValue),
+            bundle: .module,
+            locale: locale
+        )
     }
 }
