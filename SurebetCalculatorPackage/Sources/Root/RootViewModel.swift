@@ -20,6 +20,8 @@ final class RootViewModel: ObservableObject {
     private let analyticsService: AnalyticsService
     private let reviewService: ReviewService
     private let delay: Delay
+    private let bannerFetcher: @Sendable () async -> Void
+    private let bannerCacheChecker: @Sendable () -> Bool
 
     private var bannerFetchTask: Task<Void, Never>?
 
@@ -28,11 +30,15 @@ final class RootViewModel: ObservableObject {
     init(
         analyticsService: AnalyticsService = AnalyticsManager(),
         reviewService: ReviewService = ReviewHandler(),
-        delay: Delay = SystemDelay()
+        delay: Delay = SystemDelay(),
+        bannerFetcher: @escaping @Sendable () async -> Void = { try? await Banner.fetchBanner() },
+        bannerCacheChecker: @escaping @Sendable () -> Bool = { Banner.isBannerFullyCached }
     ) {
         self.analyticsService = analyticsService
         self.reviewService = reviewService
         self.delay = delay
+        self.bannerFetcher = bannerFetcher
+        self.bannerCacheChecker = bannerCacheChecker
     }
 
     // MARK: - Public Methods
@@ -114,8 +120,16 @@ private extension RootViewModel {
     }
 
     func showFullscreenBannerIfAvailable() {
-        if fullscreenBannerIsAvailable, Banner.isBannerFullyCached {
-            fullscreenBannerIsPresented = true
+        guard RootConstants.isBannerFetchEnabled, fullscreenBannerIsAvailable else { return }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let bannerCacheChecker = self.bannerCacheChecker
+            let cacheTask = Task.detached(priority: .utility) {
+                bannerCacheChecker()
+            }
+            let isCached = await cacheTask.value
+            guard isCached else { return }
+            self.fullscreenBannerIsPresented = true
         }
     }
 
@@ -148,12 +162,15 @@ private extension RootViewModel {
     }
 
     func fetchBannerIfNeeded() {
-        guard bannerFetchTask == nil else { return }
-        bannerFetchTask = Task { [weak self] in
-            try? await Banner.fetchBanner()
-            await MainActor.run {
-                self?.bannerFetchTask = nil
+        guard RootConstants.isBannerFetchEnabled, bannerFetchTask == nil else { return }
+        bannerFetchTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            let bannerFetcher = self.bannerFetcher
+            let fetchTask = Task.detached(priority: .utility) {
+                await bannerFetcher()
             }
+            await fetchTask.value
+            self.bannerFetchTask = nil
         }
     }
 }

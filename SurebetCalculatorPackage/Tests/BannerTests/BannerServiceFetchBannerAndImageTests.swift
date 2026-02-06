@@ -30,6 +30,37 @@ struct BannerServiceFetchBannerAndImageTests {
         return UserDefaults(suiteName: suiteName) ?? UserDefaults.standard
     }
 
+    /// Создает уникальную директорию кэша для тестов
+    private func createTestCacheDirectory() -> URL {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("banner-cache-\(UUID().uuidString)", isDirectory: true)
+        try? FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+        return directory
+    }
+
+    private func removeTestCacheDirectory(_ directory: URL) {
+        try? FileManager.default.removeItem(at: directory)
+    }
+
+    private func createService(
+        baseURL: URL,
+        session: URLSession,
+        defaults: UserDefaults
+    ) -> (service: Service, cacheDirectory: URL) {
+        let cacheDirectory = createTestCacheDirectory()
+        let service = Service(
+            baseURL: baseURL,
+            session: session,
+            defaults: defaults,
+            cacheDirectory: cacheDirectory
+        )
+        return (service, cacheDirectory)
+    }
+
     /// Создает тестовый BannerModel
     private func createTestBanner() -> BannerModel {
         BannerModel(
@@ -96,7 +127,12 @@ struct BannerServiceFetchBannerAndImageTests {
 
         let session = createMockURLSession()
         let defaults = createTestUserDefaults()
-        let service = Service(baseURL: uniqueBaseURL, session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(
+            baseURL: uniqueBaseURL,
+            session: session,
+            defaults: defaults
+        )
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When
         try await service.fetchBannerAndImage()
@@ -133,9 +169,13 @@ struct BannerServiceFetchBannerAndImageTests {
 
         let session = createMockURLSession()
         let defaults = createTestUserDefaults()
-        let service = Service(baseURL: uniqueBaseURL, session: session, defaults: defaults)
-        defaults.set(imageData, forKey: "stored_banner_image_data")
-        defaults.set(testBanner.imageURL.absoluteString, forKey: "stored_banner_image_url_string")
+        let (service, cacheDirectory) = createService(
+            baseURL: uniqueBaseURL,
+            session: session,
+            defaults: defaults
+        )
+        defer { removeTestCacheDirectory(cacheDirectory) }
+        service.saveBannerImageData(imageData, imageURL: testBanner.imageURL)
 
         // When
         try await service.fetchBannerAndImage()
@@ -160,7 +200,12 @@ struct BannerServiceFetchBannerAndImageTests {
 
         let session = createMockURLSession()
         let defaults = createTestUserDefaults()
-        let service = Service(baseURL: uniqueBaseURL, session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(
+            baseURL: uniqueBaseURL,
+            session: session,
+            defaults: defaults
+        )
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When & Then
         // Ошибка сети может быть URLError или BannerError в зависимости от того, где она происходит
@@ -206,7 +251,12 @@ struct BannerServiceFetchBannerAndImageTests {
 
         let session = createMockURLSession()
         let defaults = createTestUserDefaults()
-        let service = Service(baseURL: uniqueBaseURL, session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(
+            baseURL: uniqueBaseURL,
+            session: session,
+            defaults: defaults
+        )
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When & Then
         // Пустой imageURL должен выбрасывать BannerError.invalidImageURL на строке 48 Service.swift

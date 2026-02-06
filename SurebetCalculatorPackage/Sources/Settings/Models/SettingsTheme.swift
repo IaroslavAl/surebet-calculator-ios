@@ -2,9 +2,9 @@ import SwiftUI
 
 /// Доступные варианты темы оформления.
 public enum SettingsTheme: String, CaseIterable, Sendable {
-    case system = "system"
-    case light = "light"
-    case dark = "dark"
+    case system
+    case light
+    case dark
 
     /// Выбранная цветовая схема для темы.
     public var preferredColorScheme: ColorScheme? {

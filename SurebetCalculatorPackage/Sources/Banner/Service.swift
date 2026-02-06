@@ -19,13 +19,17 @@ struct Service: BannerService, @unchecked Sendable {
     private let baseURL: URL
     private let session: URLSession
     private let defaults: UserDefaults
+    private let fileManager: FileManager
+    private let cacheDirectory: URL
 
     // MARK: - Initialization
 
     init(
         baseURL: URL? = nil,
         session: URLSession = .shared,
-        defaults: UserDefaults = .standard
+        defaults: UserDefaults = .standard,
+        fileManager: FileManager = .default,
+        cacheDirectory: URL? = nil
     ) {
         if let baseURL = baseURL {
             self.baseURL = baseURL
@@ -37,6 +41,17 @@ struct Service: BannerService, @unchecked Sendable {
         }
         self.session = session
         self.defaults = defaults
+        self.fileManager = fileManager
+        if let cacheDirectory = cacheDirectory {
+            self.cacheDirectory = cacheDirectory
+        } else {
+            let baseCache = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first
+            let resolvedBase = baseCache ?? fileManager.temporaryDirectory
+            self.cacheDirectory = resolvedBase.appendingPathComponent(
+                BannerConstants.cacheDirectoryName,
+                isDirectory: true
+            )
+        }
     }
 
     // MARK: - Public Methods
@@ -174,16 +189,28 @@ struct Service: BannerService, @unchecked Sendable {
     }
 
     func saveBannerImageData(_ data: Data, imageURL: URL) {
-        BannerLogger.service.debug("Сохранение картинки и URL в UserDefaults")
-        defaults.set(data, forKey: UserDefaultsKeys.bannerImageData)
+        BannerLogger.service.debug("Сохранение картинки и URL в кэш")
+        saveBannerImageDataToDisk(data)
+        defaults.removeObject(forKey: UserDefaultsKeys.bannerImageData)
         defaults.set(imageURL.absoluteString, forKey: UserDefaultsKeys.bannerImageURLString)
     }
 
     func getStoredBannerImageData() -> Data? {
-        BannerLogger.service.debug("Получение картинки из UserDefaults")
-        let data = defaults.data(forKey: UserDefaultsKeys.bannerImageData)
-        BannerLogger.service.debug("Картинка найдена: \(data != nil, privacy: .public)")
-        return data
+        BannerLogger.service.debug("Получение картинки из кэша")
+        if let cachedData = loadBannerImageDataFromDisk() {
+            BannerLogger.service.debug("Картинка найдена в кэше: true")
+            return cachedData
+        }
+
+        if let legacyData = defaults.data(forKey: UserDefaultsKeys.bannerImageData) {
+            BannerLogger.service.debug("Картинка найдена в UserDefaults — переносим в кэш")
+            saveBannerImageDataToDisk(legacyData)
+            defaults.removeObject(forKey: UserDefaultsKeys.bannerImageData)
+            return legacyData
+        }
+
+        BannerLogger.service.debug("Картинка найдена в кэше: false")
+        return nil
     }
 
     func getStoredBannerImageURL() -> URL? {
@@ -204,8 +231,13 @@ struct Service: BannerService, @unchecked Sendable {
             return false
         }
 
-        guard getStoredBannerImageData() != nil else {
+        guard hasCachedImageFile || migrateLegacyImageIfNeeded() else {
             BannerLogger.service.debug("Картинка отсутствует в кэше")
+            return false
+        }
+
+        guard getStoredBannerImageURL() != nil else {
+            BannerLogger.service.debug("URL картинки отсутствует в кэше")
             return false
         }
 
@@ -216,9 +248,60 @@ struct Service: BannerService, @unchecked Sendable {
     // MARK: - Private Methods
 
     private func clearAllBannerData() {
-        BannerLogger.service.debug("Полная очистка данных баннера и картинки из UserDefaults")
+        BannerLogger.service.debug("Полная очистка данных баннера и картинки из кэша")
         defaults.removeObject(forKey: UserDefaultsKeys.banner)
         defaults.removeObject(forKey: UserDefaultsKeys.bannerImageData)
         defaults.removeObject(forKey: UserDefaultsKeys.bannerImageURLString)
+        removeBannerImageFileIfNeeded()
+    }
+
+    private var bannerImageFileURL: URL {
+        cacheDirectory.appendingPathComponent(BannerConstants.cachedImageFilename)
+    }
+
+    private var hasCachedImageFile: Bool {
+        fileManager.fileExists(atPath: bannerImageFileURL.path)
+    }
+
+    private func ensureCacheDirectoryExists() throws {
+        guard !fileManager.fileExists(atPath: cacheDirectory.path) else { return }
+        try fileManager.createDirectory(
+            at: cacheDirectory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+    }
+
+    private func saveBannerImageDataToDisk(_ data: Data) {
+        do {
+            try ensureCacheDirectoryExists()
+            try data.write(to: bannerImageFileURL, options: [.atomic])
+        } catch {
+            let errorDescription = error.localizedDescription
+            BannerLogger.service.error(
+                "Не удалось сохранить картинку в кэш: \(errorDescription, privacy: .public)"
+            )
+        }
+    }
+
+    private func loadBannerImageDataFromDisk() -> Data? {
+        guard hasCachedImageFile else { return nil }
+        return try? Data(contentsOf: bannerImageFileURL)
+    }
+
+    private func migrateLegacyImageIfNeeded() -> Bool {
+        guard !hasCachedImageFile else { return true }
+        guard let legacyData = defaults.data(forKey: UserDefaultsKeys.bannerImageData) else {
+            return false
+        }
+        BannerLogger.service.debug("Картинка найдена в UserDefaults — переносим в кэш")
+        saveBannerImageDataToDisk(legacyData)
+        defaults.removeObject(forKey: UserDefaultsKeys.bannerImageData)
+        return true
+    }
+
+    private func removeBannerImageFileIfNeeded() {
+        guard hasCachedImageFile else { return }
+        try? fileManager.removeItem(at: bannerImageFileURL)
     }
 }

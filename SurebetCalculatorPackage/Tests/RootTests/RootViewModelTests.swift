@@ -18,7 +18,9 @@ struct RootViewModelTests {
     func createViewModel(
         analyticsService: AnalyticsService? = nil,
         reviewService: ReviewService? = nil,
-        delay: Delay? = nil
+        delay: Delay? = nil,
+        bannerFetcher: (@Sendable () async -> Void)? = nil,
+        bannerCacheChecker: (@Sendable () -> Bool)? = nil
     ) -> RootViewModel {
         let analytics = analyticsService ?? MockAnalyticsService()
         let review = reviewService ?? MockReviewService()
@@ -26,7 +28,9 @@ struct RootViewModelTests {
         return RootViewModel(
             analyticsService: analytics,
             reviewService: review,
-            delay: reviewDelay
+            delay: reviewDelay,
+            bannerFetcher: bannerFetcher ?? { },
+            bannerCacheChecker: bannerCacheChecker ?? { false }
         )
     }
 
@@ -36,10 +40,37 @@ struct RootViewModelTests {
         defaults.removeObject(forKey: "onboardingIsShown")
         defaults.removeObject(forKey: "1.7.0")
         defaults.removeObject(forKey: "numberOfOpenings")
+        defaults.removeObject(forKey: "stored_banner")
+        defaults.removeObject(forKey: "stored_banner_image_url_string")
+        clearBannerCache()
+    }
+
+    func clearBannerCache() {
+        let fileManager = FileManager.default
+        let baseCache = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first
+        let resolvedBase = baseCache ?? fileManager.temporaryDirectory
+        let cacheDirectory = resolvedBase.appendingPathComponent(
+            BannerConstants.cacheDirectoryName,
+            isDirectory: true
+        )
+        let imageFile = cacheDirectory.appendingPathComponent(BannerConstants.cachedImageFilename)
+        try? fileManager.removeItem(at: imageFile)
     }
 
     func awaitAsyncTasks() async {
         await Task.yield()
+    }
+
+    func awaitCondition(
+        _ condition: @escaping () -> Bool,
+        maxIterations: Int = 20
+    ) async {
+        for _ in 0..<maxIterations {
+            if condition() {
+                return
+            }
+            await Task.yield()
+        }
     }
 
     // MARK: - shouldShowOnboarding Tests
@@ -216,32 +247,21 @@ struct RootViewModelTests {
 
     /// Тест показа fullscreen баннера когда доступен и закэширован
     @Test
-    func showFullscreenBannerWhenAvailableAndCached() {
+    func showFullscreenBannerWhenAvailableAndCached() async {
         // Given
         clearTestUserDefaults()
-        let viewModel = createViewModel()
-        viewModel.send(.updateOnboardingShown(true))
         UserDefaults.standard.set(true, forKey: "1.7.0")
+        let viewModel = createViewModel(
+            bannerCacheChecker: { true }
+        )
+        viewModel.send(.updateOnboardingShown(true))
         for _ in 0..<3 {
             viewModel.send(.onAppear)
         }
-        // Мокируем Banner.isBannerFullyCached через сохранение данных в UserDefaults
-        let testBanner = BannerModel(
-            id: "test",
-            title: "Test",
-            body: "Test",
-            partnerCode: nil,
-            imageURL: URL(string: "https://example.com/image.png")!,
-            actionURL: URL(string: "https://example.com")!
-        )
-        let service = Service()
-        service.saveBannerToDefaults(testBanner)
-        let imageData = Data("test".utf8)
-        UserDefaults.standard.set(imageData, forKey: "stored_banner_image_data")
-        UserDefaults.standard.set(testBanner.imageURL.absoluteString, forKey: "stored_banner_image_url_string")
 
         // When
         viewModel.send(.showFullscreenBanner)
+        await awaitCondition { viewModel.fullscreenBannerIsPresented }
 
         // Then
         #expect(viewModel.fullscreenBannerIsPresented == true)

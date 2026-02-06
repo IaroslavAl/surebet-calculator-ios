@@ -5,24 +5,15 @@ public extension String {
     /// Нормализует десятичный разделитель для поддержки обоих вариантов ввода (точка и запятая).
     func formatToDouble() -> Double? {
         let normalized = normalizeDecimalSeparator()
-
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale.current
-        if let formattedValue = formatter.number(from: normalized) {
-            return formattedValue.doubleValue
-        }
-        return nil
+        let formatter = NumberFormatterCache.decimal(locale: Locale.current)
+        return formatter.number(from: normalized)?.doubleValue
     }
 
     /// Нормализует десятичный разделитель в строке.
     /// Заменяет точку на разделитель текущей локали, если локаль использует запятую.
     /// Это обеспечивает поддержку обоих вариантов ввода (точка и запятая) независимо от локали.
     private func normalizeDecimalSeparator() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale.current
-        let decimalSeparator = formatter.decimalSeparator
+        let decimalSeparator = Locale.current.decimalSeparator
 
         // Если текущая локаль использует запятую, заменяем точку на запятую
         // Это позволяет корректно обрабатывать ввод с точкой для локалей с запятой
@@ -34,9 +25,8 @@ public extension String {
     }
 
     func isValidDouble() -> Bool {
-        self.formatToDouble() != nil
-        || self.isEmpty
-        || self.formatToDouble() ?? 0 > 0
+        let value = self.formatToDouble()
+        return value != nil || self.isEmpty
     }
 
     /// Проверяет, является ли строка неотрицательным числом

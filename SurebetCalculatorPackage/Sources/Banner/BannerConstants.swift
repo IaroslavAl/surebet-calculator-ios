@@ -15,6 +15,14 @@ enum BannerConstants {
     /// Таймаут для сетевых запросов (10 секунд)
     static let requestTimeout: TimeInterval = 10
 
+    // MARK: - Cache
+
+    /// Директория кэша баннеров в Caches.
+    static let cacheDirectoryName = "BannerCache"
+
+    /// Имя файла для изображения баннера в кэше.
+    static let cachedImageFilename = "banner_image.data"
+
     // MARK: - Delays
 
     /// Задержка перед закрытием баннера после открытия URL (500ms)

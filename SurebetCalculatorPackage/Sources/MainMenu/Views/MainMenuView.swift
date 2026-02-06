@@ -73,7 +73,7 @@ private extension MainMenuView {
         MenuCardLink(
             title: menuCalculatorTitle,
             subtitle: menuCalculatorSubtitle,
-            systemImage: "calculator",
+            systemImage: "plus.slash.minus",
             style: .primary,
             layout: layout,
             showsSubtitle: layout.showsPrimarySubtitle

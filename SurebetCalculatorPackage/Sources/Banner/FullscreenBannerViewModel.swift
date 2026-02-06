@@ -1,5 +1,6 @@
 import AnalyticsManager
 import Foundation
+import UIKit
 
 @MainActor
 final class FullscreenBannerViewModel: ObservableObject {
@@ -7,7 +8,7 @@ final class FullscreenBannerViewModel: ObservableObject {
 
     struct State {
         var isPresented: Bool
-        var bannerImageData: Data?
+        var bannerImage: UIImage?
         var bannerId: String?
         var actionURL: URL?
     }
@@ -31,7 +32,7 @@ final class FullscreenBannerViewModel: ObservableObject {
     ) {
         self.state = State(
             isPresented: isPresented.value,
-            bannerImageData: nil,
+            bannerImage: nil,
             bannerId: nil,
             actionURL: nil
         )
@@ -52,8 +53,10 @@ final class FullscreenBannerViewModel: ObservableObject {
     func send(_ action: Action) {
         switch action {
         case .onAppear:
+            if state.bannerId != nil {
+                logBannerViewed()
+            }
             loadBannerIfNeeded()
-            logBannerViewed()
         case .tapClose:
             handleCloseTap()
         case .tapBanner:
@@ -65,12 +68,37 @@ final class FullscreenBannerViewModel: ObservableObject {
 // MARK: - Private Methods
 
 private extension FullscreenBannerViewModel {
+    struct BannerImage: @unchecked Sendable {
+        let image: UIImage
+    }
+
     func loadBannerIfNeeded() {
-        guard state.bannerImageData == nil else { return }
-        state.bannerImageData = service.getStoredBannerImageData()
-        if let banner = service.getBannerFromDefaults() {
-            state.bannerId = banner.id
-            state.actionURL = banner.actionURL
+        guard state.bannerImage == nil else { return }
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let wasBannerIdEmpty = self.state.bannerId == nil
+            let service = self.service
+            let loadTask = Task.detached(priority: .utility) {
+                let imageData = service.getStoredBannerImageData()
+                let banner = service.getBannerFromDefaults()
+                var image: BannerImage?
+                if let imageData, let uiImage = UIImage(data: imageData) {
+                    let preparedImage = uiImage.preparingForDisplay() ?? uiImage
+                    image = BannerImage(image: preparedImage)
+                }
+                return (image, banner)
+            }
+            let (bannerImage, banner) = await loadTask.value
+            if self.state.bannerImage == nil {
+                self.state.bannerImage = bannerImage?.image
+            }
+            if let banner {
+                self.state.bannerId = banner.id
+                self.state.actionURL = banner.actionURL
+            }
+            if wasBannerIdEmpty, self.state.bannerId != nil {
+                self.logBannerViewed()
+            }
         }
     }
 

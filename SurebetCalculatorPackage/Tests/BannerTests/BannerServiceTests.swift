@@ -40,6 +40,37 @@ struct BannerServiceTests {
         return UserDefaults(suiteName: suiteName) ?? UserDefaults.standard
     }
 
+    /// Создает уникальную директорию кэша для тестов
+    private func createTestCacheDirectory() -> URL {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("banner-cache-\(UUID().uuidString)", isDirectory: true)
+        try? FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+        return directory
+    }
+
+    private func removeTestCacheDirectory(_ directory: URL) {
+        try? FileManager.default.removeItem(at: directory)
+    }
+
+    private func createService(
+        baseURL: URL? = nil,
+        session: URLSession = .shared,
+        defaults: UserDefaults
+    ) -> (service: Service, cacheDirectory: URL) {
+        let cacheDirectory = createTestCacheDirectory()
+        let service = Service(
+            baseURL: baseURL,
+            session: session,
+            defaults: defaults,
+            cacheDirectory: cacheDirectory
+        )
+        return (service, cacheDirectory)
+    }
+
     /// Создает тестовый BannerModel
     private func createTestBanner() -> BannerModel {
         BannerModel(
@@ -85,7 +116,12 @@ struct BannerServiceTests {
         let session = URLSession(configuration: config)
 
         let defaults = createTestUserDefaults()
-        let service = Service(baseURL: uniqueBaseURL, session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(
+            baseURL: uniqueBaseURL,
+            session: session,
+            defaults: defaults
+        )
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When
         let banner = try await service.fetchBanner()
@@ -117,7 +153,12 @@ struct BannerServiceTests {
         let session = URLSession(configuration: config)
 
         let defaults = createTestUserDefaults()
-        let service = Service(baseURL: uniqueBaseURL, session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(
+            baseURL: uniqueBaseURL,
+            session: session,
+            defaults: defaults
+        )
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When & Then
         // URLError должен пройти через, но если данные пустые, будет BannerError.bannerNotFound
@@ -152,7 +193,12 @@ struct BannerServiceTests {
         let session = URLSession(configuration: config)
 
         let defaults = createTestUserDefaults()
-        let service = Service(baseURL: uniqueBaseURL, session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(
+            baseURL: uniqueBaseURL,
+            session: session,
+            defaults: defaults
+        )
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When & Then
         // HTTP ошибка должна выбрасывать URLError(.badServerResponse) на строке 94 Service.swift
@@ -188,7 +234,12 @@ struct BannerServiceTests {
         let session = URLSession(configuration: config)
 
         let defaults = createTestUserDefaults()
-        let service = Service(baseURL: uniqueBaseURL, session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(
+            baseURL: uniqueBaseURL,
+            session: session,
+            defaults: defaults
+        )
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When & Then
         // Пустые данные должны выбрасывать BannerError.bannerNotFound на строке 100 Service.swift
@@ -224,7 +275,12 @@ struct BannerServiceTests {
         let session = URLSession(configuration: config)
 
         let defaults = createTestUserDefaults()
-        let service = Service(baseURL: uniqueBaseURL, session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(
+            baseURL: uniqueBaseURL,
+            session: session,
+            defaults: defaults
+        )
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When & Then
         await #expect(throws: Error.self) {
@@ -240,7 +296,8 @@ struct BannerServiceTests {
         // Given
         let testBanner = createTestBanner()
         let defaults = createTestUserDefaults()
-        let service = Service(session: .shared, defaults: defaults)
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When
         service.saveBannerToDefaults(testBanner)
@@ -260,7 +317,8 @@ struct BannerServiceTests {
         // Given
         let testBanner = createTestBanner()
         let defaults = createTestUserDefaults()
-        let service = Service(session: .shared, defaults: defaults)
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
         service.saveBannerToDefaults(testBanner)
 
         // When
@@ -276,7 +334,8 @@ struct BannerServiceTests {
     func getBannerFromDefaultsWhenBannerDoesNotExist() {
         // Given
         let defaults = createTestUserDefaults()
-        let service = Service(session: .shared, defaults: defaults)
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When
         let banner = service.getBannerFromDefaults()
@@ -293,7 +352,8 @@ struct BannerServiceTests {
         // Given
         let testBanner = createTestBanner()
         let defaults = createTestUserDefaults()
-        let service = Service(session: .shared, defaults: defaults)
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
         service.saveBannerToDefaults(testBanner)
         #expect(service.getBannerFromDefaults() != nil)
 
@@ -334,7 +394,8 @@ struct BannerServiceTests {
         let session = URLSession(configuration: config)
 
         let defaults = createTestUserDefaults()
-        let service = Service(session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(session: session, defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When
         try await service.downloadImage(from: imageURL)
@@ -367,7 +428,8 @@ struct BannerServiceTests {
         let session = URLSession(configuration: config)
 
         let defaults = createTestUserDefaults()
-        let service = Service(session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(session: session, defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When & Then
         // Ошибка сети должна пройти через
@@ -403,7 +465,8 @@ struct BannerServiceTests {
         let session = URLSession(configuration: config)
 
         let defaults = createTestUserDefaults()
-        let service = Service(session: session, defaults: defaults)
+        let (service, cacheDirectory) = createService(session: session, defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When & Then
         // Пустые данные должны выбрасывать URLError(.cannotDecodeContentData) на строке 158 Service.swift
@@ -420,8 +483,12 @@ struct BannerServiceTests {
         // Given
         let imageData = Data("test image data".utf8)
         let defaults = createTestUserDefaults()
-        defaults.set(imageData, forKey: "stored_banner_image_data")
-        let service = Service(session: .shared, defaults: defaults)
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
+        service.saveBannerImageData(
+            imageData,
+            imageURL: URL(string: "https://example.com/image.png")!
+        )
 
         // When
         let data = service.getStoredBannerImageData()
@@ -436,7 +503,8 @@ struct BannerServiceTests {
     func getStoredBannerImageDataWhenDataDoesNotExist() {
         // Given
         let defaults = createTestUserDefaults()
-        let service = Service(session: .shared, defaults: defaults)
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When
         let data = service.getStoredBannerImageData()
@@ -453,8 +521,9 @@ struct BannerServiceTests {
         // Given
         let imageURL = URL(string: "https://example.com/image.png")!
         let defaults = createTestUserDefaults()
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
         defaults.set(imageURL.absoluteString, forKey: "stored_banner_image_url_string")
-        let service = Service(session: .shared, defaults: defaults)
 
         // When
         let url = service.getStoredBannerImageURL()
@@ -469,7 +538,8 @@ struct BannerServiceTests {
     func getStoredBannerImageURLWhenURLDoesNotExist() {
         // Given
         let defaults = createTestUserDefaults()
-        let service = Service(session: .shared, defaults: defaults)
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
 
         // When
         let url = service.getStoredBannerImageURL()
@@ -487,10 +557,10 @@ struct BannerServiceTests {
         let testBanner = createTestBanner()
         let imageData = Data("test image data".utf8)
         let defaults = createTestUserDefaults()
-        let service = Service(session: .shared, defaults: defaults)
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
         service.saveBannerToDefaults(testBanner)
-        defaults.set(imageData, forKey: "stored_banner_image_data")
-        defaults.set(testBanner.imageURL.absoluteString, forKey: "stored_banner_image_url_string")
+        service.saveBannerImageData(imageData, imageURL: testBanner.imageURL)
 
         // When
         let isCached = service.isBannerFullyCached()
@@ -505,8 +575,12 @@ struct BannerServiceTests {
         // Given
         let imageData = Data("test image data".utf8)
         let defaults = createTestUserDefaults()
-        let service = Service(session: .shared, defaults: defaults)
-        defaults.set(imageData, forKey: "stored_banner_image_data")
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
+        service.saveBannerImageData(
+            imageData,
+            imageURL: URL(string: "https://example.com/image.png")!
+        )
 
         // When
         let isCached = service.isBannerFullyCached()
@@ -521,7 +595,8 @@ struct BannerServiceTests {
         // Given
         let testBanner = createTestBanner()
         let defaults = createTestUserDefaults()
-        let service = Service(session: .shared, defaults: defaults)
+        let (service, cacheDirectory) = createService(defaults: defaults)
+        defer { removeTestCacheDirectory(cacheDirectory) }
         service.saveBannerToDefaults(testBanner)
 
         // When
