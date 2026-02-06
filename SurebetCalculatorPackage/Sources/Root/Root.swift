@@ -10,23 +10,40 @@ public enum Root {
 
     @MainActor
     public static func view() -> some View {
+        RootContainerView()
+    }
+}
+
+@MainActor
+private final class RootDependencies: ObservableObject {
+    let viewModel: RootViewModel
+    let onboardingAnalytics: OnboardingAnalytics
+    let calculatorAnalytics: CalculatorAnalytics
+
+    init() {
         let analyticsService = AnalyticsManager()
         let reviewService = ReviewHandler()
-        let viewModel = RootViewModel(
+        viewModel = RootViewModel(
             analyticsService: analyticsService,
             reviewService: reviewService
         )
-        let onboardingAnalytics = OnboardingAnalyticsAdapter(
+        onboardingAnalytics = OnboardingAnalyticsAdapter(
             analyticsService: analyticsService
         )
-        let calculatorAnalytics = CalculatorAnalyticsAdapter(
+        calculatorAnalytics = CalculatorAnalyticsAdapter(
             analyticsService: analyticsService
         )
+    }
+}
 
-        return RootView(
-            viewModel: viewModel,
-            onboardingAnalytics: onboardingAnalytics,
-            calculatorAnalytics: calculatorAnalytics
+private struct RootContainerView: View {
+    @StateObject private var dependencies = RootDependencies()
+
+    var body: some View {
+        RootView(
+            viewModel: dependencies.viewModel,
+            onboardingAnalytics: dependencies.onboardingAnalytics,
+            calculatorAnalytics: dependencies.calculatorAnalytics
         )
     }
 }
