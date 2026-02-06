@@ -37,9 +37,8 @@ struct FullscreenBannerView: View {
 private extension FullscreenBannerView {
     @ViewBuilder
     var bannerImage: some View {
-        if let imageData = viewModel.state.bannerImageData,
-           let uiImage = UIImage(data: imageData) {
-            Image(uiImage: uiImage)
+        if let bannerImage = viewModel.state.bannerImage {
+            Image(uiImage: bannerImage)
                 .resizable()
                 .scaledToFit()
                 .cornerRadius(cornerRadius)

@@ -38,7 +38,10 @@ private extension OnboardingIndex {
     }
 
     func color(_ index: Int) -> Color {
-        index == viewModel.currentPage ? DesignSystem.Color.onboardingIndicatorActive : DesignSystem.Color.onboardingIndicatorInactive
+        let isActive = index == viewModel.currentPage
+        return isActive
+            ? DesignSystem.Color.onboardingIndicatorActive
+            : DesignSystem.Color.onboardingIndicatorInactive
     }
 }
 
