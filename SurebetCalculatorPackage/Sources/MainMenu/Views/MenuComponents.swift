@@ -28,6 +28,30 @@ struct MenuCardLink<Destination: View>: View {
     }
 }
 
+struct MenuCardButton: View {
+    let title: String
+    let subtitle: String
+    let systemImage: String
+    let style: MenuCardStyle
+    let layout: MenuLayout
+    let showsSubtitle: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            MenuCard(
+                title: title,
+                subtitle: subtitle,
+                systemImage: systemImage,
+                style: style,
+                layout: layout,
+                showsSubtitle: showsSubtitle
+            )
+        }
+        .buttonStyle(MenuCardButtonStyle())
+    }
+}
+
 struct MenuCard: View {
     let title: String
     let subtitle: String

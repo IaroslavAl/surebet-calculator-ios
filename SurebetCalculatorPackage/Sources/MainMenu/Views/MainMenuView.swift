@@ -1,3 +1,4 @@
+import Foundation
 import SurebetCalculator
 import SwiftUI
 import DesignSystem
@@ -8,6 +9,7 @@ struct MainMenuView: View {
 
     let calculatorAnalytics: CalculatorAnalytics
     @Environment(\.locale) private var locale
+    @Environment(\.openURL) private var openURL
 
     // MARK: - Body
 
@@ -28,6 +30,14 @@ struct MainMenuView: View {
         .navigationTitle(menuNavigationTitle)
         .navigationBarTitleDisplayMode(.inline)
     }
+}
+
+private enum FeedbackMailConstants {
+    static let emailAddress = "beldin.y.a@yandex.ru"
+    static let mailtoScheme = "mailto"
+    static let subjectQueryName = "subject"
+    static let bundleDisplayNameKey = "CFBundleDisplayName"
+    static let bundleNameKey = "CFBundleName"
 }
 
 // MARK: - Private Computed Properties
@@ -108,7 +118,7 @@ private extension MainMenuView {
     }
 
     func feedbackAction(_ layout: MenuLayout) -> some View {
-        MenuCardLink(
+        MenuCardButton(
             title: menuFeedbackTitle,
             subtitle: menuFeedbackSubtitle,
             systemImage: "envelope",
@@ -116,11 +126,7 @@ private extension MainMenuView {
             layout: layout,
             showsSubtitle: layout.showsSecondarySubtitle
         ) {
-            MenuPlaceholderView(
-                titleKey: .menuFeedbackTitle,
-                messageKey: .menuFeedbackDescription,
-                systemImage: "bubble.left.and.bubble.right"
-            )
+            openFeedbackMail()
         }
     }
 
@@ -179,6 +185,31 @@ private extension MainMenuView {
         case .ultraCompact:
             return DesignSystem.Spacing.small
         }
+    }
+
+    var feedbackMailSubject: String? {
+        Bundle.main.object(forInfoDictionaryKey: FeedbackMailConstants.bundleDisplayNameKey) as? String
+            ?? Bundle.main.object(forInfoDictionaryKey: FeedbackMailConstants.bundleNameKey) as? String
+    }
+
+    func feedbackMailURL() -> URL? {
+        var components = URLComponents()
+        components.scheme = FeedbackMailConstants.mailtoScheme
+        components.path = FeedbackMailConstants.emailAddress
+        if let subject = feedbackMailSubject {
+            components.queryItems = [
+                URLQueryItem(
+                    name: FeedbackMailConstants.subjectQueryName,
+                    value: subject
+                )
+            ]
+        }
+        return components.url
+    }
+
+    func openFeedbackMail() {
+        guard let url = feedbackMailURL() else { return }
+        openURL(url)
     }
 
 }
