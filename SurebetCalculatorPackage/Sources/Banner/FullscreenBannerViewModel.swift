@@ -53,8 +53,10 @@ final class FullscreenBannerViewModel: ObservableObject {
     func send(_ action: Action) {
         switch action {
         case .onAppear:
+            if state.bannerId != nil {
+                logBannerViewed()
+            }
             loadBannerIfNeeded()
-            logBannerViewed()
         case .tapClose:
             handleCloseTap()
         case .tapBanner:
@@ -74,6 +76,7 @@ private extension FullscreenBannerViewModel {
         guard state.bannerImage == nil else { return }
         Task { @MainActor [weak self] in
             guard let self else { return }
+            let wasBannerIdEmpty = self.state.bannerId == nil
             let service = self.service
             let loadTask = Task.detached(priority: .utility) {
                 let imageData = service.getStoredBannerImageData()
@@ -92,6 +95,9 @@ private extension FullscreenBannerViewModel {
             if let banner {
                 self.state.bannerId = banner.id
                 self.state.actionURL = banner.actionURL
+            }
+            if wasBannerIdEmpty, self.state.bannerId != nil {
+                self.logBannerViewed()
             }
         }
     }

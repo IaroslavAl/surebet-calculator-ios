@@ -8,10 +8,13 @@ enum RootConstants {
     /// Флаг для отключения баннеров через launch arguments.
     /// Использование: -disableBannerFetch
     static var isBannerFetchEnabled: Bool {
+        if ProcessInfo.processInfo.arguments.contains("-disableBannerFetch") {
+            return false
+        }
         if isRunningTests {
             return true
         }
-        return !ProcessInfo.processInfo.arguments.contains("-disableBannerFetch")
+        return true
     }
 
     private static var isRunningTests: Bool {
