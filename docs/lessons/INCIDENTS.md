@@ -13,6 +13,12 @@
 - Исправление: базовый экран всегда в иерархии, transition только на слое онбординга.
 - Guardrail: не анимировать целый контейнер для локального перехода overlay.
 
+## 2026-02-08 — AttributeGraph cycle и зависание интерактивности после онбординга
+- Симптом: после закрытия онбординга меню визуально показывается, но нажатия не работают; в логах повторяется `AttributeGraph: cycle detected ...`.
+- Корневая причина: `SurebetCalculatorViewModel` создавался прямо в `NavigationLink` destination builder, из-за чего на iOS 16 destination переинициализировался и запускал цикл обновлений SwiftUI.
+- Исправление: вынести владение VM в отдельный container view с `@StateObject`, а в `SurebetCalculatorView` использовать `@ObservedObject`.
+- Guardrail: для экранов, открываемых через `NavigationLink`, не создавать `ObservableObject` напрямую в destination builder; владелец VM должен быть стабильным (`@StateObject` в контейнере).
+
 ## 2026-01-27 — Race condition в MockURLProtocol
 - Симптом: флаки сетевых тестов.
 - Корневая причина: глобальный handler перезаписывался параллельно.
