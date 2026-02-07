@@ -12,6 +12,7 @@
    - изменение сервиса/сети;
    - изменение архитектуры/модуля;
    - добавление/починка тестов;
+   - изменение CI/pipeline;
    - документация.
 2. Открой `docs/agent/POLICIES.md` и проверь ограничения.
 3. Открой релевантный playbook из `docs/agent/PLAYBOOKS/`.
@@ -22,6 +23,7 @@
 - Нужно понять кто от кого зависит: `docs/reference/DEPENDENCY_GRAPH.md`.
 - Нужно понять контракты модулей: `docs/reference/MODULE_INDEX.md`.
 - Нужно понять команды проверки: `docs/reference/BUILD_TEST_COMMANDS.md`.
+- Нужно понять CI-контракт и required checks: `docs/reference/CI_RULES.md`.
 - Нужно избежать повторения старой ошибки: `docs/lessons/INCIDENTS.md`.
 
 ## Definition of Done для агента
@@ -36,4 +38,4 @@
 - Протаскивать `Binding` во ViewModel как внешний mutable state.
 - Дублировать один и тот же факт в 3+ документах без источника правды.
 
-Последнее обновление: 2026-02-06
+Последнее обновление: 2026-02-07

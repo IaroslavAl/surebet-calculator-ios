@@ -2,15 +2,13 @@ name: Docs Validation
 
 on:
   pull_request:
-    paths:
-      - 'AGENTS.md'
-      - 'README.md'
-      - 'docs/**'
-      - 'scripts/validate-docs.sh'
-      - '.github/workflows/docs-validation.yml'
+    branches:
+      - main
+      - master
   push:
     branches:
       - main
+      - master
     paths:
       - 'AGENTS.md'
       - 'README.md'
@@ -18,6 +16,10 @@ on:
       - 'scripts/validate-docs.sh'
       - '.github/workflows/docs-validation.yml'
   workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   docs-validation:

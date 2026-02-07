@@ -47,5 +47,16 @@
 - Версии зависимостей: `SurebetCalculatorPackage/Package.swift`.
 - Модульные контракты: `docs/reference/MODULE_INDEX.md`.
 - Команды проверки: `docs/reference/BUILD_TEST_COMMANDS.md`.
+- CI-контракт: `docs/reference/CI_RULES.md`.
 
-Последнее обновление: 2026-02-06
+## 9. CI
+- MUST: использовать только GitHub-hosted runners.
+- MUST: поддерживать обязательные проверки в CI:
+  - `SwiftLint`,
+  - `Build`,
+  - `Unit Tests`,
+  - `Validate Docs Structure`.
+- MUST: при изменении CI-контракта обновлять `docs/reference/CI_RULES.md`.
+- SHOULD: переиспользуемую CI-логику выносить в `scripts/ci/*`.
+
+Последнее обновление: 2026-02-07
