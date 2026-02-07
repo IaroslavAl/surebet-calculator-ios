@@ -1,0 +1,32 @@
+name: Docs Validation
+
+on:
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'docs/**'
+      - 'scripts/validate-docs.sh'
+      - '.github/workflows/docs-validation.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'docs/**'
+      - 'scripts/validate-docs.sh'
+      - '.github/workflows/docs-validation.yml'
+  workflow_dispatch:
+
+jobs:
+  docs-validation:
+    name: Validate Docs Structure
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate documentation
+        run: ./scripts/validate-docs.sh
