@@ -13,8 +13,9 @@ public enum SurebetCalculator {
 
 @MainActor
 private struct SurebetCalculatorContainerView: View {
-    // Keep a stable VM lifetime for NavigationLink destination.
-    // Recreating VM from the destination builder causes SwiftUI update cycles on iOS 16.
+    // Важно для iOS 16: destination в NavigationLink может пересоздаваться.
+    // Если создавать VM в builder-е destination, SwiftUI уходит в update cycle
+    // (AttributeGraph), и экран меню/калькулятора перестает быть интерактивным.
     @StateObject private var viewModel: SurebetCalculatorViewModel
 
     init(analytics: CalculatorAnalytics) {
