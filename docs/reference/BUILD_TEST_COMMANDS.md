@@ -10,13 +10,13 @@ xcodebuild -resolvePackageDependencies -project surebet-calculator.xcodeproj
 ## Build
 ```bash
 xcodebuild -project surebet-calculator.xcodeproj -scheme surebet-calculator \
-  -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9' build
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' build
 ```
 
 ## Tests
 ```bash
 xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator \
-  -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9'
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
 ```
 
 ## CI parity commands (recommended before PR)
