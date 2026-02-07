@@ -2,7 +2,6 @@ import XCTest
 
 /// UI тесты для калькулятора сурбетов.
 /// Тестирует основные пользовательские сценарии.
-@MainActor
 final class SurebetCalculatorUITests: XCTestCase {
     // MARK: - Properties
 
@@ -10,15 +9,13 @@ final class SurebetCalculatorUITests: XCTestCase {
 
     // MARK: - Lifecycle
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
         continueAfterFailure = false
         app = XCUIApplication()
     }
 
-    override func tearDown() {
+    override func tearDownWithError() throws {
         app = nil
-        super.tearDown()
     }
 
     // MARK: - Happy Path Tests
