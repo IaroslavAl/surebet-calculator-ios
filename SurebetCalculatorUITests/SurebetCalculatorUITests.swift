@@ -11,7 +11,7 @@ final class SurebetCalculatorUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
-        app = XCUIApplication()
+        app = MainActor.assumeIsolated { XCUIApplication() }
     }
 
     override func tearDownWithError() throws {
