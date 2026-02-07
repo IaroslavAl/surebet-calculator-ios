@@ -21,6 +21,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     // MARK: - Happy Path Tests
 
     /// Тест: Запуск приложения и показ онбординга для нового пользователя
+    @MainActor
     func testAppLaunchShowsOnboardingForNewUser() throws {
         app.launchArguments = ["-resetUserDefaults"]
         app.launch()
@@ -40,6 +41,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     }
 
     /// Тест: Прохождение онбординга полностью (3 страницы)
+    @MainActor
     func testOnboardingCompleteFlow() throws {
         app.launchArguments = ["-resetUserDefaults"]
         app.launch()
@@ -87,6 +89,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     }
 
     /// Тест: Закрытие онбординга кнопкой X
+    @MainActor
     func testOnboardingCloseButton() throws {
         app.launchArguments = ["-resetUserDefaults"]
         app.launch()
@@ -115,6 +118,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     /// Тест: Ввод данных в калькулятор (через коэффициенты и общую сумму)
     /// По умолчанию selectedRow = .total, поэтому rowBetSize поля заблокированы.
     /// Работаем через totalBetSize и coefficient поля (они всегда enabled).
+    @MainActor
     func testCalculatorInputAndCalculation() throws {
         launchAppWithoutOnboarding()
 
@@ -144,6 +148,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     }
 
     /// Тест: Показ результата (profit percentage)
+    @MainActor
     func testProfitPercentageDisplay() throws {
         launchAppWithoutOnboarding()
 
@@ -175,6 +180,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     // MARK: - Edge Cases Tests
 
     /// Тест: Очистка всех полей
+    @MainActor
     func testClearAllFields() throws {
         launchAppWithoutOnboarding()
 
@@ -208,6 +214,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     }
 
     /// Тест: Изменение количества строк через пикер
+    @MainActor
     func testChangeRowCount() throws {
         launchAppWithoutOnboarding()
 
@@ -229,6 +236,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     }
 
     /// Тест: Уменьшение количества строк через пикер
+    @MainActor
     func testReduceRowCount() throws {
         launchAppWithoutOnboarding()
 
@@ -249,6 +257,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     }
 
     /// Тест: Минимальное количество строк (2)
+    @MainActor
     func testMinimumRowCount() throws {
         launchAppWithoutOnboarding()
 
@@ -264,6 +273,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     }
 
     /// Тест: Максимальное количество строк (20)
+    @MainActor
     func testMaximumRowCount() throws {
         launchAppWithoutOnboarding()
 
@@ -282,6 +292,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     }
 
     /// Тест: Очистка текущего поля с клавиатуры
+    @MainActor
     func testKeyboardClearButton() throws {
         launchAppWithoutOnboarding()
 
@@ -306,6 +317,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     }
 
     /// Тест: Переключение между режимами расчёта (total/row)
+    @MainActor
     func testToggleCalculationMode() throws {
         launchAppWithoutOnboarding()
 
@@ -335,6 +347,7 @@ final class SurebetCalculatorUITests: XCTestCase {
 
     // MARK: - Private Helpers
 
+    @MainActor
     private func launchAppWithoutOnboarding() {
         app.launchArguments = ["-onboardingIsShown"]
         app.launch()
@@ -346,6 +359,7 @@ final class SurebetCalculatorUITests: XCTestCase {
         )
     }
 
+    @MainActor
     private func tapDoneButton() {
         let doneButton = app.buttons[Identifiers.Keyboard.doneButton]
         if doneButton.waitForExistence(timeout: 1) {
@@ -353,6 +367,7 @@ final class SurebetCalculatorUITests: XCTestCase {
         }
     }
 
+    @MainActor
     private func selectRowCount(_ value: Int) {
         let decreaseControl = app.descendants(matching: .any)[Identifiers.Calculator.rowCountDecreaseButton]
         let increaseControl = app.descendants(matching: .any)[Identifiers.Calculator.rowCountIncreaseButton]
