@@ -121,16 +121,8 @@ private extension RootViewModel {
 
     func showFullscreenBannerIfAvailable() {
         guard RootConstants.isBannerFetchEnabled, fullscreenBannerIsAvailable else { return }
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            let bannerCacheChecker = self.bannerCacheChecker
-            let cacheTask = Task.detached(priority: .utility) {
-                bannerCacheChecker()
-            }
-            let isCached = await cacheTask.value
-            guard isCached else { return }
-            self.fullscreenBannerIsPresented = true
-        }
+        guard bannerCacheChecker() else { return }
+        fullscreenBannerIsPresented = true
     }
 
     func requestReviewIfNeeded() {
