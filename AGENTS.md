@@ -39,4 +39,5 @@ xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator
 - Модули и контракты: `docs/reference/MODULE_INDEX.md`
 - Зависимости и граф: `docs/reference/DEPENDENCY_GRAPH.md`
 - Команды сборки/тестов: `docs/reference/BUILD_TEST_COMMANDS.md`
+- Правила CI и required checks: `docs/reference/CI_RULES.md`
 - Инциденты и анти-паттерны: `docs/lessons/INCIDENTS.md`

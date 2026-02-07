@@ -10,6 +10,7 @@
 - `docs/reference/MODULE_INDEX.md`
 - `docs/reference/DEPENDENCY_GRAPH.md`
 - `docs/reference/BUILD_TEST_COMMANDS.md`
+- `docs/reference/CI_RULES.md`
 
 ## Архитектурные решения и опыт
 - `docs/decisions/*`
