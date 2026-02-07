@@ -10,15 +10,15 @@ final class SurebetCalculatorUITests: XCTestCase {
 
     // MARK: - Lifecycle
 
-    override func setUp() async throws {
-        try await super.setUp()
+    override func setUp() {
+        super.setUp()
         continueAfterFailure = false
         app = XCUIApplication()
     }
 
-    override func tearDown() async throws {
+    override func tearDown() {
         app = nil
-        try await super.tearDown()
+        super.tearDown()
     }
 
     // MARK: - Happy Path Tests
