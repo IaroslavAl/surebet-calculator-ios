@@ -14,6 +14,7 @@ final class KeyboardAccessoryOverlayManager {
     private weak var containerView: UIView?
     private weak var keyboardGuideView: UIView?
     private var constraints: [NSLayoutConstraint] = []
+    private var isAttachRetryScheduled = false
 
     init() {
         toolbarView.configure(onClear: {}, onDone: {})
@@ -23,12 +24,10 @@ final class KeyboardAccessoryOverlayManager {
 
     func attach(to view: UIView) {
         guard let window = resolveHostWindow(for: view) else {
-            Task { @MainActor [weak self, weak view] in
-                guard let self, let view else { return }
-                self.attach(to: view)
-            }
+            scheduleAttachRetryIfNeeded(for: view)
             return
         }
+        isAttachRetryScheduled = false
         install(hostWindow: window)
     }
 
@@ -45,6 +44,7 @@ final class KeyboardAccessoryOverlayManager {
         hostWindow = nil
         containerView = nil
         keyboardGuideView = nil
+        isAttachRetryScheduled = false
     }
 
     private func install(hostWindow: UIWindow) {
@@ -82,6 +82,17 @@ final class KeyboardAccessoryOverlayManager {
             addKeyboardObserver(for: UIResponder.keyboardWillChangeFrameNotification),
             addKeyboardObserver(for: UIResponder.keyboardWillHideNotification)
         ]
+    }
+
+    private func scheduleAttachRetryIfNeeded(for view: UIView) {
+        guard !isAttachRetryScheduled else { return }
+        isAttachRetryScheduled = true
+        DispatchQueue.main.async { [weak self, weak view] in
+            guard let self else { return }
+            self.isAttachRetryScheduled = false
+            guard let view, let window = self.resolveHostWindow(for: view) else { return }
+            self.install(hostWindow: window)
+        }
     }
 
     private func addKeyboardObserver(for name: Notification.Name) -> NSObjectProtocol {
