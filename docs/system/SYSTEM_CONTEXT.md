@@ -1,60 +1,11 @@
-# System Context — SurebetCalculator
+# SYSTEM CONTEXT (LEGACY ENTRY)
 
-Карта проекта для ИИ‑агента. Если есть противоречия, приоритет у `docs/rules/*` и `docs/architecture/*`.
+Этот файл сохранен для обратной совместимости.
 
-## Быстрые факты
+Актуальные источники:
+- Старт: `docs/agent/START_HERE.md`
+- Правила: `docs/agent/POLICIES.md`
+- Карта проекта: `docs/reference/PROJECT_MAP.md`
+- Индекс модулей: `docs/reference/MODULE_INDEX.md`
 
-| | |
-|---|---|
-| **Swift** | 6.0 (strict concurrency) |
-| **iOS** | 16.0+ |
-| **Архитектура** | MVVM + Services + DI |
-| **Package Manager** | SPM (монорепо в `SurebetCalculatorPackage/`) |
-| **Тесты** | Swift Testing (`import Testing`) |
-
-## Структура репозитория
-- `SurebetCalculator/` — iOS app target
-- `SurebetCalculatorPackage/` — Sources и Tests модулей
-- `SurebetCalculatorUITests/` — UI‑тесты
-
-## Модули (кратко)
-- `Root` — entry point и координация
-- `MainMenu` — экран меню
-- `Settings` — настройки темы и языка
-- `SurebetCalculator` — бизнес‑логика калькулятора
-- `Banner` — баннеры (сеть, кэш, UI)
-- `Onboarding` — онбординг
-- `ReviewHandler` — запрос отзывов
-- `AnalyticsManager` — типобезопасная аналитика
-- `DesignSystem` — дизайн‑токены и базовые UI‑компоненты
-
-Подробнее: `docs/architecture/MODULES.md`.
-
-## Ключевые точки входа
-
-| Назначение | Файл |
-|---|---|
-| App entry | `SurebetCalculator/SurebetCalculatorApp.swift` |
-| Root UI | `SurebetCalculatorPackage/Sources/Root/RootView.swift` |
-| Root VM | `SurebetCalculatorPackage/Sources/Root/RootViewModel.swift` |
-| MainMenu UI | `SurebetCalculatorPackage/Sources/MainMenu/Views/MainMenuView.swift` |
-| Calculator logic | `SurebetCalculatorPackage/Sources/SurebetCalculator/Calculator/` |
-| Banner service | `SurebetCalculatorPackage/Sources/Banner/` |
-| Package config | `SurebetCalculatorPackage/Package.swift` |
-
-## Архитектура и паттерны (очень коротко)
-- MVVM + `send(_:)` как единая точка входа во ViewModel.
-- DI через `init`: параметр = протокол, дефолт = реализация.
-- UI‑состояние через `@Published private(set)`.
-- Аналитика — только через `AnalyticsEvent`.
-
-Подробнее: `docs/architecture/DATA_FLOW.md` и `docs/rules/CODING_STANDARDS.md`.
-
-## Источники правды в коде
-- Версии зависимостей: `SurebetCalculatorPackage/Package.swift`.
-- Навигация и условия показа: `RootView`/`RootViewModel`.
-- Каталог аналитики: `AnalyticsManager/AnalyticsEvent`.
-
----
-
-Последнее обновление: 2026-02-05
+Если есть конфликт, приоритет у документов из `docs/agent/*` и `docs/reference/*`.
