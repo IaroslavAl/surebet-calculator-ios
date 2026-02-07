@@ -25,13 +25,13 @@ iOS-приложение для расчета surebet-стратегий (ви�
 ## Сборка
 ```bash
 xcodebuild -project surebet-calculator.xcodeproj -scheme surebet-calculator \
-  -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9' build
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' build
 ```
 
 ## Тесты
 ```bash
 xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator \
-  -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9'
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
 ```
 
 ## Зависимости

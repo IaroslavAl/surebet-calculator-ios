@@ -21,21 +21,46 @@ xcodebuild \
   -project "$PROJECT" \
   "${COMMON_FLAGS[@]}"
 
-SIMULATOR_LINE="$( (xcrun simctl list devices available || true) | sed -n 's/^[[:space:]]*\(iPhone[^()]* ([-A-F0-9]\{36\})\).*/\1/p' | head -n1 )"
-SIMULATOR_ID="$(echo "$SIMULATOR_LINE" | sed -n 's/.*(\([-A-F0-9]\{36\}\)).*/\1/p')"
+SIMULATOR_DESTINATION="${SIMULATOR_DESTINATION:-}"
+if [[ -z "$SIMULATOR_DESTINATION" ]]; then
+  SIMULATOR_SELECTION="$(
+    (xcrun simctl list devices available || true) | awk '
+      /^-- iOS [0-9.]+ --$/ {
+        os=$0
+        sub(/^-- iOS /, "", os)
+        sub(/ --$/, "", os)
+        next
+      }
+      /^[[:space:]]*iPhone/ && /\([A-Fa-f0-9-]{36}\)/ {
+        name=$0
+        sub(/^[[:space:]]*/, "", name)
+        sub(/ \([A-Fa-f0-9-]{36}\).*/, "", name)
+        if (os != "") {
+          print name "|" os
+          exit
+        }
+      }
+    '
+  )"
 
-if [[ -z "$SIMULATOR_ID" ]]; then
-  echo "No available iPhone simulator found."
-  xcrun simctl list devices available || true
-  exit 1
+  SIMULATOR_NAME="${SIMULATOR_SELECTION%%|*}"
+  SIMULATOR_OS="${SIMULATOR_SELECTION#*|}"
+
+  if [[ -z "$SIMULATOR_NAME" || -z "$SIMULATOR_OS" || "$SIMULATOR_SELECTION" == "$SIMULATOR_NAME" ]]; then
+    echo "No available iPhone simulator found."
+    xcrun simctl list devices available || true
+    exit 1
+  fi
+
+  SIMULATOR_DESTINATION="platform=iOS Simulator,name=$SIMULATOR_NAME,OS=$SIMULATOR_OS"
 fi
 
-echo "Using simulator: $SIMULATOR_LINE"
+echo "Using destination: $SIMULATOR_DESTINATION"
 
 xcodebuild \
   -project "$PROJECT" \
   -scheme "$SCHEME" \
   "${COMMON_FLAGS[@]}" \
-  -destination "id=$SIMULATOR_ID" \
+  -destination "$SIMULATOR_DESTINATION" \
   -derivedDataPath "$DERIVED_DATA_PATH" \
   "$ACTION"

@@ -22,11 +22,11 @@
 ## 3) Проверка перед сдачей
 ```bash
 xcodebuild -project surebet-calculator.xcodeproj -scheme surebet-calculator \
-  -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9' build
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' build
 
 # Обязательно, если менялись ViewModel/Services/Tests
 xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator \
-  -destination 'id=F8F50881-5D0E-49DA-AA54-1312A752EED9'
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
 ```
 Критерий успеха: `TEST SUCCEEDED`.
 
