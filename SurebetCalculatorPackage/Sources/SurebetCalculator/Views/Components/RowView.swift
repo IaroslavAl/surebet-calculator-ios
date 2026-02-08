@@ -1,6 +1,5 @@
 import SwiftUI
 import DesignSystem
-import UIKit
 
 struct RowView: View {
     // MARK: - Properties
@@ -95,14 +94,6 @@ private extension RowView {
                 DesignSystem.Color.surface
             }
         }
-        .contentShape(.rect)
-        .onTapGesture(perform: actionWithImpactFeedback)
-    }
-
-    func actionWithImpactFeedback() {
-        guard !state.isSelected else { return }
-        withAnimation(DesignSystem.Animation.quickInteraction) { onSelect() }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 }
 

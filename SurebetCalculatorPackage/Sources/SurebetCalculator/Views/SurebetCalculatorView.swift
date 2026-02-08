@@ -32,10 +32,7 @@ struct SurebetCalculatorView: View {
         .onAppear {
             keyboardActionProxy.update(
                 onClear: { viewModel.send(.clearFocusableField) },
-                onDone: {
-                    focusedField = nil
-                    viewModel.send(.hideKeyboard)
-                }
+                onDone: dismissKeyboard
             )
             focusedField = viewModel.focus
         }
@@ -61,33 +58,37 @@ private extension SurebetCalculatorView {
     }
 
     var scrollView: some View {
-        ScrollView(showsIndicators: false) {
-            ZStack {
-                backgroundTapGesture
-                VStack(spacing: sectionSpacing) {
-                    OutcomeCountControlView(
-                        viewModel: viewModel.outcomeCountViewModel,
-                        onRemove: { viewModel.send(.removeRow) },
-                        onAdd: { viewModel.send(.addRow) }
-                    )
-                    TotalRowView(
-                        viewModel: viewModel.totalRowViewModel,
-                        focusedField: $focusedField,
-                        onSelect: { viewModel.send(.selectRow(.total)) },
-                        onBetSizeChange: { text in
-                            viewModel.send(.setTextFieldText(.totalBetSize, text))
-                        }
-                    )
-                    rowsHeader
-                    rowsView
+        GeometryReader { geometry in
+            ScrollView(showsIndicators: false) {
+                ZStack(alignment: .top) {
+                    backgroundTapGesture
+                    VStack(spacing: sectionSpacing) {
+                        OutcomeCountControlView(
+                            viewModel: viewModel.outcomeCountViewModel,
+                            onRemove: { viewModel.send(.removeRow) },
+                            onAdd: { viewModel.send(.addRow) }
+                        )
+                        TotalRowView(
+                            viewModel: viewModel.totalRowViewModel,
+                            focusedField: $focusedField,
+                            onSelect: { viewModel.send(.selectRow(.total)) },
+                            onBetSizeChange: { text in
+                                viewModel.send(.setTextFieldText(.totalBetSize, text))
+                            }
+                        )
+                        rowsHeader
+                        rowsView
+                    }
+                    .padding(.vertical, sectionSpacing)
+                    .padding(.horizontal, horizontalPadding)
                 }
-                .padding(.vertical, sectionSpacing)
-                .padding(.horizontal, horizontalPadding)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: geometry.size.height, alignment: .top)
             }
-        }
-        .scrollDismissesKeyboard(.immediately)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            Color.clear.frame(height: keyboardAccessoryInset)
+            .scrollDismissesKeyboard(.immediately)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Color.clear.frame(height: keyboardAccessoryInset)
+            }
         }
     }
 
@@ -97,7 +98,7 @@ private extension SurebetCalculatorView {
             .contentShape(.rect)
             .allowsHitTesting(viewModel.focus != nil)
             .onTapGesture {
-                focusedField = nil
+                dismissKeyboard()
             }
     }
 
@@ -144,6 +145,12 @@ private extension SurebetCalculatorView {
         ToolbarItem(placement: .topBarTrailing) {
             NavigationClearButton(onClear: { viewModel.send(.clearAll) })
         }
+    }
+
+    func dismissKeyboard() {
+        guard viewModel.focus != nil || focusedField != nil else { return }
+        focusedField = nil
+        viewModel.send(.hideKeyboard)
     }
 }
 
