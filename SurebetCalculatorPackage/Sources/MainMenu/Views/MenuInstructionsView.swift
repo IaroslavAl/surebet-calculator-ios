@@ -56,17 +56,17 @@ private extension MenuInstructionsView {
                 message: MainMenuLocalizationKey.instructionsStepOneBody.localized(locale)
             ),
             InstructionStep(
-                systemImage: "percent",
+                systemImage: "slider.horizontal.3",
                 title: MainMenuLocalizationKey.instructionsStepTwoTitle.localized(locale),
                 message: MainMenuLocalizationKey.instructionsStepTwoBody.localized(locale)
             ),
             InstructionStep(
-                systemImage: "target",
+                systemImage: "highlighter",
                 title: MainMenuLocalizationKey.instructionsStepThreeTitle.localized(locale),
                 message: MainMenuLocalizationKey.instructionsStepThreeBody.localized(locale)
             ),
             InstructionStep(
-                systemImage: "checkmark.seal",
+                systemImage: "trash",
                 title: MainMenuLocalizationKey.instructionsStepFourTitle.localized(locale),
                 message: MainMenuLocalizationKey.instructionsStepFourBody.localized(locale)
             )
