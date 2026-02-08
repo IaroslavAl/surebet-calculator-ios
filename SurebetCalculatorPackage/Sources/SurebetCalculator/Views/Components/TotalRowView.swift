@@ -5,14 +5,21 @@ import UIKit
 struct TotalRowView: View {
     // MARK: - Properties
 
-    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    @ObservedObject var viewModel: TotalRowItemViewModel
     @Environment(\.locale) private var locale
+    let focusedField: FocusState<FocusableField?>.Binding
+    let onSelect: () -> Void
+    let onBetSizeChange: (String) -> Void
 
     // MARK: - Body
 
     var body: some View {
         HStack(alignment: .bottom, spacing: columnSpacing) {
-            ToggleButton(row: .total)
+            ToggleButton(
+                isOn: state.isOn,
+                accessibilityIdentifier: AccessibilityIdentifiers.TotalRow.toggleButton,
+                action: onSelect
+            )
                 .frame(width: selectionIndicatorSize)
             totalBetSizeColumn
                 .frame(maxWidth: .infinity)
@@ -32,6 +39,7 @@ struct TotalRowView: View {
 // MARK: - Private Computed Properties
 
 private extension TotalRowView {
+    var state: TotalRowItemState { viewModel.state }
     var betSizeLabel: String { SurebetCalculatorLocalizationKey.totalBetSize.localized(locale) }
     var profitPercentageLabel: String { SurebetCalculatorLocalizationKey.profitPercentage.localized(locale) }
     var labelSpacing: CGFloat { DesignSystem.Spacing.small }
@@ -39,7 +47,7 @@ private extension TotalRowView {
     var cardPadding: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
     var cardCornerRadius: CGFloat { isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.medium }
     var selectionIndicatorSize: CGFloat { isIPad ? 48 : 44 }
-    var isSelected: Bool { viewModel.selection == .total }
+    var isSelected: Bool { state.isSelected }
 
     var totalBetSizeColumn: some View {
         VStack(spacing: labelSpacing) {
@@ -51,7 +59,11 @@ private extension TotalRowView {
             TextFieldView(
                 placeholder: "",
                 label: betSizeLabel,
-                focusableField: .totalBetSize
+                focusableField: .totalBetSize,
+                focusedField: focusedField,
+                text: state.betSize,
+                isDisabled: state.isBetSizeDisabled,
+                onTextChange: onBetSizeChange
             )
         }
     }
@@ -64,7 +76,7 @@ private extension TotalRowView {
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             TextView(
-                text: viewModel.total.profitPercentage,
+                text: state.profitPercentage,
                 isPercent: true,
                 isEmphasized: isSelected,
                 accessibilityId: AccessibilityIdentifiers.TotalRow.profitPercentageText
@@ -85,16 +97,36 @@ private extension TotalRowView {
     }
 
     func actionWithImpactFeedback() {
-        guard viewModel.selection != .total else { return }
-        withAnimation(DesignSystem.Animation.quickInteraction) {
-            viewModel.send(.selectRow(.total))
-        }
+        guard !isSelected else { return }
+        withAnimation(DesignSystem.Animation.quickInteraction) { onSelect() }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 }
 
-#Preview {
-    TotalRowView()
+private struct TotalRowViewPreview: View {
+    @FocusState private var focusedField: FocusableField?
+
+    private let viewModel = TotalRowItemViewModel(
+        state: TotalRowItemState(
+            isSelected: true,
+            isOn: true,
+            betSize: "1000",
+            profitPercentage: "10%",
+            isBetSizeDisabled: false
+        )
+    )
+
+    var body: some View {
+        TotalRowView(
+            viewModel: viewModel,
+            focusedField: $focusedField,
+            onSelect: {},
+            onBetSizeChange: { _ in }
+        )
         .padding(.trailing)
-        .environmentObject(SurebetCalculatorViewModel())
+    }
+}
+
+#Preview {
+    TotalRowViewPreview()
 }

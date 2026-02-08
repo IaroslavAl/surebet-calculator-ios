@@ -15,9 +15,6 @@ struct CalculatorTextFieldStyle: TextFieldStyle {
             .background(backgroundColor)
             .cornerRadius(cornerRadius)
             .keyboardType(.decimalPad)
-            .animation(DesignSystem.Animation.quickInteraction, value: isValid)
-            .animation(DesignSystem.Animation.quickInteraction, value: isEnabled)
-            .animation(DesignSystem.Animation.quickInteraction, value: isFocused)
     }
 }
 

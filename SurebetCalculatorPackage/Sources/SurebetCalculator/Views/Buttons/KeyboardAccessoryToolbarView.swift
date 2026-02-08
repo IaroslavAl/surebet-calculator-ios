@@ -7,7 +7,6 @@ final class KeyboardAccessoryToolbarView: UIView {
         static let sidePadding: CGFloat = 16
         static let verticalPadding: CGFloat = 0
         static let borderWidth: CGFloat = 1
-        static let hitSlop: CGFloat = 8
     }
 
     private let clearButton = UIButton(type: .system)
@@ -35,13 +34,6 @@ final class KeyboardAccessoryToolbarView: UIView {
             width: UIView.noIntrinsicMetric,
             height: currentButtonSize + Layout.verticalPadding * 2
         )
-    }
-
-    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-        guard isUserInteractionEnabled, !isHidden, alpha > 0.01 else { return false }
-        let clearFrame = clearButton.frame.insetBy(dx: -Layout.hitSlop, dy: -Layout.hitSlop)
-        let doneFrame = doneButton.frame.insetBy(dx: -Layout.hitSlop, dy: -Layout.hitSlop)
-        return clearFrame.contains(point) || doneFrame.contains(point)
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

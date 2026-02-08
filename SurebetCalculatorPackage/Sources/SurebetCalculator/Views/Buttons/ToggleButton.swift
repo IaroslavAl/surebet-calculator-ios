@@ -1,19 +1,19 @@
 import SwiftUI
 import DesignSystem
+import UIKit
 
 struct ToggleButton: View {
     // MARK: - Properties
 
-    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
-
-    let row: Selection
+    let isOn: Bool
+    let accessibilityIdentifier: String
+    let action: () -> Void
 
     // MARK: - Body
 
     var body: some View {
         Button(action: actionWithImpactFeedback, label: label)
             .buttonStyle(.scale)
-            .animation(DesignSystem.Animation.quickInteraction, value: isON)
             .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
@@ -21,26 +21,15 @@ struct ToggleButton: View {
 // MARK: - Private Methods
 
 private extension ToggleButton {
-    var isON: Bool {
-        switch row {
-        case .total:
-            viewModel.total.isON
-        case let .row(id):
-            viewModel.row(for: id)?.isON ?? false
-        case .none:
-            false
-        }
-    }
-
     var transition: AnyTransition { DesignSystem.Animation.scaleWithOpacity }
 
     func label() -> some View {
         ZStack {
             Circle()
-                .fill(isON ? DesignSystem.Color.accentSoft : DesignSystem.Color.surface)
+                .fill(isOn ? DesignSystem.Color.accentSoft : DesignSystem.Color.surface)
             Circle()
-                .stroke(isON ? DesignSystem.Color.accent : DesignSystem.Color.borderMuted, lineWidth: 1.2)
-            if isON {
+                .stroke(isOn ? DesignSystem.Color.accent : DesignSystem.Color.borderMuted, lineWidth: 1.2)
+            if isOn {
                 Image(systemName: "checkmark")
                     .font(.system(size: iconSize, weight: .semibold))
                     .foregroundColor(DesignSystem.Color.accent)
@@ -54,21 +43,9 @@ private extension ToggleButton {
 
     func actionWithImpactFeedback() {
         withAnimation(DesignSystem.Animation.quickInteraction) {
-            viewModel.send(.selectRow(row))
+            action()
         }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-    }
-
-    var accessibilityIdentifier: String {
-        switch row {
-        case .total:
-            return AccessibilityIdentifiers.TotalRow.toggleButton
-        case let .row(id):
-            let displayIndex = viewModel.displayIndex(for: id) ?? 0
-            return AccessibilityIdentifiers.Row.toggleButton(displayIndex)
-        case .none:
-            return AccessibilityIdentifiers.TotalRow.toggleButton
-        }
     }
 
     var size: CGFloat {
@@ -85,6 +62,9 @@ private extension ToggleButton {
 }
 
 #Preview {
-    ToggleButton(row: .total)
-        .environmentObject(SurebetCalculatorViewModel())
+    ToggleButton(
+        isOn: true,
+        accessibilityIdentifier: AccessibilityIdentifiers.TotalRow.toggleButton,
+        action: {}
+    )
 }

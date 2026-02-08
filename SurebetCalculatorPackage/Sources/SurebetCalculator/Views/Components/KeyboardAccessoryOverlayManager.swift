@@ -13,26 +13,34 @@ final class KeyboardAccessoryOverlayManager {
     private weak var hostWindow: UIWindow?
     private weak var containerView: UIView?
     private weak var keyboardGuideView: UIView?
+    private var actionProxy: KeyboardAccessoryActionProxy?
     private var constraints: [NSLayoutConstraint] = []
     private var isAttachRetryScheduled = false
+    private var isToolbarVisible = false
 
     init() {
-        toolbarView.configure(onClear: {}, onDone: {})
+        toolbarView.configure(
+            onClear: { [weak self] in
+                self?.actionProxy?.performClear()
+            },
+            onDone: { [weak self] in
+                self?.actionProxy?.performDone()
+            }
+        )
         toolbarView.alpha = 0
         toolbarView.isUserInteractionEnabled = false
     }
 
-    func attach(to view: UIView) {
+    func update(actionProxy: KeyboardAccessoryActionProxy, in view: UIView) {
+        self.actionProxy = actionProxy
+
         guard let window = resolveHostWindow(for: view) else {
             scheduleAttachRetryIfNeeded(for: view)
             return
         }
+
         isAttachRetryScheduled = false
         install(hostWindow: window)
-    }
-
-    func updateActions(onClear: @escaping () -> Void, onDone: @escaping () -> Void) {
-        toolbarView.updateActions(onClear: onClear, onDone: onDone)
     }
 
     func teardown() {
@@ -44,14 +52,18 @@ final class KeyboardAccessoryOverlayManager {
         hostWindow = nil
         containerView = nil
         keyboardGuideView = nil
+        actionProxy = nil
         isAttachRetryScheduled = false
+        isToolbarVisible = false
     }
 
     private func install(hostWindow: UIWindow) {
         let guideView = hostWindow.rootViewController?.view ?? hostWindow
         let containerView = hostWindow
         if self.hostWindow === hostWindow, toolbarView.superview === containerView { return }
+        let currentActionProxy = actionProxy
         teardown()
+        actionProxy = currentActionProxy
         self.hostWindow = hostWindow
         self.containerView = containerView
         keyboardGuideView = guideView
@@ -73,6 +85,7 @@ final class KeyboardAccessoryOverlayManager {
 
         toolbarView.alpha = 0
         toolbarView.isUserInteractionEnabled = false
+        isToolbarVisible = false
         registerObservers()
     }
 
@@ -174,33 +187,56 @@ final class KeyboardAccessoryOverlayManager {
         duration: Double,
         curveRaw: Int
     ) {
-        toolbarView.isUserInteractionEnabled = context.isVisible
-        let updates = { [weak self] in
-            guard let self else { return }
-            if context.isVisible {
-                self.toolbarView.alpha = 1
-            }
-            context.containerView.layoutIfNeeded()
+        if context.isVisible == isToolbarVisible {
+            guard context.isVisible else { return }
+            animateLayout(
+                in: context.containerView,
+                animated: animated,
+                duration: duration,
+                curveRaw: curveRaw
+            )
+            return
         }
+
+        isToolbarVisible = context.isVisible
+        toolbarView.isUserInteractionEnabled = context.isVisible
+        let targetAlpha: CGFloat = context.isVisible ? 1 : 0
 
         if animated && duration > 0 {
             UIView.animate(
                 withDuration: duration,
                 delay: 0,
                 options: [animationOptions(for: curveRaw), .beginFromCurrentState],
-                animations: updates
-            ) { [weak self] _ in
-                guard let self else { return }
-                if !context.isVisible {
-                    self.toolbarView.alpha = 0
+                animations: {
+                    self.toolbarView.alpha = targetAlpha
+                    context.containerView.layoutIfNeeded()
                 }
-            }
+            )
         } else {
-            updates()
-            if !context.isVisible {
-                toolbarView.alpha = 0
-            }
+            toolbarView.alpha = targetAlpha
+            context.containerView.layoutIfNeeded()
         }
+    }
+
+    private func animateLayout(
+        in containerView: UIView,
+        animated: Bool,
+        duration: Double,
+        curveRaw: Int
+    ) {
+        guard animated && duration > 0 else {
+            containerView.layoutIfNeeded()
+            return
+        }
+
+        UIView.animate(
+            withDuration: duration,
+            delay: 0,
+            options: [animationOptions(for: curveRaw), .beginFromCurrentState],
+            animations: {
+                containerView.layoutIfNeeded()
+            }
+        )
     }
 
     private func animationOptions(for curveRaw: Int) -> UIView.AnimationOptions {

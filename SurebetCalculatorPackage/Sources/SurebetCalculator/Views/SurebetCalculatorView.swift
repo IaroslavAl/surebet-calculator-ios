@@ -4,17 +4,16 @@ import DesignSystem
 struct SurebetCalculatorView: View {
     // MARK: - Properties
 
-    @StateObject
-    private var viewModel: SurebetCalculatorViewModel
+    @ObservedObject private var viewModel: SurebetCalculatorViewModel
+    @StateObject private var keyboardActionProxy = KeyboardAccessoryActionProxy()
     @Environment(\.locale) private var locale
 
-    @FocusState
-    private var isFocused
+    @FocusState private var focusedField: FocusableField?
 
     // MARK: - Initialization
 
     init(viewModel: SurebetCalculatorViewModel) {
-        self._viewModel = StateObject(wrappedValue: viewModel)
+        self.viewModel = viewModel
     }
 
     // MARK: - Body
@@ -30,17 +29,26 @@ struct SurebetCalculatorView: View {
         .toolbar(content: toolbar)
         .frame(minHeight: .zero, maxHeight: .infinity, alignment: .top)
         .font(DesignSystem.Typography.body)
-        .environmentObject(viewModel)
-        .animation(.default, value: viewModel.selectedNumberOfRows)
-        .focused($isFocused)
-        .onTapGesture {
-            isFocused = false
+        .onAppear {
+            keyboardActionProxy.update(
+                onClear: { viewModel.send(.clearFocusableField) },
+                onDone: {
+                    focusedField = nil
+                    viewModel.send(.hideKeyboard)
+                }
+            )
+            focusedField = viewModel.focus
+        }
+        .onChange(of: focusedField) { newFocus in
+            guard viewModel.focus != newFocus else { return }
+            viewModel.send(.setFocus(newFocus))
+        }
+        .onChange(of: viewModel.focus) { focus in
+            guard focusedField != focus else { return }
+            focusedField = focus
         }
         .background(
-            KeyboardAccessoryOverlayHost(
-                onClear: { viewModel.send(.clearFocusableField) },
-                onDone: { viewModel.send(.hideKeyboard) }
-            )
+            KeyboardAccessoryOverlayHost(actionProxy: keyboardActionProxy)
         )
     }
 }
@@ -54,15 +62,28 @@ private extension SurebetCalculatorView {
 
     var scrollView: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: sectionSpacing) {
-                OutcomeCountControlView()
-                TotalRowView()
-                rowsHeader
-                rowsView
+            ZStack {
+                backgroundTapGesture
+                VStack(spacing: sectionSpacing) {
+                    OutcomeCountControlView(
+                        viewModel: viewModel.outcomeCountViewModel,
+                        onRemove: { viewModel.send(.removeRow) },
+                        onAdd: { viewModel.send(.addRow) }
+                    )
+                    TotalRowView(
+                        viewModel: viewModel.totalRowViewModel,
+                        focusedField: $focusedField,
+                        onSelect: { viewModel.send(.selectRow(.total)) },
+                        onBetSizeChange: { text in
+                            viewModel.send(.setTextFieldText(.totalBetSize, text))
+                        }
+                    )
+                    rowsHeader
+                    rowsView
+                }
+                .padding(.vertical, sectionSpacing)
+                .padding(.horizontal, horizontalPadding)
             }
-            .padding(.vertical, sectionSpacing)
-            .padding(.horizontal, horizontalPadding)
-            .background(backgroundTapGesture)
         }
         .scrollDismissesKeyboard(.immediately)
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -72,18 +93,31 @@ private extension SurebetCalculatorView {
 
     var backgroundTapGesture: some View {
         Color.clear
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .contentShape(.rect)
+            .allowsHitTesting(viewModel.focus != nil)
             .onTapGesture {
-                viewModel.send(.hideKeyboard)
+                focusedField = nil
             }
     }
 
     var rowsView: some View {
         VStack(spacing: rowsSpacing) {
-            ForEach(Array(viewModel.activeRowIds.enumerated()), id: \.element) { index, id in
-                RowView(rowId: id, displayIndex: index)
+            ForEach(viewModel.activeRowViewModels) { rowViewModel in
+                RowView(
+                    viewModel: rowViewModel,
+                    focusedField: $focusedField,
+                    onSelect: { viewModel.send(.selectRow(.row(rowViewModel.id))) },
+                    onCoefficientChange: { text in
+                        viewModel.send(.setTextFieldText(.rowCoefficient(rowViewModel.id), text))
+                    },
+                    onBetSizeChange: { text in
+                        viewModel.send(.setTextFieldText(.rowBetSize(rowViewModel.id), text))
+                    }
+                )
             }
         }
+        .animation(DesignSystem.Animation.quickInteraction, value: viewModel.activeRowViewModelIDs)
     }
 
     var rowsHeader: some View {
@@ -108,10 +142,9 @@ private extension SurebetCalculatorView {
     @ToolbarContentBuilder
     func toolbar() -> some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            NavigationClearButton()
+            NavigationClearButton(onClear: { viewModel.send(.clearAll) })
         }
     }
-
 }
 
 // MARK: - Private Computed Properties

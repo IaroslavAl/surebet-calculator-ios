@@ -5,8 +5,10 @@ import UIKit
 struct OutcomeCountControlView: View {
     // MARK: - Properties
 
-    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    @ObservedObject var viewModel: OutcomeCountViewModel
     @Environment(\.locale) private var locale
+    let onRemove: () -> Void
+    let onAdd: () -> Void
 
     // MARK: - Body
 
@@ -24,14 +26,14 @@ struct OutcomeCountControlView: View {
                     systemName: "minus",
                     isDisabled: isAtMin,
                     accessibilityId: AccessibilityIdentifiers.Calculator.rowCountDecreaseButton,
-                    action: { viewModel.send(.removeRow) }
+                    action: onRemove
                 )
                 valuePill
                 counterButton(
                     systemName: "plus",
                     isDisabled: isAtMax,
                     accessibilityId: AccessibilityIdentifiers.Calculator.rowCountIncreaseButton,
-                    action: { viewModel.send(.addRow) }
+                    action: onAdd
                 )
             }
         }
@@ -49,6 +51,7 @@ struct OutcomeCountControlView: View {
 // MARK: - Private Methods
 
 private extension OutcomeCountControlView {
+    var state: OutcomeCountState { viewModel.state }
     var label: String { SurebetCalculatorLocalizationKey.outcomesCount.localized(locale) }
     var spacing: CGFloat { DesignSystem.Spacing.small }
     var horizontalPadding: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.medium }
@@ -58,7 +61,7 @@ private extension OutcomeCountControlView {
     var valueMinWidth: CGFloat { isIPad ? 48 : 32 }
 
     var valuePill: some View {
-        Text("\(viewModel.selectedNumberOfRows.rawValue)")
+        Text("\(state.selectedNumberOfRows.rawValue)")
             .font(DesignSystem.Typography.numeric)
             .foregroundColor(DesignSystem.Color.textPrimary)
             .frame(minWidth: valueMinWidth, minHeight: controlHeight)
@@ -97,23 +100,32 @@ private extension OutcomeCountControlView {
     }
 
     var minRowCount: Int {
-        viewModel.availableRowCounts.first?.rawValue ?? CalculatorConstants.minRowCount
+        state.minRowCount
     }
 
     var maxRowCount: Int {
-        viewModel.availableRowCounts.last?.rawValue ?? CalculatorConstants.maxRowCount
+        state.maxRowCount
     }
 
     var isAtMin: Bool {
-        viewModel.selectedNumberOfRows.rawValue <= minRowCount
+        state.selectedNumberOfRows.rawValue <= minRowCount
     }
 
     var isAtMax: Bool {
-        viewModel.selectedNumberOfRows.rawValue >= maxRowCount
+        state.selectedNumberOfRows.rawValue >= maxRowCount
     }
 }
 
 #Preview {
-    OutcomeCountControlView()
-        .environmentObject(SurebetCalculatorViewModel())
+    OutcomeCountControlView(
+        viewModel: OutcomeCountViewModel(
+            state: OutcomeCountState(
+                selectedNumberOfRows: .two,
+                minRowCount: 2,
+                maxRowCount: 20
+            )
+        ),
+        onRemove: {},
+        onAdd: {}
+    )
 }

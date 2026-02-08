@@ -4,21 +4,33 @@ import DesignSystem
 struct TextFieldView: View {
     // MARK: - Properties
 
-    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
-    @FocusState private var isFocused: FocusableField?
-
     let placeholder: String
     let label: String
     let focusableField: FocusableField
+    let displayIndex: Int?
+    let focusedField: FocusState<FocusableField?>.Binding
+    let text: String
+    let isDisabled: Bool
+    let onTextChange: (String) -> Void
 
     init(
         placeholder: String,
         label: String? = nil,
-        focusableField: FocusableField
+        focusableField: FocusableField,
+        displayIndex: Int? = nil,
+        focusedField: FocusState<FocusableField?>.Binding,
+        text: String,
+        isDisabled: Bool,
+        onTextChange: @escaping (String) -> Void
     ) {
         self.placeholder = placeholder
         self.label = label ?? placeholder
         self.focusableField = focusableField
+        self.displayIndex = displayIndex
+        self.focusedField = focusedField
+        self.text = text
+        self.isDisabled = isDisabled
+        self.onTextChange = onTextChange
     }
 
     // MARK: - Body
@@ -37,22 +49,15 @@ struct TextFieldView: View {
             .tint(DesignSystem.Color.accent)
             .opacity(isDisabled ? 0.7 : 1)
             .contentShape(.rect)
-            .focused($isFocused, equals: focusableField)
+            .focused(focusedField, equals: focusableField)
+            .onTapGesture {
+                guard !isDisabled else { return }
+                focusedField.wrappedValue = focusableField
+            }
             .disabled(isDisabled)
             .overlay {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .stroke(borderColor, lineWidth: borderLineWidth)
-            }
-            .onTapGesture {
-                viewModel.send(.setFocus(focusableField))
-            }
-            .onChange(of: viewModel.focus) {
-                isFocused = $0
-            }
-            .onChange(of: isFocused) { focus in
-                if let focus {
-                    viewModel.send(.setFocus(focus))
-                }
             }
             .accessibilityIdentifier(accessibilityIdentifier)
             .accessibilityLabel(label)
@@ -87,27 +92,15 @@ private extension TextFieldView {
     var bindingText: Binding<String> {
         Binding(
             get: { text },
-            set: { viewModel.send(.setTextFieldText(focusableField, $0)) }
+            set: { updatedText in
+                guard updatedText != text else { return }
+                onTextChange(updatedText)
+            }
         )
     }
 
-    var isDisabled: Bool {
-        viewModel.isFieldDisabled(focusableField)
-    }
-
     var isFieldFocused: Bool {
-        isFocused == focusableField
-    }
-
-    var text: String {
-        switch focusableField {
-        case .totalBetSize:
-            return viewModel.total.betSize
-        case let .rowBetSize(id):
-            return viewModel.row(for: id)?.betSize ?? ""
-        case let .rowCoefficient(id):
-            return viewModel.row(for: id)?.coefficient ?? ""
-        }
+        focusedField.wrappedValue == focusableField
     }
 
     var isValid: Bool {
@@ -123,12 +116,10 @@ private extension TextFieldView {
         switch focusableField {
         case .totalBetSize:
             return AccessibilityIdentifiers.TotalRow.betSizeTextField
-        case let .rowBetSize(id):
-            let displayIndex = viewModel.displayIndex(for: id) ?? 0
-            return AccessibilityIdentifiers.Row.betSizeTextField(displayIndex)
-        case let .rowCoefficient(id):
-            let displayIndex = viewModel.displayIndex(for: id) ?? 0
-            return AccessibilityIdentifiers.Row.coefficientTextField(displayIndex)
+        case .rowBetSize:
+            return AccessibilityIdentifiers.Row.betSizeTextField(displayIndex ?? 0)
+        case .rowCoefficient:
+            return AccessibilityIdentifiers.Row.coefficientTextField(displayIndex ?? 0)
         }
     }
 
@@ -141,12 +132,24 @@ private extension TextFieldView {
     }
 }
 
+private struct TextFieldViewPreview: View {
+    @State private var text = "100"
+    @FocusState private var focusedField: FocusableField?
+
+    var body: some View {
+        TextFieldView(
+            placeholder: "",
+            label: SurebetCalculatorLocalizationKey.totalBetSize.localized(Locale.current),
+            focusableField: .totalBetSize,
+            focusedField: $focusedField,
+            text: text,
+            isDisabled: false,
+            onTextChange: { text = $0 }
+        )
+        .padding()
+    }
+}
+
 #Preview {
-    TextFieldView(
-        placeholder: "",
-        label: SurebetCalculatorLocalizationKey.totalBetSize.localized(Locale.current),
-        focusableField: .totalBetSize
-    )
-    .padding()
-    .environmentObject(SurebetCalculatorViewModel())
+    TextFieldViewPreview()
 }

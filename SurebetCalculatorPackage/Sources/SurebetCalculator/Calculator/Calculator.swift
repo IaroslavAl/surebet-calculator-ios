@@ -71,30 +71,23 @@ private extension Calculator {
         return nil
     }
 
-    /// Вычисляет значение сурбета как обратную величину суммы обратных величин коэффициентов.
-    /// Используется для определения, является ли комбинация ставок выигрышной (значение < 1.0).
-    /// Формула: 1 / (1/k1 + 1/k2 + ... + 1/kn), где k1, k2, ..., kn - коэффициенты активных строк.
-    var surebetValue: Double {
-        activeRowIds
-            .compactMap { rowsById[$0]?.coefficient.formatToDouble() }
-            .reduce(0) { $0 + (1 / $1) }
-    }
-
     /// Проверяет, что все активные строки имеют валидные и непустые размеры ставок.
     /// Используется для определения возможности вычисления итоговой ставки из суммы ставок по строкам.
     var hasValidBetSizes: Bool {
-        activeRowIds
-            .compactMap { rowsById[$0]?.betSize }
-            .allSatisfy { $0.isValidDouble() && !$0.isEmpty }
+        activeRowIds.allSatisfy { id in
+            guard let betSize = rowsById[id]?.betSize else { return false }
+            return betSize.isValidDouble() && !betSize.isEmpty
+        }
     }
 
     /// Проверяет, что все активные коэффициенты могут быть преобразованы в числа и являются положительными.
     /// Необходимо для корректного вычисления сурбета,
     /// так как отрицательные или нулевые коэффициенты делают вычисления невозможными.
     var hasValidCoefficients: Bool {
-        activeRowIds
-            .compactMap { rowsById[$0]?.coefficient }
-            .allSatisfy { $0.formatToDouble() ?? 0 >= 1 }
+        activeRowIds.allSatisfy { id in
+            guard let coefficient = rowsById[id]?.coefficient.formatToDouble() else { return false }
+            return coefficient >= 1
+        }
     }
 
     /// Определяет метод вычислений на основе валидности текущего ввода.
@@ -127,9 +120,19 @@ private extension Calculator {
     /// чтобы сохранить соотношение между коэффициентами и обеспечить корректный сурбет.
     /// - Returns: Обновленные итоговые данные и строки.
     func calculateTotal() -> CalculationOutput {
+        let coefficientContext = makeCoefficientContext()
+        guard coefficientContext.inverseCoefficientSum > 0 else {
+            return resetDerivedValues()
+        }
+
         var total = self.total
-        let rowsById = calculateRowsBetSizesAndIncomes(total: total, rowsById: self.rowsById)
-        let profitPercentage = (100 / surebetValue) - 100
+        let rowsById = calculateRowsBetSizesAndIncomes(
+            total: total,
+            rowsById: self.rowsById,
+            coefficientsById: coefficientContext.coefficientsById,
+            inverseCoefficientSum: coefficientContext.inverseCoefficientSum
+        )
+        let profitPercentage = (100 / coefficientContext.inverseCoefficientSum) - 100
         total.profitPercentage = profitPercentage.formatToString(isPercent: true)
         return CalculationOutput(total: total, rowsById: rowsById)
     }
@@ -139,26 +142,41 @@ private extension Calculator {
     /// итоговая ставка вычисляется как сумма всех ставок, а доходы пересчитываются для каждой строки.
     /// - Returns: Обновленные итоговые данные и строки.
     func calculateRows() -> CalculationOutput {
+        let coefficientContext = makeCoefficientContext()
+        guard coefficientContext.inverseCoefficientSum > 0 else {
+            return resetDerivedValues()
+        }
+
         var total = self.total
         var rowsById = self.rowsById
-        let totalBetSize = activeRowIds
-            .compactMap { rowsById[$0]?.betSize.formatToDouble() }
-            .reduce(0, +)
+
+        var totalBetSize = 0.0
+        var betSizesById: [RowID: Double] = [:]
+        betSizesById.reserveCapacity(activeRowIds.count)
+        for id in activeRowIds {
+            guard let betSize = rowsById[id]?.betSize.formatToDouble() else { continue }
+            betSizesById[id] = betSize
+            totalBetSize += betSize
+        }
+
         for id in activeRowIds {
             guard var row = rowsById[id] else { continue }
-            let coefficient = row.coefficient.formatToDouble()
-            let betSize = row.betSize.formatToDouble()
-            if let coefficient, let betSize {
-                row.income = calculateIncome(
-                    coefficient: coefficient,
-                    betSize: betSize,
-                    totalBetSize: totalBetSize
-                )
-                rowsById[id] = row
-            }
+            guard
+                let coefficient = coefficientContext.coefficientsById[id],
+                let betSize = betSizesById[id]
+            else { continue }
+            row.income = calculateIncome(
+                coefficient: coefficient,
+                betSize: betSize,
+                totalBetSize: totalBetSize
+            )
+            rowsById[id] = row
         }
+
         total.betSize = totalBetSize.formatToString()
-        total.profitPercentage = calculateProfitPercentage(totalBetSize: totalBetSize)
+        total.profitPercentage = calculateProfitPercentage(
+            inverseCoefficientSum: coefficientContext.inverseCoefficientSum
+        )
         return CalculationOutput(total: total, rowsById: rowsById)
     }
 
@@ -169,16 +187,28 @@ private extension Calculator {
     /// - Parameter id: Идентификатор строки, для которой выполняются вычисления.
     /// - Returns: Обновленные итоговые данные и строки.
     func calculateSpecificRow(_ id: RowID) -> CalculationOutput {
+        let coefficientContext = makeCoefficientContext()
+        guard coefficientContext.inverseCoefficientSum > 0 else {
+            return resetDerivedValues()
+        }
+
         var total = self.total
         var rowsById = self.rowsById
-        let coefficient = rowsById[id]?.coefficient.formatToDouble()
+        let coefficient = coefficientContext.coefficientsById[id]
         let betSize = rowsById[id]?.betSize.formatToDouble()
         if let coefficient, let betSize {
-            let totalBetSize = (betSize / (1 / coefficient / surebetValue))
+            let totalBetSize = betSize / (1 / coefficient / coefficientContext.inverseCoefficientSum)
             total.betSize = totalBetSize.formatToString()
-            total.profitPercentage = calculateProfitPercentage(totalBetSize: totalBetSize)
+            total.profitPercentage = calculateProfitPercentage(
+                inverseCoefficientSum: coefficientContext.inverseCoefficientSum
+            )
         }
-        rowsById = calculateRowsBetSizesAndIncomes(total: total, rowsById: rowsById)
+        rowsById = calculateRowsBetSizesAndIncomes(
+            total: total,
+            rowsById: rowsById,
+            coefficientsById: coefficientContext.coefficientsById,
+            inverseCoefficientSum: coefficientContext.inverseCoefficientSum
+        )
         return CalculationOutput(total: total, rowsById: rowsById)
     }
 
@@ -191,33 +221,38 @@ private extension Calculator {
     /// - Returns: Обновленные строки с новыми размерами ставок и доходами.
     func calculateRowsBetSizesAndIncomes(
         total: TotalRow,
-        rowsById: [RowID: Row]
+        rowsById: [RowID: Row],
+        coefficientsById: [RowID: Double],
+        inverseCoefficientSum: Double
     ) -> [RowID: Row] {
         var updatedRowsById = rowsById
+        guard
+            let totalBetSize = total.betSize.formatToDouble(),
+            inverseCoefficientSum > 0
+        else {
+            return updatedRowsById
+        }
+
         for id in activeRowIds {
             guard var row = rowsById[id] else { continue }
-            let coefficient = row.coefficient.formatToDouble()
-            let totalBetSize = total.betSize.formatToDouble()
-            if let coefficient, let totalBetSize {
-                let betSize = 1 / coefficient / surebetValue * totalBetSize
-                row.betSize = betSize.formatToString()
-                row.income = calculateIncome(
-                    coefficient: coefficient,
-                    betSize: betSize,
-                    totalBetSize: totalBetSize
-                )
-                updatedRowsById[id] = row
-            }
+            guard let coefficient = coefficientsById[id] else { continue }
+            let betSize = 1 / coefficient / inverseCoefficientSum * totalBetSize
+            row.betSize = betSize.formatToString()
+            row.income = calculateIncome(
+                coefficient: coefficient,
+                betSize: betSize,
+                totalBetSize: totalBetSize
+            )
+            updatedRowsById[id] = row
         }
         return updatedRowsById
     }
 
     /// Вычисляет и форматирует процент прибыли на основе итогового размера ставки.
     /// Процент прибыли показывает, насколько выгодна комбинация ставок (положительное значение означает прибыль).
-    /// - Parameter totalBetSize: Итоговый размер всех ставок.
     /// - Returns: Отформатированный процент прибыли в виде строки.
-    func calculateProfitPercentage(totalBetSize: Double) -> String {
-        let profitPercentage = (100 / surebetValue) - 100
+    func calculateProfitPercentage(inverseCoefficientSum: Double) -> String {
+        let profitPercentage = (100 / inverseCoefficientSum) - 100
         return profitPercentage.formatToString(isPercent: true)
     }
 
@@ -273,5 +308,27 @@ private extension Calculator {
         }
 
         return CalculationOutput(total: total, rowsById: rowsById)
+    }
+
+    private struct CoefficientContext {
+        let coefficientsById: [RowID: Double]
+        let inverseCoefficientSum: Double
+    }
+
+    private func makeCoefficientContext() -> CoefficientContext {
+        var coefficientsById: [RowID: Double] = [:]
+        coefficientsById.reserveCapacity(activeRowIds.count)
+        var inverseCoefficientSum = 0.0
+
+        for id in activeRowIds {
+            guard let coefficient = rowsById[id]?.coefficient.formatToDouble() else { continue }
+            coefficientsById[id] = coefficient
+            inverseCoefficientSum += 1 / coefficient
+        }
+
+        return CoefficientContext(
+            coefficientsById: coefficientsById,
+            inverseCoefficientSum: inverseCoefficientSum
+        )
     }
 }

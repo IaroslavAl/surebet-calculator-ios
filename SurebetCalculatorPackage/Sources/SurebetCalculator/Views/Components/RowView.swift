@@ -5,17 +5,23 @@ import UIKit
 struct RowView: View {
     // MARK: - Properties
 
-    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
+    @ObservedObject var viewModel: RowItemViewModel
     @Environment(\.locale) private var locale
 
-    let rowId: RowID
-    let displayIndex: Int
+    let focusedField: FocusState<FocusableField?>.Binding
+    let onSelect: () -> Void
+    let onCoefficientChange: (String) -> Void
+    let onBetSizeChange: (String) -> Void
 
     // MARK: - Body
 
     var body: some View {
         HStack(spacing: columnSpacing) {
-            ToggleButton(row: .row(rowId))
+            ToggleButton(
+                isOn: state.isOn,
+                accessibilityIdentifier: AccessibilityIdentifiers.Row.toggleButton(state.displayIndex),
+                action: onSelect
+            )
                 .frame(width: selectionIndicatorSize)
             coefficient
                 .frame(maxWidth: .infinity)
@@ -37,19 +43,25 @@ struct RowView: View {
 // MARK: - Private Computed Properties
 
 private extension RowView {
+    var state: RowItemState { viewModel.state }
     var coefficientText: String { SurebetCalculatorLocalizationKey.coefficient.localized(locale) }
     var betSizeText: String { SurebetCalculatorLocalizationKey.betSize.localized(locale) }
     var columnSpacing: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
     var rowPadding: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
     var rowCornerRadius: CGFloat { isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.medium }
     var selectionIndicatorSize: CGFloat { isIPad ? 48 : 44 }
-    var isSelected: Bool { viewModel.selection == .row(rowId) }
+    var isSelected: Bool { state.isSelected }
 
     var betSize: some View {
         TextFieldView(
             placeholder: "",
             label: betSizeText,
-            focusableField: .rowBetSize(rowId)
+            focusableField: .rowBetSize(state.id),
+            displayIndex: state.displayIndex,
+            focusedField: focusedField,
+            text: state.betSize,
+            isDisabled: state.isBetSizeDisabled,
+            onTextChange: onBetSizeChange
         )
     }
 
@@ -57,16 +69,21 @@ private extension RowView {
         TextFieldView(
             placeholder: "",
             label: coefficientText,
-            focusableField: .rowCoefficient(rowId)
+            focusableField: .rowCoefficient(state.id),
+            displayIndex: state.displayIndex,
+            focusedField: focusedField,
+            text: state.coefficient,
+            isDisabled: false,
+            onTextChange: onCoefficientChange
         )
     }
 
     var income: some View {
         TextView(
-            text: viewModel.row(for: rowId)?.income ?? "0",
+            text: state.income,
             isPercent: false,
             isEmphasized: isSelected,
-            accessibilityId: AccessibilityIdentifiers.Row.incomeText(displayIndex)
+            accessibilityId: AccessibilityIdentifiers.Row.incomeText(state.displayIndex)
         )
     }
 
@@ -83,16 +100,41 @@ private extension RowView {
     }
 
     func actionWithImpactFeedback() {
-        guard viewModel.selection != .row(rowId) else { return }
-        withAnimation(DesignSystem.Animation.quickInteraction) {
-            viewModel.send(.selectRow(.row(rowId)))
-        }
+        guard !state.isSelected else { return }
+        withAnimation(DesignSystem.Animation.quickInteraction) { onSelect() }
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 }
 
-#Preview {
-    RowView(rowId: RowID(rawValue: 0), displayIndex: 0)
+private struct RowViewPreview: View {
+    @FocusState private var focusedField: FocusableField?
+
+    private let rowViewModel = RowItemViewModel(
+        id: RowID(rawValue: 0),
+        state: RowItemState(
+            id: RowID(rawValue: 0),
+            displayIndex: 0,
+            isSelected: false,
+            isOn: false,
+            coefficient: "2",
+            betSize: "100",
+            income: "10",
+            isBetSizeDisabled: true
+        )
+    )
+
+    var body: some View {
+        RowView(
+            viewModel: rowViewModel,
+            focusedField: $focusedField,
+            onSelect: {},
+            onCoefficientChange: { _ in },
+            onBetSizeChange: { _ in }
+        )
         .padding(.trailing)
-        .environmentObject(SurebetCalculatorViewModel())
+    }
+}
+
+#Preview {
+    RowViewPreview()
 }

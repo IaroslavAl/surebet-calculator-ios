@@ -2,8 +2,7 @@ import SwiftUI
 import UIKit
 
 struct KeyboardAccessoryOverlayHost: UIViewRepresentable {
-    let onClear: () -> Void
-    let onDone: () -> Void
+    let actionProxy: KeyboardAccessoryActionProxy
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -17,7 +16,7 @@ struct KeyboardAccessoryOverlayHost: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
-        context.coordinator.update(onClear: onClear, onDone: onDone, in: uiView)
+        context.coordinator.update(actionProxy: actionProxy, in: uiView)
     }
 
     static func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
@@ -28,9 +27,8 @@ struct KeyboardAccessoryOverlayHost: UIViewRepresentable {
     final class Coordinator {
         private let manager = KeyboardAccessoryOverlayManager()
 
-        func update(onClear: @escaping () -> Void, onDone: @escaping () -> Void, in view: UIView) {
-            manager.updateActions(onClear: onClear, onDone: onDone)
-            manager.attach(to: view)
+        func update(actionProxy: KeyboardAccessoryActionProxy, in view: UIView) {
+            manager.update(actionProxy: actionProxy, in: view)
         }
 
         func teardown() {
@@ -40,5 +38,5 @@ struct KeyboardAccessoryOverlayHost: UIViewRepresentable {
 }
 
 #Preview {
-    KeyboardAccessoryOverlayHost(onClear: {}, onDone: {})
+    KeyboardAccessoryOverlayHost(actionProxy: KeyboardAccessoryActionProxy())
 }
