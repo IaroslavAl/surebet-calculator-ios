@@ -5,15 +5,15 @@ import UIKit
 struct NavigationClearButton: View {
     // MARK: - Properties
 
-    @EnvironmentObject private var viewModel: SurebetCalculatorViewModel
     @Environment(\.locale) private var locale
+    let onClear: () -> Void
 
     // MARK: - Body
 
     var body: some View {
         Button {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            viewModel.send(.clearAll)
+            onClear()
         } label: {
             Image(systemName: "trash")
                 .font(font)
@@ -31,6 +31,5 @@ struct NavigationClearButton: View {
 }
 
 #Preview {
-    NavigationClearButton()
-        .environmentObject(SurebetCalculatorViewModel())
+    NavigationClearButton(onClear: {})
 }

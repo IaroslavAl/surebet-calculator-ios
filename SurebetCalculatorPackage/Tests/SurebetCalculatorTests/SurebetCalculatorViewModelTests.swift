@@ -162,6 +162,80 @@ struct SurebetCalculatorViewModelTests {
     }
 
     @Test
+    func initNormalizesDuplicateAndMissingOrderedRowIDs() {
+        // Given
+        let row0 = rowId(0)
+        let row1 = rowId(1)
+        let row2 = rowId(2)
+        let unknown = rowId(99)
+        let rowsById: [RowID: Row] = [
+            row0: Row(id: row0),
+            row1: Row(id: row1),
+            row2: Row(id: row2)
+        ]
+
+        // When
+        let viewModel = SurebetCalculatorViewModel(
+            rowsById: rowsById,
+            orderedRowIds: [row1, row1, unknown],
+            selectedNumberOfRows: .three,
+            selection: .none
+        )
+
+        // Then
+        #expect(viewModel.orderedRowIds == [row1, row0, row2])
+        #expect(viewModel.activeRowViewModelIDs == [row1, row0, row2])
+    }
+
+    @Test
+    func selectRowMovesFocusFromTotalBetSizeToSelectedRowBetSize() {
+        // Given
+        let selectedRowID = rowId(1)
+        let viewModel = makeViewModel(
+            selection: .total,
+            focus: .totalBetSize
+        )
+
+        // When
+        viewModel.send(.selectRow(.row(selectedRowID)))
+
+        // Then
+        #expect(viewModel.focus == .rowBetSize(selectedRowID))
+    }
+
+    @Test
+    func selectTotalMovesFocusFromRowBetSizeToTotalBetSize() {
+        // Given
+        let viewModel = makeViewModel(
+            selection: .none,
+            focus: .rowBetSize(rowId(0))
+        )
+
+        // When
+        viewModel.send(.selectRow(.total))
+
+        // Then
+        #expect(viewModel.focus == .totalBetSize)
+    }
+
+    @Test
+    func deselectTotalMovesFocusToFirstActiveRowBetSize() {
+        // Given
+        let firstActiveRowID = rowId(0)
+        let viewModel = makeViewModel(
+            selection: .total,
+            focus: .totalBetSize
+        )
+
+        // When
+        viewModel.send(.selectRow(.total))
+
+        // Then
+        #expect(viewModel.selection == .none)
+        #expect(viewModel.focus == .rowBetSize(firstActiveRowID))
+    }
+
+    @Test
     func selectNumberOfRowsWhenToDeselectAndClear() {
         // Given
         let initialNumberOfRows: NumberOfRows = .three
@@ -185,6 +259,29 @@ struct SurebetCalculatorViewModelTests {
         #expect(!row(viewModel, id).isON)
         #expect(row(viewModel, id).betSize == "")
         #expect(viewModel.selectedNumberOfRows == newNumberOfRows)
+    }
+
+    @Test
+    func removeRowMovesFocusFromInactiveRowToFirstActiveRowBetSize() {
+        // Given
+        let viewModel = makeViewModel(
+            rows: [
+                .init(id: rowId(0)),
+                .init(id: rowId(1)),
+                .init(id: rowId(2)),
+                .init(id: rowId(3))
+            ],
+            selectedNumberOfRows: .three,
+            selection: .none,
+            focus: .rowBetSize(rowId(2))
+        )
+
+        // When
+        viewModel.send(.removeRow)
+
+        // Then
+        #expect(viewModel.selectedNumberOfRows == .two)
+        #expect(viewModel.focus == .rowBetSize(rowId(0)))
     }
 
     @Test
@@ -946,6 +1043,81 @@ struct SurebetCalculatorViewModelTests {
         #expect(row(viewModel, 0).isON)
         #expect(viewModel.selection == .row(rowId(0)))
         #expect(viewModel.selectedNumberOfRows == .two)
+    }
+
+    @Test
+    func rowItemStateUpdatesOnlyForChangedRow() {
+        // Given
+        let viewModel = makeViewModel()
+        let initialStates = viewModel.activeRowViewModels.map(\.state)
+
+        // When
+        viewModel.send(.setTextFieldText(.rowCoefficient(rowId(0)), "2"))
+
+        // Then
+        let updatedStates = viewModel.activeRowViewModels.map(\.state)
+        #expect(updatedStates[0].coefficient == "2")
+        #expect(updatedStates[1] == initialStates[1])
+    }
+
+    @Test
+    func rowItemViewModelsReflectReorderedActiveRows() {
+        // Given
+        let viewModel = makeViewModel(
+            rows: [
+                .init(id: RowID(rawValue: 0)),
+                .init(id: RowID(rawValue: 1)),
+                .init(id: RowID(rawValue: 2))
+            ],
+            selectedNumberOfRows: .three
+        )
+
+        // When
+        viewModel.send(.reorderRows(fromOffsets: IndexSet(integer: 0), toOffset: 3))
+
+        // Then
+        #expect(viewModel.activeRowViewModels.map(\.id) == viewModel.activeRowIds)
+        #expect(viewModel.activeRowViewModels.map(\.state.displayIndex) == [0, 1, 2])
+    }
+
+    @Test
+    func totalRowItemStateUpdatesWhenSelectionChanges() {
+        // Given
+        let viewModel = makeViewModel()
+        #expect(viewModel.totalRowViewModel.state.isSelected)
+
+        // When
+        viewModel.send(.selectRow(.row(rowId(0))))
+
+        // Then
+        #expect(!viewModel.totalRowViewModel.state.isSelected)
+        #expect(viewModel.totalRowViewModel.state.isBetSizeDisabled)
+    }
+
+    @Test
+    func outcomeCountStateUpdatesAfterAddRow() {
+        // Given
+        let viewModel = makeViewModel(selectedNumberOfRows: .two)
+        #expect(viewModel.outcomeCountViewModel.state.selectedNumberOfRows == .two)
+
+        // When
+        viewModel.send(.addRow)
+
+        // Then
+        #expect(viewModel.outcomeCountViewModel.state.selectedNumberOfRows == .three)
+        #expect(viewModel.outcomeCountViewModel.state.maxRowCount == CalculatorConstants.maxRowCount)
+    }
+
+    @Test
+    func setFocusSameValueDoesNotChangeFocus() {
+        // Given
+        let viewModel = makeViewModel(focus: .totalBetSize)
+
+        // When
+        viewModel.send(.setFocus(.totalBetSize))
+
+        // Then
+        #expect(viewModel.focus == .totalBetSize)
     }
 
     // MARK: - Concurrency Tests
