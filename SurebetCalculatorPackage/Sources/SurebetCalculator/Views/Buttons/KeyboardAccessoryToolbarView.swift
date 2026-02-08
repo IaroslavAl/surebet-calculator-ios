@@ -29,6 +29,12 @@ final class KeyboardAccessoryToolbarView: UIView {
         return nil
     }
 
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        guard isUserInteractionEnabled, !isHidden, alpha > 0.01 else { return false }
+        return isPointInsideButton(clearButton, point: point, event: event)
+            || isPointInsideButton(doneButton, point: point, event: event)
+    }
+
     override var intrinsicContentSize: CGSize {
         CGSize(
             width: UIView.noIntrinsicMetric,
@@ -128,6 +134,12 @@ final class KeyboardAccessoryToolbarView: UIView {
         doneButton.layer.borderColor = borderColor
 
         invalidateIntrinsicContentSize()
+    }
+
+    private func isPointInsideButton(_ button: UIButton, point: CGPoint, event: UIEvent?) -> Bool {
+        guard button.isUserInteractionEnabled, !button.isHidden, button.alpha > 0.01 else { return false }
+        let pointInButton = button.convert(point, from: self)
+        return button.point(inside: pointInButton, with: event)
     }
 
     private var currentButtonSize: CGFloat {
