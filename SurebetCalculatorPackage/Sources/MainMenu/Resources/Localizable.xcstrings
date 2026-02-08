@@ -7,49 +7,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Review profit percentage and adjust stakes until the outcome looks right."
+            "value" : "Tap the trash button in the navigation bar to clear all fields quickly."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Проверь процент прибыли и при необходимости скорректируй ставки."
+            "value" : "Нажмите кнопку с корзиной в строке навигации, чтобы быстро очистить все поля."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prüfe den ROI und passe die Einsätze an, bis das Ergebnis passt."
+            "value" : "Tippe auf die Papierkorb-Schaltfläche in der Navigationsleiste, um alle Felder schnell zu leeren."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ελέγξτε το ROI και προσαρμόστε τα στοιχήματα μέχρι να φαίνεται σωστό το αποτέλεσμα."
+            "value" : "Πατήστε το κουμπί κάδου στη γραμμή πλοήγησης για να καθαρίσετε γρήγορα όλα τα πεδία."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Revisa el ROI y ajusta las apuestas hasta que el resultado sea el adecuado."
+            "value" : "Pulsa el botón de papelera en la barra de navegación para limpiar todos los campos rápidamente."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vérifiez le ROI et ajustez les mises jusqu’à obtenir un résultat satisfaisant."
+            "value" : "Appuyez sur le bouton corbeille de la barre de navigation pour effacer rapidement tous les champs."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Controlla il ROI e regola le puntate finché il risultato non è corretto."
+            "value" : "Tocca il pulsante cestino nella barra di navigazione per svuotare rapidamente tutti i campi."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Revise o ROI e ajuste as apostas até que o resultado fique correto."
+            "value" : "Toque no botão de lixeira na barra de navegação para limpar rapidamente todos os campos."
           }
         }
       }
@@ -60,49 +60,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check the result"
+            "value" : "Clear all data"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Проверь результат"
+            "value" : "Очистка всех данных"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ergebnis prüfen"
+            "value" : "Alle Daten löschen"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Έλεγχος αποτελέσματος"
+            "value" : "Καθαρισμός όλων των δεδομένων"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comprueba el resultado"
+            "value" : "Borrar todos los datos"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vérifier le résultat"
+            "value" : "Effacer toutes les données"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Controlla il risultato"
+            "value" : "Cancella tutti i dati"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verifique o resultado"
+            "value" : "Limpar todos os dados"
           }
         }
       }
@@ -113,49 +113,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select the number of outcomes and enter odds for each line."
+            "value" : "Set the number of outcomes from 2 to 20 and enter odds for each outcome."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выбери количество исходов и введи коэффициенты по каждой строке."
+            "value" : "Выберите количество исходов от 2 до 20 и введите коэффициент для каждого исхода."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wähle die Anzahl der Ausgänge und gib die Quoten für jede Zeile ein."
+            "value" : "Wähle die Anzahl der Ausgänge von 2 bis 20 und gib für jeden Ausgang die Quote ein."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Επιλέξτε τον αριθμό των ενδεχομένων και εισαγάγετε τις αποδόσεις για κάθε γραμμή."
+            "value" : "Ορίστε τον αριθμό εκβάσεων από 2 έως 20 και εισαγάγετε απόδοση για κάθε έκβαση."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Selecciona el número de resultados e introduce las cuotas para cada línea."
+            "value" : "Define el número de resultados de 2 a 20 e introduce la cuota de cada resultado."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sélectionnez le nombre d’issues et saisissez les cotes pour chaque ligne."
+            "value" : "Définissez le nombre d’issues de 2 à 20 et saisissez la cote de chaque issue."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seleziona il numero di esiti e inserisci le quote per ogni riga."
+            "value" : "Imposta il numero di esiti da 2 a 20 e inserisci la quota per ogni esito."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Selecione o número de resultados e insira as odds para cada linha."
+            "value" : "Defina o número de resultados de 2 a 20 e insira a odd de cada resultado."
           }
         }
       }
@@ -166,49 +166,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter odds"
+            "value" : "Choose outcomes"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Введи коэффициенты"
+            "value" : "Выберите исходы"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quoten eingeben"
+            "value" : "Ausgänge wählen"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Εισαγωγή αποδόσεων"
+            "value" : "Επιλέξτε εκβάσεις"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Introduce las cuotas"
+            "value" : "Elige resultados"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saisir les cotes"
+            "value" : "Choisir les issues"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inserisci le quote"
+            "value" : "Scegli gli esiti"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Insira as odds"
+            "value" : "Escolha resultados"
           }
         }
       }
@@ -219,49 +219,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose which line to calculate from and fill in the stake."
+            "value" : "Enter odds and stake amounts in highlighted fields. The calculation updates automatically."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выбери строку для расчёта и укажи размер ставки."
+            "value" : "Введите коэффициенты и суммы ставок в подсвеченные поля. Расчет обновляется автоматически."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wähle die Zeile für die Berechnung und trage den Einsatz ein."
+            "value" : "Gib Quoten und Einsatzsummen in die hervorgehobenen Felder ein. Die Berechnung wird automatisch aktualisiert."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Επιλέξτε τη γραμμή για τον υπολογισμό και συμπληρώστε το στοίχημα."
+            "value" : "Εισαγάγετε αποδόσεις και ποσά πονταρισμάτων στα επισημασμένα πεδία. Ο υπολογισμός ενημερώνεται αυτόματα."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elige la línea para calcular y completa la apuesta."
+            "value" : "Introduce cuotas y montos de apuesta en los campos resaltados. El cálculo se actualiza automáticamente."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez la ligne de calcul et renseignez la mise."
+            "value" : "Saisissez les cotes et les montants des mises dans les champs surlignés. Le calcul se met à jour automatiquement."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scegli la riga da cui calcolare e inserisci la puntata."
+            "value" : "Inserisci quote e importi delle puntate nei campi evidenziati. Il calcolo si aggiorna automaticamente."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escolha a linha para o cálculo e preencha a aposta."
+            "value" : "Insira odds e valores de aposta nos campos destacados. O cálculo é atualizado automaticamente."
           }
         }
       }
@@ -272,49 +272,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set a stake"
+            "value" : "Fill highlighted fields"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Задай ставку"
+            "value" : "Заполните подсвеченные поля"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Einsatz festlegen"
+            "value" : "Hervorgehobene Felder ausfüllen"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ορίστε στοίχημα"
+            "value" : "Συμπληρώστε τα επισημασμένα πεδία"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Define una apuesta"
+            "value" : "Rellena los campos resaltados"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Définir une mise"
+            "value" : "Remplissez les champs surlignés"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imposta una puntata"
+            "value" : "Compila i campi evidenziati"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Defina uma aposta"
+            "value" : "Preencha os campos destacados"
           }
         }
       }
@@ -325,49 +325,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use the total stake if you want the calculator to distribute it."
+            "value" : "Use one of three modes: from total stake, from selected outcome, or manual without outcome binding."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Если известна общая сумма, введи её в поле итога."
+            "value" : "Используйте один из трех режимов: от общей суммы ставки, от выбранного исхода или вручную без привязки к исходу."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verwende den Gesamteinsatz, wenn der Rechner ihn verteilen soll."
+            "value" : "Verwende einen von drei Modi: vom Gesamteinsatz, vom ausgewählten Ausgang oder manuell ohne Bindung an einen Ausgang."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Χρησιμοποιήστε το συνολικό στοίχημα αν θέλετε να το κατανείμει ο υπολογιστής."
+            "value" : "Χρησιμοποιήστε μία από τις τρεις λειτουργίες: από συνολικό ποντάρισμα, από επιλεγμένη έκβαση ή χειροκίνητα χωρίς σύνδεση με έκβαση."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Usa la apuesta total si quieres que la calculadora la distribuya."
+            "value" : "Usa uno de tres modos: desde la apuesta total, desde el resultado seleccionado o manual sin vinculación a un resultado."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Utilisez l’enjeu total si vous voulez que le calculateur le répartisse."
+            "value" : "Utilisez l’un des trois modes : à partir de la mise totale, de l’issue sélectionnée ou en manuel sans liaison à une issue."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Usa la puntata totale se vuoi che il calcolatore la distribuisca."
+            "value" : "Usa una delle tre modalità: dalla puntata totale, dall’esito selezionato o manuale senza vincolo a un esito."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use a aposta total se quiser que a calculadora a distribua."
+            "value" : "Use um dos três modos: pela aposta total, pelo resultado selecionado ou manual sem vínculo com um resultado."
           }
         }
       }
@@ -378,49 +378,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add total stake"
+            "value" : "Choose calculation mode"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Введи общую ставку"
+            "value" : "Выберите режим расчета"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gesamteinsatz eingeben"
+            "value" : "Berechnungsmodus wählen"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Εισαγωγή συνολικού στοιχήματος"
+            "value" : "Επιλέξτε λειτουργία υπολογισμού"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade la apuesta total"
+            "value" : "Elige el modo de cálculo"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter l’enjeu total"
+            "value" : "Choisissez le mode de calcul"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi la puntata totale"
+            "value" : "Scegli la modalità di calcolo"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adicionar aposta total"
+            "value" : "Escolha o modo de cálculo"
           }
         }
       }
@@ -431,49 +431,367 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A quick guide for confident calculations."
+            "value" : "Use one of three calculation modes and fill only highlighted fields."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Короткая инструкция, чтобы быстро начать расчёт."
+            "value" : "Используйте один из трех режимов расчета и заполняйте только подсвеченные поля."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eine kurze Anleitung für sichere Berechnungen."
+            "value" : "Nutze einen von drei Berechnungsmodi und fülle nur hervorgehobene Felder aus."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ένας σύντομος οδηγός για σίγουρους υπολογισμούς."
+            "value" : "Χρησιμοποιήστε έναν από τους τρεις τρόπους υπολογισμού και συμπληρώστε μόνο τα επισημασμένα πεδία."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Una guía rápida para cálculos seguros."
+            "value" : "Usa uno de los tres modos de cálculo y completa solo los campos resaltados."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un guide rapide pour des calculs sûrs."
+            "value" : "Utilisez l’un des trois modes de calcul et remplissez uniquement les champs surlignés."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Una guida rapida per calcoli sicuri."
+            "value" : "Usa una delle tre modalità di calcolo e compila solo i campi evidenziati."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Um guia rápido para cálculos seguros."
+            "value" : "Use um dos três modos de cálculo e preencha apenas os campos destacados."
+          }
+        }
+      }
+    },
+    "instructions_step_five_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fill highlighted fields"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заполняйте подсвеченные поля"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hervorgehobene Felder ausfüllen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Συμπληρώστε τα επισημασμένα πεδία"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rellena campos resaltados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplir les champs surlignés"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compila i campi evidenziati"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preencha campos destacados"
+          }
+        }
+      }
+    },
+    "instructions_step_five_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In each mode, input is expected only in highlighted fields."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В каждом режиме ввод выполняется только в подсвеченные поля."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In jedem Modus erfolgt die Eingabe nur in den hervorgehobenen Feldern."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Σε κάθε λειτουργία η εισαγωγή γίνεται μόνο στα επισημασμένα πεδία."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cada modo, la entrada se realiza solo en los campos resaltados."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans chaque mode, la saisie se fait uniquement dans les champs surlignés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In ogni modalità, l’inserimento avviene solo nei campi evidenziati."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Em cada modo, a entrada ocorre apenas nos campos destacados."
+          }
+        }
+      }
+    },
+    "instructions_step_six_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear all data"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистка всех данных"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Daten löschen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καθαρισμός όλων των δεδομένων"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar todos los datos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer toutes les données"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancella tutti i dati"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpar todos os dados"
+          }
+        }
+      }
+    },
+    "instructions_step_six_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap the trash button in the navigation bar to clear all fields quickly."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нажмите кнопку с корзиной в строке навигации, чтобы быстро очистить все поля."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tippe auf die Papierkorb-Schaltfläche in der Navigationsleiste, um alle Felder zu leeren."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πατήστε το κουμπί κάδου στη γραμμή πλοήγησης για να καθαρίσετε γρήγορα όλα τα πεδία."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulsa el botón de papelera en la barra de navegación para limpiar todos los campos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appuyez sur le bouton corbeille de la barre de navigation pour effacer tous les champs."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca il pulsante cestino nella barra di navigazione per pulire tutti i campi."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque no botão de lixeira na barra de navegação para limpar todos os campos."
+          }
+        }
+      }
+    },
+    "instructions_screenshots_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screenshots"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скриншоты"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screenshots"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Στιγμιότυπα οθόνης"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capturas de pantalla"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Captures d’écran"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screenshot"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capturas de tela"
+          }
+        }
+      }
+    },
+    "instructions_screenshots_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A place for examples will appear here. You can add screenshots later."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Здесь будет блок с примерами. Вы сможете добавить скриншоты позже."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hier wird ein Bereich mit Beispielen angezeigt. Du kannst später Screenshots hinzufügen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Εδώ θα εμφανιστεί ενότητα με παραδείγματα. Μπορείτε να προσθέσετε στιγμιότυπα αργότερα."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquí aparecerá un bloque con ejemplos. Puedes agregar capturas después."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un bloc d’exemples apparaîtra ici. Vous pourrez ajouter des captures plus tard."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qui apparirà una sezione con esempi. Potrai aggiungere screenshot in seguito."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aqui aparecerá uma seção com exemplos. Você pode adicionar capturas depois."
           }
         }
       }
@@ -484,49 +802,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start a new surebet."
+            "value" : "Start a new surebet"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Начать новый расчёт."
+            "value" : "Начать новый расчёт"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Starte eine neue Surebet."
+            "value" : "Starte eine neue Surebet"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ξεκινήστε ένα νέο surebet."
+            "value" : "Ξεκινήστε ένα νέο surebet"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inicia un nuevo surebet."
+            "value" : "Inicia un nuevo surebet"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Commencez un nouveau surebet."
+            "value" : "Commencez un nouveau surebet"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inizia un nuovo surebet."
+            "value" : "Inizia un nuovo surebet"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inicie um novo surebet."
+            "value" : "Inicie um novo surebet"
           }
         }
       }
@@ -643,49 +961,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "One-time purchase."
+            "value" : "One-time purchase"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Разовая покупка."
+            "value" : "Разовая покупка"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Einmaliger Kauf."
+            "value" : "Einmaliger Kauf"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Εφάπαξ αγορά."
+            "value" : "Εφάπαξ αγορά"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Compra única."
+            "value" : "Compra única"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Achat unique."
+            "value" : "Achat unique"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Acquisto una tantum."
+            "value" : "Acquisto una tantum"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Compra única."
+            "value" : "Compra única"
           }
         }
       }
@@ -802,49 +1120,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Feedback and ideas."
+            "value" : "Feedback and ideas"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Отзывы и идеи."
+            "value" : "Отзывы и идеи"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Feedback und Ideen."
+            "value" : "Feedback und Ideen"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Σχόλια και ιδέες."
+            "value" : "Σχόλια και ιδέες"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comentarios e ideas."
+            "value" : "Comentarios e ideas"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Commentaires et idées."
+            "value" : "Commentaires et idées"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Feedback e idee."
+            "value" : "Feedback e idee"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Feedback e ideias."
+            "value" : "Feedback e ideias"
           }
         }
       }
@@ -908,49 +1226,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "How it works."
+            "value" : "How to use"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Как это работает."
+            "value" : "Как пользоваться"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "So funktioniert es."
+            "value" : "So benutzt du es"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Πώς λειτουργεί."
+            "value" : "Πώς χρησιμοποιείται"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cómo funciona."
+            "value" : "Cómo usarla"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comment ça marche."
+            "value" : "Comment l’utiliser"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Come funziona."
+            "value" : "Come usarla"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Como funciona."
+            "value" : "Como usar"
           }
         }
       }
@@ -961,49 +1279,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Instructions"
+            "value" : "How to Calculate"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Инструкция"
+            "value" : "Как рассчитать"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anleitung"
+            "value" : "So berechnest du"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Οδηγίες"
+            "value" : "Πώς να υπολογίσετε"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Instrucciones"
+            "value" : "Cómo calcular"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Instructions"
+            "value" : "Comment calculer"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Istruzioni"
+            "value" : "Come calcolare"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Instruções"
+            "value" : "Como calcular"
           }
         }
       }
@@ -1120,49 +1438,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Currency and rounding."
+            "value" : "Currency and rounding"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Валюта и округление."
+            "value" : "Валюта и округление"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Währung und Rundung."
+            "value" : "Währung und Rundung"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Νόμισμα και στρογγυλοποίηση."
+            "value" : "Νόμισμα και στρογγυλοποίηση"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Moneda y redondeo."
+            "value" : "Moneda y redondeo"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Devise et arrondi."
+            "value" : "Devise et arrondi"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Valuta e arrotondamento."
+            "value" : "Valuta e arrotondamento"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Moeda e arredondamento."
+            "value" : "Moeda e arredondamento"
           }
         }
       }
@@ -1226,49 +1544,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Everything you need is one tap away."
+            "value" : "Everything you need is one tap away"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Все нужные функции — в одном месте."
+            "value" : "Все нужные функции — в одном месте"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alles, was du brauchst, ist nur einen Tipp entfernt."
+            "value" : "Alles, was du brauchst, ist nur einen Tipp entfernt"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ό,τι χρειάζεστε είναι ένα πάτημα μακριά."
+            "value" : "Ό,τι χρειάζεστε είναι ένα πάτημα μακριά"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Todo lo que necesitas está a un toque."
+            "value" : "Todo lo que necesitas está a un toque"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tout ce dont vous avez besoin est à portée d’un tap."
+            "value" : "Tout ce dont vous avez besoin est à portée d’un tap"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tutto ciò che ti serve è a un tocco."
+            "value" : "Tutto ciò che ti serve è a un tocco"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tudo o que você precisa está a um toque."
+            "value" : "Tudo o que você precisa está a um toque"
           }
         }
       }

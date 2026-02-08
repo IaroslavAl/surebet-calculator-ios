@@ -7,49 +7,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Appearance and language preferences."
+            "value" : "Appearance and language preferences"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Внешний вид и язык приложения."
+            "value" : "Внешний вид и язык приложения"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erscheinungsbild und Spracheinstellungen."
+            "value" : "Erscheinungsbild und Spracheinstellungen"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Προτιμήσεις εμφάνισης και γλώσσας."
+            "value" : "Προτιμήσεις εμφάνισης και γλώσσας"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Preferencias de apariencia e idioma."
+            "value" : "Preferencias de apariencia e idioma"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Préférences d’apparence et de langue."
+            "value" : "Préférences d’apparence et de langue"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Preferenze di aspetto e lingua."
+            "value" : "Preferenze di aspetto e lingua"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Preferências de aparência e idioma."
+            "value" : "Preferências de aparência e idioma"
           }
         }
       }
@@ -1067,49 +1067,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose the app language."
+            "value" : "Choose the app language"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выберите язык приложения."
+            "value" : "Выберите язык приложения"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wähle die App-Sprache."
+            "value" : "Wähle die App-Sprache"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Επιλέξτε τη γλώσσα της εφαρμογής."
+            "value" : "Επιλέξτε τη γλώσσα της εφαρμογής"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elige el idioma de la app."
+            "value" : "Elige el idioma de la app"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez la langue de l’app."
+            "value" : "Choisissez la langue de l’app"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scegli la lingua dell’app."
+            "value" : "Scegli la lingua dell’app"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escolha o idioma do app."
+            "value" : "Escolha o idioma do app"
           }
         }
       }
@@ -1279,49 +1279,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comfortable in low light."
+            "value" : "Comfortable in low light"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Комфортна при низком освещении."
+            "value" : "Комфортна при низком освещении"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Angenehm bei wenig Licht."
+            "value" : "Angenehm bei wenig Licht"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Άνετο σε χαμηλό φωτισμό."
+            "value" : "Άνετο σε χαμηλό φωτισμό"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cómodo con poca luz."
+            "value" : "Cómodo con poca luz"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Confortable par faible luminosité."
+            "value" : "Confortable par faible luminosité"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Confortevole con poca luce."
+            "value" : "Confortevole con poca luce"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Confortável com pouca luz."
+            "value" : "Confortável com pouca luz"
           }
         }
       }
@@ -1385,49 +1385,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bright and clean."
+            "value" : "Bright and clean"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Светлая и чистая."
+            "value" : "Светлая и чистая"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hell und klar."
+            "value" : "Hell und klar"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Φωτεινό και καθαρό."
+            "value" : "Φωτεινό και καθαρό"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claro y limpio."
+            "value" : "Claro y limpio"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clair et épuré."
+            "value" : "Clair et épuré"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Luminoso e pulito."
+            "value" : "Luminoso e pulito"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claro e limpo."
+            "value" : "Claro e limpo"
           }
         }
       }
@@ -1491,49 +1491,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose the look of the app."
+            "value" : "Choose the look of the app"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выберите внешний вид приложения."
+            "value" : "Выберите внешний вид приложения"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wähle das Erscheinungsbild der App."
+            "value" : "Wähle das Erscheinungsbild der App"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Επιλέξτε την εμφάνιση της εφαρμογής."
+            "value" : "Επιλέξτε την εμφάνιση της εφαρμογής"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elige el aspecto de la app."
+            "value" : "Elige el aspecto de la app"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez l’apparence de l’app."
+            "value" : "Choisissez l’apparence de l’app"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scegli l’aspetto dell’app."
+            "value" : "Scegli l’aspetto dell’app"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escolha a aparência do app."
+            "value" : "Escolha a aparência do app"
           }
         }
       }
@@ -1544,49 +1544,49 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Follow device settings."
+            "value" : "Follow device settings"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Следовать настройкам устройства."
+            "value" : "Следовать настройкам устройства"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Geräteeinstellungen folgen."
+            "value" : "Geräteeinstellungen folgen"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ακολουθεί τις ρυθμίσεις της συσκευής."
+            "value" : "Ακολουθεί τις ρυθμίσεις της συσκευής"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sigue la configuración del dispositivo."
+            "value" : "Sigue la configuración del dispositivo"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Suit les réglages de l’appareil."
+            "value" : "Suit les réglages de l’appareil"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Segue le impostazioni del dispositivo."
+            "value" : "Segue le impostazioni del dispositivo"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Segue as configurações do dispositivo."
+            "value" : "Segue as configurações do dispositivo"
           }
         }
       }
