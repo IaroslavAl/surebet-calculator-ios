@@ -162,6 +162,32 @@ struct SurebetCalculatorViewModelTests {
     }
 
     @Test
+    func initNormalizesDuplicateAndMissingOrderedRowIDs() {
+        // Given
+        let row0 = rowId(0)
+        let row1 = rowId(1)
+        let row2 = rowId(2)
+        let unknown = rowId(99)
+        let rowsById: [RowID: Row] = [
+            row0: Row(id: row0),
+            row1: Row(id: row1),
+            row2: Row(id: row2)
+        ]
+
+        // When
+        let viewModel = SurebetCalculatorViewModel(
+            rowsById: rowsById,
+            orderedRowIds: [row1, row1, unknown],
+            selectedNumberOfRows: .three,
+            selection: .none
+        )
+
+        // Then
+        #expect(viewModel.orderedRowIds == [row1, row0, row2])
+        #expect(viewModel.activeRowViewModelIDs == [row1, row0, row2])
+    }
+
+    @Test
     func selectRowMovesFocusFromTotalBetSizeToSelectedRowBetSize() {
         // Given
         let selectedRowID = rowId(1)

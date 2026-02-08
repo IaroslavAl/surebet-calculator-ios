@@ -39,7 +39,10 @@ final class SurebetCalculatorViewModel: ObservableObject {
     ) {
         let resolvedRows: (rowsById: [RowID: Row], orderedRowIds: [RowID])
         if let rowsById, let orderedRowIds {
-            resolvedRows = (rowsById: rowsById, orderedRowIds: orderedRowIds)
+            resolvedRows = Self.normalizedRows(
+                rowsById: rowsById,
+                orderedRowIds: orderedRowIds
+            )
         } else {
             resolvedRows = Row.createRows(CalculatorConstants.maxRowCount)
         }
@@ -73,7 +76,10 @@ final class SurebetCalculatorViewModel: ObservableObject {
                 )
             )
         }
-        self.rowViewModelsById = Dictionary(uniqueKeysWithValues: initialRowViewModels.map { ($0.id, $0) })
+        self.rowViewModelsById = Dictionary(
+            initialRowViewModels.map { ($0.id, $0) },
+            uniquingKeysWith: { existing, _ in existing }
+        )
         self.activeRowViewModels = Array(initialRowViewModels.prefix(normalizedSelectedNumber.rawValue))
 
         self.totalRowViewModel = TotalRowItemViewModel(
@@ -138,6 +144,31 @@ final class SurebetCalculatorViewModel: ObservableObject {
         }
 
         synchronizePresentation(from: previousSnapshot)
+    }
+}
+
+// MARK: - Initialization Helpers
+
+private extension SurebetCalculatorViewModel {
+    static func normalizedRows(
+        rowsById: [RowID: Row],
+        orderedRowIds: [RowID]
+    ) -> (rowsById: [RowID: Row], orderedRowIds: [RowID]) {
+        var seenRowIDs = Set<RowID>()
+        var normalizedOrderedRowIDs: [RowID] = []
+        normalizedOrderedRowIDs.reserveCapacity(rowsById.count)
+
+        for id in orderedRowIds where rowsById[id] != nil {
+            guard seenRowIDs.insert(id).inserted else { continue }
+            normalizedOrderedRowIDs.append(id)
+        }
+
+        let missingRowIDs = rowsById.keys
+            .sorted(by: { $0.rawValue < $1.rawValue })
+            .filter { seenRowIDs.insert($0).inserted }
+        normalizedOrderedRowIDs.append(contentsOf: missingRowIDs)
+
+        return (rowsById: rowsById, orderedRowIds: normalizedOrderedRowIDs)
     }
 }
 
