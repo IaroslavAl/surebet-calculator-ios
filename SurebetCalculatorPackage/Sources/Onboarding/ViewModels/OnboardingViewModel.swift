@@ -87,6 +87,6 @@ private extension OnboardingViewModel {
     func logPageViewed(index: Int) {
         guard pages.indices.contains(index) else { return }
         let page = pages[index]
-        analytics.onboardingPageViewed(pageIndex: index, pageTitle: page.image)
+        analytics.onboardingPageViewed(pageIndex: index, pageTitle: page.analyticsTitle)
     }
 }
