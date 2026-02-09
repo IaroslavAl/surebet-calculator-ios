@@ -106,10 +106,18 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel(isOnboardingEnabled: false)
+        let defaults = UserDefaults.standard
 
         // Then
         #expect(viewModel.shouldShowOnboarding == false)
         #expect(viewModel.isOnboardingShown == true)
+        #expect(defaults.object(forKey: "onboardingIsShown") == nil)
+
+        // When
+        viewModel.send(.updateOnboardingShown(true))
+
+        // Then
+        #expect(defaults.object(forKey: "onboardingIsShown") == nil)
     }
 
     // MARK: - shouldShowOnboardingWithAnimation Tests

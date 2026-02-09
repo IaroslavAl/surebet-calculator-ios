@@ -42,10 +42,6 @@ final class RootViewModel: ObservableObject {
         self.isOnboardingEnabled = isOnboardingEnabled
         self.bannerFetcher = bannerFetcher
         self.bannerCacheChecker = bannerCacheChecker
-
-        if !isOnboardingEnabled {
-            onboardingIsShown = true
-        }
     }
 
     // MARK: - Public Methods
@@ -158,7 +154,6 @@ private extension RootViewModel {
 
     func updateOnboardingShownInternal(_ value: Bool) {
         guard isOnboardingEnabled else {
-            onboardingIsShown = true
             return
         }
         onboardingIsShown = value
