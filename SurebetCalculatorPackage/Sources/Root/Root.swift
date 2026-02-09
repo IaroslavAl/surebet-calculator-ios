@@ -25,7 +25,8 @@ private final class RootDependencies: ObservableObject {
         let reviewService = ReviewHandler()
         viewModel = RootViewModel(
             analyticsService: analyticsService,
-            reviewService: reviewService
+            reviewService: reviewService,
+            isOnboardingEnabled: RootConstants.isOnboardingEnabled
         )
         onboardingAnalytics = OnboardingAnalyticsAdapter(
             analyticsService: analyticsService

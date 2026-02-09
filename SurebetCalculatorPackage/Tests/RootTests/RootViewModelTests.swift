@@ -19,6 +19,7 @@ struct RootViewModelTests {
         analyticsService: AnalyticsService? = nil,
         reviewService: ReviewService? = nil,
         delay: Delay? = nil,
+        isOnboardingEnabled: Bool = true,
         bannerFetcher: (@Sendable () async -> Void)? = nil,
         bannerCacheChecker: (@Sendable () -> Bool)? = nil
     ) -> RootViewModel {
@@ -29,6 +30,7 @@ struct RootViewModelTests {
             analyticsService: analytics,
             reviewService: review,
             delay: reviewDelay,
+            isOnboardingEnabled: isOnboardingEnabled,
             bannerFetcher: bannerFetcher ?? { },
             bannerCacheChecker: bannerCacheChecker ?? { false }
         )
@@ -96,6 +98,26 @@ struct RootViewModelTests {
 
         // Then
         #expect(viewModel.shouldShowOnboarding == false)
+    }
+
+    /// Тест проверки что onboarding скрыт при отключенном feature toggle
+    @Test
+    func shouldShowOnboardingWhenFeatureDisabled() {
+        // Given
+        clearTestUserDefaults()
+        let viewModel = createViewModel(isOnboardingEnabled: false)
+        let defaults = UserDefaults.standard
+
+        // Then
+        #expect(viewModel.shouldShowOnboarding == false)
+        #expect(viewModel.isOnboardingShown == true)
+        #expect(defaults.object(forKey: "onboardingIsShown") == nil)
+
+        // When
+        viewModel.send(.updateOnboardingShown(true))
+
+        // Then
+        #expect(defaults.object(forKey: "onboardingIsShown") == nil)
     }
 
     // MARK: - shouldShowOnboardingWithAnimation Tests
@@ -210,6 +232,21 @@ struct RootViewModelTests {
 
         // Then
         #expect(viewModel.fullscreenBannerIsAvailable == false)
+    }
+
+    /// Тест доступности fullscreen баннера при выключенном onboarding и выполненных остальных условиях
+    @Test
+    func fullscreenBannerIsAvailableWhenOnboardingFeatureDisabled() {
+        // Given
+        clearTestUserDefaults()
+        let viewModel = createViewModel(isOnboardingEnabled: false)
+        UserDefaults.standard.set(true, forKey: "1.7.0")
+        for _ in 0..<3 {
+            viewModel.send(.onAppear)
+        }
+
+        // Then
+        #expect(viewModel.fullscreenBannerIsAvailable == true)
     }
 
     /// Тест доступности fullscreen баннера когда review не показан

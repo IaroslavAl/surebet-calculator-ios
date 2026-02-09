@@ -11,12 +11,7 @@ struct OnboardingPageView: View {
 
     var body: some View {
         VStack(spacing: .zero) {
-            Image(page.image, bundle: .module)
-                .resizable()
-                .scaledToFit()
-                .padding(.vertical)
-                .padding(.horizontal, imagePadding)
-                .accessibilityLabel(OnboardingLocalizationKey.image.localized(locale))
+            illustrationView
             Spacer()
             Text(page.description)
                 .font(DesignSystem.Typography.title)
@@ -33,15 +28,40 @@ struct OnboardingPageView: View {
         isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large
     }
 
-    var imagePadding: CGFloat {
+    var illustrationPadding: CGFloat {
         isIPad ? DesignSystem.Spacing.extraExtraLarge : .zero
+    }
+
+    var illustrationSize: CGFloat {
+        isIPad ? 132 : 96
+    }
+
+    var illustrationView: some View {
+        RoundedRectangle(cornerRadius: DesignSystem.Radius.extraLarge)
+            .fill(DesignSystem.Color.onboardingSurface)
+            .overlay {
+                RoundedRectangle(cornerRadius: DesignSystem.Radius.extraLarge)
+                    .stroke(DesignSystem.Color.onboardingBorder, lineWidth: 1)
+            }
+            .overlay {
+                Image(systemName: page.illustration.rawValue)
+                    .font(.system(size: illustrationSize, weight: .semibold, design: .rounded))
+                    .foregroundStyle(DesignSystem.Color.onboardingTextPrimary)
+            }
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1.55, contentMode: .fit)
+            .padding(.vertical)
+            .padding(.horizontal, illustrationPadding)
+            .accessibilityLabel(OnboardingLocalizationKey.image.localized(locale))
     }
 }
 
 #Preview {
     OnboardingPageView(
         page: OnboardingPage.createPages(locale: Locale.current).first ?? .init(
-            image: "onboarding1",
+            id: 0,
+            illustration: .stakeDistribution,
+            analyticsTitle: "onboarding_page_1",
             description: OnboardingLocalizationKey.page1Description.localized(Locale.current)
         )
     )
