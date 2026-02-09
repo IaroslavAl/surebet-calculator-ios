@@ -20,6 +20,7 @@ final class RootViewModel: ObservableObject {
     private let analyticsService: AnalyticsService
     private let reviewService: ReviewService
     private let delay: Delay
+    private let isOnboardingEnabled: Bool
     private let bannerFetcher: @Sendable () async -> Void
     private let bannerCacheChecker: @Sendable () -> Bool
 
@@ -31,14 +32,20 @@ final class RootViewModel: ObservableObject {
         analyticsService: AnalyticsService = AnalyticsManager(),
         reviewService: ReviewService = ReviewHandler(),
         delay: Delay = SystemDelay(),
+        isOnboardingEnabled: Bool = true,
         bannerFetcher: @escaping @Sendable () async -> Void = { try? await Banner.fetchBanner() },
         bannerCacheChecker: @escaping @Sendable () -> Bool = { Banner.isBannerFullyCached }
     ) {
         self.analyticsService = analyticsService
         self.reviewService = reviewService
         self.delay = delay
+        self.isOnboardingEnabled = isOnboardingEnabled
         self.bannerFetcher = bannerFetcher
         self.bannerCacheChecker = bannerCacheChecker
+
+        if !isOnboardingEnabled {
+            onboardingIsShown = true
+        }
     }
 
     // MARK: - Public Methods
@@ -83,7 +90,7 @@ final class RootViewModel: ObservableObject {
 
     /// Проверяет, нужно ли показать onboarding
     var shouldShowOnboarding: Bool {
-        !onboardingIsShown
+        isOnboardingEnabled && !onboardingIsShown
     }
 
     /// Проверяет, нужно ли показать onboarding с анимацией
@@ -93,7 +100,7 @@ final class RootViewModel: ObservableObject {
 
     /// Возвращает текущее состояние onboarding
     var isOnboardingShown: Bool {
-        onboardingIsShown
+        onboardingIsShown || !isOnboardingEnabled
     }
 
     /// Заголовок для запроса отзыва.
@@ -103,7 +110,7 @@ final class RootViewModel: ObservableObject {
 
     /// Проверяет, доступен ли fullscreen баннер для показа
     var fullscreenBannerIsAvailable: Bool {
-        onboardingIsShown && requestReviewWasShown && numberOfOpenings.isMultiple(of: 3)
+        isOnboardingShown && requestReviewWasShown && numberOfOpenings.isMultiple(of: 3)
     }
 }
 
@@ -129,7 +136,7 @@ private extension RootViewModel {
 #if !DEBUG
         Task {
             await delay.sleep(nanoseconds: RootConstants.reviewRequestDelay)
-            if !requestReviewWasShown, numberOfOpenings >= 2, onboardingIsShown {
+            if !requestReviewWasShown, numberOfOpenings >= 2, isOnboardingShown {
                 alertIsPresented = true
                 requestReviewWasShown = true
                 analyticsService.log(event: .reviewPromptShown)
@@ -150,6 +157,10 @@ private extension RootViewModel {
     }
 
     func updateOnboardingShownInternal(_ value: Bool) {
+        guard isOnboardingEnabled else {
+            onboardingIsShown = true
+            return
+        }
         onboardingIsShown = value
     }
 

@@ -23,7 +23,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     /// Тест: Запуск приложения и показ онбординга для нового пользователя
     @MainActor
     func testAppLaunchShowsOnboardingForNewUser() throws {
-        app.launchArguments = ["-resetUserDefaults"]
+        app.launchArguments = ["-resetUserDefaults", "-enableOnboarding"]
         app.launch()
 
         let onboardingView = app.otherElements[Identifiers.Onboarding.view]
@@ -43,7 +43,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     /// Тест: Прохождение онбординга полностью (3 страницы)
     @MainActor
     func testOnboardingCompleteFlow() throws {
-        app.launchArguments = ["-resetUserDefaults"]
+        app.launchArguments = ["-resetUserDefaults", "-enableOnboarding"]
         app.launch()
 
         let onboardingView = app.otherElements[Identifiers.Onboarding.view]
@@ -91,7 +91,7 @@ final class SurebetCalculatorUITests: XCTestCase {
     /// Тест: Закрытие онбординга кнопкой X
     @MainActor
     func testOnboardingCloseButton() throws {
-        app.launchArguments = ["-resetUserDefaults"]
+        app.launchArguments = ["-resetUserDefaults", "-enableOnboarding"]
         app.launch()
 
         let onboardingView = app.otherElements[Identifiers.Onboarding.view]
@@ -349,7 +349,7 @@ final class SurebetCalculatorUITests: XCTestCase {
 
     @MainActor
     private func launchAppWithoutOnboarding() {
-        app.launchArguments = ["-onboardingIsShown"]
+        app.launchArguments = ["-disableOnboarding", "-onboardingIsShown"]
         app.launch()
 
         let navBar = app.navigationBars["Surebet calculator"]
