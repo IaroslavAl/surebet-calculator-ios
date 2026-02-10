@@ -447,6 +447,63 @@ struct AnalyticsManagerTests {
         #expect(event.parameters?["session_number"] == .int(10))
     }
 
+    /// Тест названия и параметров события survey_shown
+    @Test
+    func analyticsEventNameWhenSurveyShown() {
+        // Given
+        let event = AnalyticsEvent.surveyShown(
+            surveyId: "survey_1",
+            surveyVersion: 3,
+            sourceScreen: "calculator"
+        )
+
+        // Then
+        #expect(event.name == "survey_shown")
+        #expect(event.parameters?["survey_id"] == .string("survey_1"))
+        #expect(event.parameters?["survey_version"] == .int(3))
+        #expect(event.parameters?["source_screen"] == .string("calculator"))
+    }
+
+    /// Тест названия и параметров события survey_closed
+    @Test
+    func analyticsEventNameWhenSurveyClosed() {
+        // Given
+        let event = AnalyticsEvent.surveyClosed(
+            surveyId: "survey_1",
+            surveyVersion: 3,
+            sourceScreen: "settings"
+        )
+
+        // Then
+        #expect(event.name == "survey_closed")
+        #expect(event.parameters?["survey_id"] == .string("survey_1"))
+        #expect(event.parameters?["survey_version"] == .int(3))
+        #expect(event.parameters?["source_screen"] == .string("settings"))
+    }
+
+    /// Тест названия и параметров события survey_submitted
+    @Test
+    func analyticsEventNameWhenSurveySubmitted() {
+        // Given
+        let event = AnalyticsEvent.surveySubmitted(
+            surveyId: "survey_2",
+            surveyVersion: nil,
+            sourceScreen: "instructions",
+            answers: [
+                "rating_field_rating": .int(9),
+                "comment_field_text": .string("Good app")
+            ]
+        )
+
+        // Then
+        #expect(event.name == "survey_submitted")
+        #expect(event.parameters?["survey_id"] == .string("survey_2"))
+        #expect(event.parameters?["source_screen"] == .string("instructions"))
+        #expect(event.parameters?["answers_count"] == .int(2))
+        #expect(event.parameters?["rating_field_rating"] == .int(9))
+        #expect(event.parameters?["comment_field_text"] == .string("Good app"))
+    }
+
     // MARK: - log(event:) Tests
 
     /// Тест логирования типобезопасного события без параметров

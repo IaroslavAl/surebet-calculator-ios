@@ -9,6 +9,7 @@ struct MenuCardLink<Destination: View>: View {
     let style: MenuCardStyle
     let layout: MenuLayout
     let showsSubtitle: Bool
+    let onTap: (() -> Void)?
     let destination: () -> Destination
 
     var body: some View {
@@ -24,6 +25,11 @@ struct MenuCardLink<Destination: View>: View {
                 showsSubtitle: showsSubtitle
             )
         }
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                onTap?()
+            }
+        )
         .buttonStyle(MenuCardButtonStyle())
     }
 }

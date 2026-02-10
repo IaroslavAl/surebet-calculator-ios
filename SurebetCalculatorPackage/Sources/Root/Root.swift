@@ -2,8 +2,10 @@ import AnalyticsManager
 import AppMetricaCore
 import Onboarding
 import ReviewHandler
+import Settings
 import SwiftUI
 import SurebetCalculator
+import Survey
 
 public enum Root {
     // MARK: - Public Methods
@@ -23,10 +25,14 @@ private final class RootDependencies: ObservableObject {
     init() {
         let analyticsService = AnalyticsManager()
         let reviewService = ReviewHandler()
+        let surveyService = Self.makeSurveyService()
         viewModel = RootViewModel(
             analyticsService: analyticsService,
             reviewService: reviewService,
-            isOnboardingEnabled: RootConstants.isOnboardingEnabled
+            isOnboardingEnabled: RootConstants.isOnboardingEnabled,
+            surveyService: surveyService,
+            surveyLocaleProvider: Self.selectedSurveyLocaleIdentifier,
+            isSurveyEnabled: RootConstants.isSurveyEnabled
         )
         onboardingAnalytics = OnboardingAnalyticsAdapter(
             analyticsService: analyticsService
@@ -34,6 +40,31 @@ private final class RootDependencies: ObservableObject {
         calculatorAnalytics = CalculatorAnalyticsAdapter(
             analyticsService: analyticsService
         )
+    }
+
+    private static func makeSurveyService() -> SurveyService {
+        switch RootConstants.surveyDataSource {
+        case .mock:
+            return MockSurveyService(scenario: RootConstants.surveyMockScenario)
+        case .remote:
+            guard let baseURL = URL(string: RootConstants.surveyAPIBaseURL) else {
+                return MockSurveyService(scenario: RootConstants.surveyMockScenario)
+            }
+            return RemoteSurveyService(baseURL: baseURL)
+        }
+    }
+
+    nonisolated private static func selectedSurveyLocaleIdentifier() -> String {
+        let rawValue = UserDefaults.standard.string(forKey: SettingsStorage.languageKey)
+            ?? SettingsLanguage.system.rawValue
+        let selectedLanguage = SettingsLanguage(rawValue: rawValue) ?? .system
+
+        switch selectedLanguage {
+        case .system:
+            return Locale.autoupdatingCurrent.identifier
+        default:
+            return selectedLanguage.rawValue
+        }
     }
 }
 

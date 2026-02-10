@@ -131,11 +131,25 @@ let package = Package(
                 "Onboarding",
                 "Settings",
                 "ReviewHandler",
+                "Survey",
                 "SurebetCalculator",
                 .product(
                     name: "AppMetricaCore",
                     package: "appmetrica-sdk-ios"
                 )
+            ],
+            resources: [.process("Resources")],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
+        .target(
+            name: "Survey",
+            dependencies: [
+                "DesignSystem",
             ],
             resources: [.process("Resources")],
             plugins: [
@@ -214,12 +228,25 @@ let package = Package(
             ]
         ),
         .testTarget(
+            name: "SurveyTests",
+            dependencies: [
+                "Survey",
+            ],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
+        .testTarget(
             name: "RootTests",
             dependencies: [
                 "Root",
                 "AnalyticsManager",
                 "Banner",
                 "ReviewHandler",
+                "Survey",
                 "SurebetCalculator"
             ],
             plugins: [
