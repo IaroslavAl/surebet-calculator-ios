@@ -16,6 +16,7 @@
 - MUST: модели и сервисные протоколы должны быть `Sendable`.
 - SHOULD: реализации сервисов по умолчанию `struct`; `class/actor` только при обосновании.
 - MUST: учитывать Swift 6 strict concurrency при API UIKit/Foundation.
+- MUST: в action-сеттерах, которые вызываются из `Binding` (`set*Presented`, `set*Enabled` и т.п.), перед присваиванием проверять `newValue != currentValue`, чтобы не публиковать no-op обновления.
 - MUST: в hot-path UI (например, ввод в `TextField`, частые `onChange`) не выполнять тяжелые синхронные вычисления на `MainActor` без short-circuit.
 - MUST: перед запуском расчета из `send(_:)` проверять, что вход действительно изменился; no-op действия не должны запускать пересчет.
 - SHOULD: не публиковать через `@Published` в root ViewModel состояние, которое не читается напрямую корневым View.
@@ -30,6 +31,7 @@
 - MUST: зависимости передаются через `init`.
 - MUST: сигнатуры инициализаторов — протоколы, defaults — боевые реализации.
 - MUST: View не собирает вручную сложные зависимости.
+- MUST: для экранов, открываемых через `NavigationLink`, orchestration-события root-уровня (показ sheet/overlay, аналитические события входа в раздел) не запускать из destination `.onAppear`; источник — tap/navigation state на стороне экрана-источника.
 
 ## 5. Тестирование
 - MUST: использовать `Swift Testing` (`import Testing`) для package-тестов.
@@ -63,4 +65,4 @@
 - MUST: при изменении CI-контракта обновлять `docs/reference/CI_RULES.md`.
 - SHOULD: переиспользуемую CI-логику выносить в `scripts/ci/*`.
 
-Последнее обновление: 2026-02-08
+Последнее обновление: 2026-02-10

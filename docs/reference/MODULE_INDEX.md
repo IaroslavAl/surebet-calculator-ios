@@ -4,7 +4,7 @@
 
 ## Root
 - Public API: `Root.view()`.
-- Роль: композиция модулей, onboarding/review/fullscreen-banner orchestration.
+- Роль: композиция модулей, onboarding/review/fullscreen-banner/survey orchestration.
 - Важные файлы:
   - `SurebetCalculatorPackage/Sources/Root/Root.swift`
   - `SurebetCalculatorPackage/Sources/Root/RootView.swift`
@@ -26,6 +26,13 @@
   - `Banner.isBannerFullyCached`
 - Роль: inline/fullscreen баннеры, сеть `/banner`, кэш модели и изображения.
 
+## Survey
+- Public API:
+  - `Survey.sheet(survey:onSubmit:onClose:)`
+  - `SurveyService`, `RemoteSurveyService`, `MockSurveyService`
+  - `SurveyModel`, `SurveySubmission`
+- Роль: in-app опросы, динамические поля, валидация required/optional, mock/remote data source.
+
 ## Onboarding
 - Public API: `Onboarding.view(onboardingIsShown:analytics:)`.
 - Роль: flow онбординга, аналитика шагов и завершения.
@@ -40,7 +47,7 @@
 
 ## AnalyticsManager
 - Public API: `AnalyticsService`, `AnalyticsManager`, `AnalyticsEvent`.
-- Роль: типобезопасные события и адаптер к AppMetrica.
+- Роль: типобезопасные события и адаптер к AppMetrica (включая survey events).
 
 ## DesignSystem
 - Public API: `DesignSystem` + токены/базовые компоненты.

@@ -10,6 +10,7 @@ graph TD
     Root --> Onboarding
     Root --> Settings
     Root --> ReviewHandler
+    Root --> Survey
     Root --> AnalyticsManager
     Root --> DesignSystem
     Root --> AppMetricaCore
@@ -27,6 +28,7 @@ graph TD
 
     Onboarding --> DesignSystem
     Settings --> DesignSystem
+    Survey --> DesignSystem
 
     AnalyticsManager --> AppMetricaCore
 ```
