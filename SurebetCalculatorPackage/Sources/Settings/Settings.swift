@@ -5,6 +5,15 @@ public enum Settings {
     /// Экран настроек приложения.
     @MainActor
     public static func view() -> some View {
-        SettingsView(viewModel: SettingsViewModel())
+        SettingsContainerView()
+    }
+}
+
+@MainActor
+private struct SettingsContainerView: View {
+    @StateObject private var viewModel = SettingsViewModel()
+
+    var body: some View {
+        SettingsView(viewModel: viewModel)
     }
 }

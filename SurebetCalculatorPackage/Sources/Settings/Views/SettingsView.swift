@@ -5,14 +5,14 @@ import DesignSystem
 struct SettingsView: View {
     // MARK: - Properties
 
-    @StateObject private var viewModel: SettingsViewModel
+    @ObservedObject private var viewModel: SettingsViewModel
     @Environment(\.locale) private var locale
     @EnvironmentObject private var languageStore: AppLanguageStore
 
     // MARK: - Initialization
 
     init(viewModel: SettingsViewModel) {
-        self._viewModel = StateObject(wrappedValue: viewModel)
+        self.viewModel = viewModel
     }
 
     // MARK: - Body
