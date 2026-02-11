@@ -10,6 +10,16 @@
   - `SurebetCalculatorPackage/Sources/Root/RootView.swift`
   - `SurebetCalculatorPackage/Sources/Root/RootViewModel.swift`
 
+## FeatureToggles
+- Public API:
+  - `FeatureKey`
+  - `FeatureFlags`
+  - `FeatureFlagsProvider`
+  - `DefaultFeatureFlagsProvider`
+  - `FeatureFlagOverrideStore`
+- Роль: единый источник фич-флагов (launch arguments + persisted overrides в `UserDefaults`) и подготовка к управлению из debug menu.
+- Поведение: `DefaultFeatureFlagsProvider` делает snapshot на старте; после изменения override требуется переинициализация зависимостей (обычно перезапуск экрана/приложения).
+
 ## MainMenu
 - Public API: `MainMenu.view(calculatorAnalytics:)`.
 - Роль: первый экран и переходы в разделы.
@@ -59,4 +69,4 @@
 2. Обновить релевантный playbook.
 3. Добавить ADR при изменении архитектурного решения.
 
-Последнее обновление: 2026-02-06
+Последнее обновление: 2026-02-11

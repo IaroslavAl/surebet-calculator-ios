@@ -18,6 +18,7 @@ xcodebuild -project surebet-calculator.xcodeproj -scheme surebet-calculator \
 xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator \
   -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
 ```
+В test plan входят package-тесты, включая `FeatureTogglesTests`.
 
 ## CI parity commands (recommended before PR)
 ```bash
@@ -43,4 +44,4 @@ xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator
 ## Связанные документы
 - `docs/reference/CI_RULES.md`
 
-Последнее обновление: 2026-02-07
+Последнее обновление: 2026-02-11

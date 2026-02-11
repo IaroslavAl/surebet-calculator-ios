@@ -1,4 +1,5 @@
 import Foundation
+import FeatureToggles
 import Testing
 @testable import Root
 @testable import SurebetCalculator
@@ -26,7 +27,14 @@ struct IntegrationTests {
         RootViewModel(
             analyticsService: analyticsService ?? MockAnalyticsService(),
             reviewService: reviewService ?? MockReviewService(),
-            delay: ImmediateDelay()
+            delay: ImmediateDelay(),
+            featureFlags: FeatureFlags(
+                onboarding: true,
+                survey: false,
+                reviewPrompt: true,
+                bannerFetch: true,
+                fullscreenBanner: true
+            )
         )
     }
 

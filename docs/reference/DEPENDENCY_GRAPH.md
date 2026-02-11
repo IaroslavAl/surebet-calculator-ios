@@ -11,6 +11,7 @@ graph TD
     Root --> Settings
     Root --> ReviewHandler
     Root --> Survey
+    Root --> FeatureToggles
     Root --> AnalyticsManager
     Root --> DesignSystem
     Root --> AppMetricaCore
@@ -43,4 +44,4 @@ graph TD
 - Нельзя добавлять неиспользуемые пакетные зависимости.
 - Для всех targets подключать SwiftLint plugin консистентно.
 
-Последнее обновление: 2026-02-06
+Последнее обновление: 2026-02-11
