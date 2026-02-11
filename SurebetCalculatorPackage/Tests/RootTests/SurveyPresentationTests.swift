@@ -38,7 +38,7 @@ struct SurveyPresentationTests {
         // When
         viewModel.send(.fetchSurvey)
         viewModel.send(.sectionOpened(.calculator))
-        await awaitCondition { viewModel.surveyIsPresented }
+        #expect(await awaitCondition { viewModel.surveyIsPresented })
 
         // Then
         #expect(viewModel.surveyIsPresented == true)
@@ -54,9 +54,9 @@ struct SurveyPresentationTests {
         viewModel.send(.setSurveyPresented(false))
         viewModel.send(.surveySheetDismissed)
         viewModel.send(.sectionOpened(.settings))
-        await awaitCondition {
+        #expect(await awaitCondition {
             defaults.stringArray(forKey: RootConstants.handledSurveyIDsKey)?.contains("survey_id_1") == true
-        }
+        })
 
         // Then
         #expect(viewModel.surveyIsPresented == false)
@@ -99,7 +99,7 @@ struct SurveyPresentationTests {
         // When
         viewModel.send(.fetchSurvey)
         viewModel.send(.sectionOpened(.instructions))
-        await awaitCondition { viewModel.surveyIsPresented }
+        #expect(await awaitCondition { viewModel.surveyIsPresented })
 
         let submission = SurveySubmission(
             surveyID: "survey_id_2",
@@ -110,9 +110,9 @@ struct SurveyPresentationTests {
         )
         viewModel.send(.surveySubmitted(submission))
         viewModel.send(.surveySheetDismissed)
-        await awaitCondition {
+        #expect(await awaitCondition {
             defaults.stringArray(forKey: RootConstants.handledSurveyIDsKey)?.contains("survey_id_2") == true
-        }
+        })
 
         // Then
         #expect(defaults.stringArray(forKey: RootConstants.handledSurveyIDsKey)?.contains("survey_id_2") == true)
@@ -127,14 +127,17 @@ struct SurveyPresentationTests {
 
     private func awaitCondition(
         _ condition: @escaping () -> Bool,
-        maxIterations: Int = 50
-    ) async {
-        for _ in 0..<maxIterations {
+        timeout: Duration = .seconds(1)
+    ) async -> Bool {
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: timeout)
+        while clock.now < deadline {
             if condition() {
-                return
+                return true
             }
             await Task.yield()
         }
+        return condition()
     }
 }
 
