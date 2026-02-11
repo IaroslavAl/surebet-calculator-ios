@@ -26,7 +26,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
         #if !DEBUG
         let apiKey = "f7e1f335-475a-4b6c-ba4a-77988745bc7a"
-        if let configuration = AppMetricaConfiguration(apiKey: apiKey) {
+        if let configuration = makeAppMetricaConfiguration(apiKey: apiKey) {
             AppMetrica.activate(with: configuration)
         }
         #endif
@@ -50,5 +50,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         if arguments.contains("-onboardingIsShown") {
             UserDefaults.standard.set(true, forKey: "onboardingIsShown")
         }
+    }
+
+    /// Совместимо с SDK, где initializer может быть failable/non-failable.
+    private func makeAppMetricaConfiguration(apiKey: String) -> AppMetricaConfiguration? {
+        AppMetricaConfiguration(apiKey: apiKey)
     }
 }
