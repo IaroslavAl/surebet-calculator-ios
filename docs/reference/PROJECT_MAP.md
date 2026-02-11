@@ -22,6 +22,7 @@
 - Баннеры, сеть, кэш: `Sources/Banner/*`.
 - Онбординг: `Sources/Onboarding/*`.
 - Настройки языка/темы: `Sources/Settings/*`.
+- In-app опросы: `Sources/Survey/*`.
 - Review flow: `Sources/ReviewHandler/*`.
 - Аналитика: `Sources/AnalyticsManager/*`.
 - Дизайн-токены/базовые компоненты: `Sources/DesignSystem/*`.
@@ -33,5 +34,6 @@
 - `SurebetCalculatorPackage/Tests/OnboardingTests/*`
 - `SurebetCalculatorPackage/Tests/ReviewHandlerTests/*`
 - `SurebetCalculatorPackage/Tests/AnalyticsManagerTests/*`
+- `SurebetCalculatorPackage/Tests/SurveyTests/*`
 
 Последнее обновление: 2026-02-06

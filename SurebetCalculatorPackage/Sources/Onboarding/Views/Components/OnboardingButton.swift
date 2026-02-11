@@ -10,9 +10,13 @@ struct OnboardingButton: View {
     // MARK: - Body
 
     var body: some View {
-        Button(action: action) {
-            label
-        }
+        PrimaryActionButton(
+            text,
+            variant: .onboarding,
+            size: .large,
+            action: action
+        )
+        .animation(DesignSystem.Animation.quickInteraction, value: viewModel.currentPage)
         .accessibilityLabel(text)
         .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.nextButton)
     }
@@ -32,32 +36,8 @@ private extension OnboardingButton {
         }
         return OnboardingLocalizationKey.next.localized(locale)
     }
-    var cornerRadius: CGFloat {
-        isIPad ? DesignSystem.Radius.extraLarge : DesignSystem.Radius.medium
-    }
-
     func action() {
         viewModel.send(.setCurrentPage(viewModel.currentPage + 1))
-    }
-
-    var label: some View {
-        Text(text)
-            .font(DesignSystem.Typography.button)
-            .foregroundColor(DesignSystem.Color.onboardingButtonText)
-            .bold()
-            .frame(maxWidth: .infinity)
-            .padding(padding)
-            .background(DesignSystem.Color.onboardingButtonBackground)
-            .cornerRadius(cornerRadius)
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(DesignSystem.Color.onboardingButtonBorder, lineWidth: 1)
-            }
-            .animation(DesignSystem.Animation.quickInteraction, value: viewModel.currentPage)
-    }
-
-    var padding: CGFloat {
-        isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large
     }
 }
 

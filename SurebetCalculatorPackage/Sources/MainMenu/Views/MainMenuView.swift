@@ -8,6 +8,7 @@ struct MainMenuView: View {
     // MARK: - Properties
 
     let calculatorAnalytics: CalculatorAnalytics
+    let onSectionOpened: ((MainMenuSection) -> Void)?
     @Environment(\.locale) private var locale
     @Environment(\.openURL) private var openURL
 
@@ -76,7 +77,10 @@ private extension MainMenuView {
             systemImage: "plus.slash.minus",
             style: .primary,
             layout: layout,
-            showsSubtitle: layout.showsPrimarySubtitle
+            showsSubtitle: layout.showsPrimarySubtitle,
+            onTap: {
+                onSectionOpened?(.calculator)
+            }
         ) {
             SurebetCalculator.view(analytics: calculatorAnalytics)
         }
@@ -98,7 +102,10 @@ private extension MainMenuView {
             systemImage: "slider.horizontal.3",
             style: .standard,
             layout: layout,
-            showsSubtitle: layout.showsSecondarySubtitle
+            showsSubtitle: layout.showsSecondarySubtitle,
+            onTap: {
+                onSectionOpened?(.settings)
+            }
         ) {
             Settings.view()
         }
@@ -111,7 +118,10 @@ private extension MainMenuView {
             systemImage: "book.closed",
             style: .standard,
             layout: layout,
-            showsSubtitle: layout.showsSecondarySubtitle
+            showsSubtitle: layout.showsSecondarySubtitle,
+            onTap: {
+                onSectionOpened?(.instructions)
+            }
         ) {
             MenuInstructionsView()
         }
@@ -137,7 +147,8 @@ private extension MainMenuView {
             systemImage: "cart",
             style: .highlight,
             layout: layout,
-            showsSubtitle: layout.showsSecondarySubtitle
+            showsSubtitle: layout.showsSecondarySubtitle,
+            onTap: nil
         ) {
             MenuPlaceholderView(
                 titleKey: .menuDisableAdsTitle,
@@ -216,6 +227,9 @@ private extension MainMenuView {
 
 #Preview {
     NavigationStack {
-        MainMenuView(calculatorAnalytics: NoopCalculatorAnalytics())
+        MainMenuView(
+            calculatorAnalytics: NoopCalculatorAnalytics(),
+            onSectionOpened: nil
+        )
     }
 }

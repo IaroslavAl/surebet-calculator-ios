@@ -4,6 +4,7 @@ import MainMenu
 import Onboarding
 import Settings
 import SurebetCalculator
+import Survey
 import SwiftUI
 
 @MainActor
@@ -35,6 +36,7 @@ struct RootView: View {
             .modifier(LifecycleModifier(viewModel: viewModel))
             .modifier(ReviewAlertModifier(viewModel: viewModel))
             .modifier(FullscreenBannerOverlayModifier(viewModel: viewModel))
+            .modifier(SurveySheetModifier(viewModel: viewModel))
             .modifier(AnimationModifier(viewModel: viewModel))
     }
 }
@@ -55,7 +57,12 @@ private extension RootView {
 
     var menuView: some View {
         NavigationStack {
-            MainMenu.view(calculatorAnalytics: calculatorAnalytics)
+            MainMenu.view(
+                calculatorAnalytics: calculatorAnalytics,
+                onSectionOpened: { section in
+                    viewModel.send(.sectionOpened(section))
+                }
+            )
         }
         .allowsHitTesting(!viewModel.shouldShowOnboardingWithAnimation)
         .accessibilityHidden(viewModel.shouldShowOnboardingWithAnimation)
@@ -111,6 +118,9 @@ private struct LifecycleModifier: ViewModifier {
             .onAppear {
                 viewModel.send(.fetchBanner)
             }
+            .onAppear {
+                viewModel.send(.fetchSurvey)
+            }
     }
 }
 
@@ -163,6 +173,39 @@ private struct AnimationModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .animation(DesignSystem.Animation.smoothTransition, value: viewModel.fullscreenBannerIsPresented)
+    }
+}
+
+private struct SurveySheetModifier: ViewModifier {
+    @ObservedObject var viewModel: RootViewModel
+
+    private var surveyIsPresentedBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.surveyIsPresented },
+            set: { viewModel.send(.setSurveyPresented($0)) }
+        )
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(
+                isPresented: surveyIsPresentedBinding,
+                onDismiss: {
+                    viewModel.send(.surveySheetDismissed)
+                }
+            ) {
+                if let survey = viewModel.activeSurvey {
+                    Survey.sheet(
+                        survey: survey,
+                        onSubmit: { submission in
+                            viewModel.send(.surveySubmitted(submission))
+                        },
+                        onClose: {
+                            viewModel.send(.surveyCloseTapped)
+                        }
+                    )
+                }
+            }
     }
 }
 

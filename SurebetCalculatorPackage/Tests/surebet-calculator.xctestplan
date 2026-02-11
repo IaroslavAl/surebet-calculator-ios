@@ -63,6 +63,13 @@
         "identifier" : "ReviewHandlerTests",
         "name" : "ReviewHandlerTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:SurebetCalculatorPackage",
+        "identifier" : "SurveyTests",
+        "name" : "SurveyTests"
+      }
     }
   ],
   "version" : 1

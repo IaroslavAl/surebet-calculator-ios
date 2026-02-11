@@ -44,6 +44,7 @@ struct RootViewModelTests {
         defaults.removeObject(forKey: "numberOfOpenings")
         defaults.removeObject(forKey: "stored_banner")
         defaults.removeObject(forKey: "stored_banner_image_url_string")
+        defaults.removeObject(forKey: RootConstants.handledSurveyIDsKey)
         clearBannerCache()
     }
 
