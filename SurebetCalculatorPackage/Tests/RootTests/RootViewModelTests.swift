@@ -4,6 +4,7 @@ import Testing
 @testable import AnalyticsManager
 @testable import ReviewHandler
 @testable import Banner
+@testable import FeatureToggles
 @testable import SurebetCalculator
 
 // swiftlint:disable file_length
@@ -19,20 +20,37 @@ struct RootViewModelTests {
         analyticsService: AnalyticsService? = nil,
         reviewService: ReviewService? = nil,
         delay: Delay? = nil,
-        isOnboardingEnabled: Bool = true,
+        featureFlags: FeatureFlags? = nil,
         bannerFetcher: (@Sendable () async -> Void)? = nil,
         bannerCacheChecker: (@Sendable () -> Bool)? = nil
     ) -> RootViewModel {
         let analytics = analyticsService ?? MockAnalyticsService()
         let review = reviewService ?? MockReviewService()
         let reviewDelay = delay ?? ImmediateDelay()
+        let flags = featureFlags ?? makeFeatureFlags()
         return RootViewModel(
             analyticsService: analytics,
             reviewService: review,
             delay: reviewDelay,
-            isOnboardingEnabled: isOnboardingEnabled,
+            featureFlags: flags,
             bannerFetcher: bannerFetcher ?? { },
             bannerCacheChecker: bannerCacheChecker ?? { false }
+        )
+    }
+
+    func makeFeatureFlags(
+        onboarding: Bool = true,
+        survey: Bool = false,
+        reviewPrompt: Bool = true,
+        bannerFetch: Bool = true,
+        fullscreenBanner: Bool = true
+    ) -> FeatureFlags {
+        FeatureFlags(
+            onboarding: onboarding,
+            survey: survey,
+            reviewPrompt: reviewPrompt,
+            bannerFetch: bannerFetch,
+            fullscreenBanner: fullscreenBanner
         )
     }
 
@@ -106,7 +124,9 @@ struct RootViewModelTests {
     func shouldShowOnboardingWhenFeatureDisabled() {
         // Given
         clearTestUserDefaults()
-        let viewModel = createViewModel(isOnboardingEnabled: false)
+        let viewModel = createViewModel(
+            featureFlags: makeFeatureFlags(onboarding: false)
+        )
         let defaults = UserDefaults.standard
 
         // Then
@@ -240,7 +260,9 @@ struct RootViewModelTests {
     func fullscreenBannerIsAvailableWhenOnboardingFeatureDisabled() {
         // Given
         clearTestUserDefaults()
-        let viewModel = createViewModel(isOnboardingEnabled: false)
+        let viewModel = createViewModel(
+            featureFlags: makeFeatureFlags(onboarding: false)
+        )
         UserDefaults.standard.set(true, forKey: "1.7.0")
         for _ in 0..<3 {
             viewModel.send(.onAppear)
@@ -281,6 +303,24 @@ struct RootViewModelTests {
         #expect(viewModel.fullscreenBannerIsAvailable == false)
     }
 
+    /// Тест недоступности fullscreen баннера при выключенном feature toggle.
+    @Test
+    func fullscreenBannerIsAvailableWhenFeatureDisabled() {
+        // Given
+        clearTestUserDefaults()
+        let viewModel = createViewModel(
+            featureFlags: makeFeatureFlags(fullscreenBanner: false)
+        )
+        viewModel.send(.updateOnboardingShown(true))
+        UserDefaults.standard.set(true, forKey: "1.7.0")
+        for _ in 0..<3 {
+            viewModel.send(.onAppear)
+        }
+
+        // Then
+        #expect(viewModel.fullscreenBannerIsAvailable == false)
+    }
+
     // MARK: - showFullscreenBanner() Tests
 
     /// Тест показа fullscreen баннера когда доступен и закэширован
@@ -311,6 +351,50 @@ struct RootViewModelTests {
         // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
+
+        // When
+        viewModel.send(.showFullscreenBanner)
+
+        // Then
+        #expect(viewModel.fullscreenBannerIsPresented == false)
+    }
+
+    /// Тест блокировки показа fullscreen баннера при выключенном bannerFetch флаге.
+    @Test
+    func showFullscreenBannerWhenBannerFetchFeatureDisabled() {
+        // Given
+        clearTestUserDefaults()
+        UserDefaults.standard.set(true, forKey: "1.7.0")
+        let viewModel = createViewModel(
+            featureFlags: makeFeatureFlags(bannerFetch: false),
+            bannerCacheChecker: { true }
+        )
+        viewModel.send(.updateOnboardingShown(true))
+        for _ in 0..<3 {
+            viewModel.send(.onAppear)
+        }
+
+        // When
+        viewModel.send(.showFullscreenBanner)
+
+        // Then
+        #expect(viewModel.fullscreenBannerIsPresented == false)
+    }
+
+    /// Тест блокировки показа fullscreen баннера при выключенном fullscreenBanner флаге.
+    @Test
+    func showFullscreenBannerWhenFullscreenBannerFeatureDisabled() {
+        // Given
+        clearTestUserDefaults()
+        UserDefaults.standard.set(true, forKey: "1.7.0")
+        let viewModel = createViewModel(
+            featureFlags: makeFeatureFlags(fullscreenBanner: false),
+            bannerCacheChecker: { true }
+        )
+        viewModel.send(.updateOnboardingShown(true))
+        for _ in 0..<3 {
+            viewModel.send(.onAppear)
+        }
 
         // When
         viewModel.send(.showFullscreenBanner)
@@ -400,6 +484,27 @@ struct RootViewModelTests {
 
         // Then
         #expect(viewModel.alertIsPresented == false)
+    }
+
+    /// Тест блокировки review prompt при выключенном флаге.
+    @Test
+    func showRequestReviewWhenFeatureDisabled() async {
+        // Given
+        clearTestUserDefaults()
+        let viewModel = createViewModel(
+            featureFlags: makeFeatureFlags(reviewPrompt: false)
+        )
+        viewModel.send(.updateOnboardingShown(true))
+        viewModel.send(.onAppear)
+        viewModel.send(.onAppear)
+
+        // When
+        viewModel.send(.showRequestReview)
+        await awaitAsyncTasks()
+
+        // Then
+        #expect(viewModel.alertIsPresented == false)
+        #expect(UserDefaults.standard.bool(forKey: "1.7.0") == false)
     }
 
     // MARK: - handleReviewNo() Tests

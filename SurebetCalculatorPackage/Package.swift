@@ -94,6 +94,15 @@ let package = Package(
             ]
         ),
         .target(
+            name: "FeatureToggles",
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
+        .target(
             name: "MainMenu",
             dependencies: [
                 "DesignSystem",
@@ -132,6 +141,7 @@ let package = Package(
                 "Settings",
                 "ReviewHandler",
                 "Survey",
+                "FeatureToggles",
                 "SurebetCalculator",
                 .product(
                     name: "AppMetricaCore",
@@ -240,11 +250,24 @@ let package = Package(
             ]
         ),
         .testTarget(
+            name: "FeatureTogglesTests",
+            dependencies: [
+                "FeatureToggles",
+            ],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
+        .testTarget(
             name: "RootTests",
             dependencies: [
                 "Root",
                 "AnalyticsManager",
                 "Banner",
+                "FeatureToggles",
                 "ReviewHandler",
                 "Survey",
                 "SurebetCalculator"

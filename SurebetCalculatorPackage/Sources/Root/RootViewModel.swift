@@ -1,5 +1,6 @@
 import AnalyticsManager
 import Banner
+import FeatureToggles
 import Foundation
 import MainMenu
 import ReviewHandler
@@ -24,13 +25,12 @@ final class RootViewModel: ObservableObject {
     private let analyticsService: AnalyticsService
     private let reviewService: ReviewService
     private let delay: Delay
-    private let isOnboardingEnabled: Bool
+    private let featureFlags: FeatureFlags
     private let bannerFetcher: @Sendable () async -> Void
     private let bannerCacheChecker: @Sendable () -> Bool
     private let surveyService: SurveyService
     private let surveyLocaleProvider: @Sendable () -> String
     private let surveyDefaults: UserDefaults
-    private let isSurveyEnabled: Bool
 
     private var bannerFetchTask: Task<Void, Never>?
     private var surveyFetchTask: Task<Void, Never>?
@@ -46,24 +46,22 @@ final class RootViewModel: ObservableObject {
         analyticsService: AnalyticsService = AnalyticsManager(),
         reviewService: ReviewService = ReviewHandler(),
         delay: Delay = SystemDelay(),
-        isOnboardingEnabled: Bool = true,
+        featureFlags: FeatureFlags = .releaseDefaults,
         bannerFetcher: @escaping @Sendable () async -> Void = { try? await Banner.fetchBanner() },
         bannerCacheChecker: @escaping @Sendable () -> Bool = { Banner.isBannerFullyCached },
         surveyService: SurveyService = MockSurveyService(scenario: .rotation),
         surveyLocaleProvider: @escaping @Sendable () -> String = { Locale.autoupdatingCurrent.identifier },
-        surveyDefaults: UserDefaults = .standard,
-        isSurveyEnabled: Bool = false
+        surveyDefaults: UserDefaults = .standard
     ) {
         self.analyticsService = analyticsService
         self.reviewService = reviewService
         self.delay = delay
-        self.isOnboardingEnabled = isOnboardingEnabled
+        self.featureFlags = featureFlags
         self.bannerFetcher = bannerFetcher
         self.bannerCacheChecker = bannerCacheChecker
         self.surveyService = surveyService
         self.surveyLocaleProvider = surveyLocaleProvider
         self.surveyDefaults = surveyDefaults
-        self.isSurveyEnabled = isSurveyEnabled
     }
 
     // MARK: - Public Methods
@@ -129,7 +127,7 @@ final class RootViewModel: ObservableObject {
 
     /// Проверяет, нужно ли показать onboarding
     var shouldShowOnboarding: Bool {
-        isOnboardingEnabled && !onboardingIsShown
+        featureFlags.onboarding && !onboardingIsShown
     }
 
     /// Проверяет, нужно ли показать onboarding с анимацией
@@ -139,7 +137,7 @@ final class RootViewModel: ObservableObject {
 
     /// Возвращает текущее состояние onboarding
     var isOnboardingShown: Bool {
-        onboardingIsShown || !isOnboardingEnabled
+        onboardingIsShown || !featureFlags.onboarding
     }
 
     /// Заголовок для запроса отзыва.
@@ -149,7 +147,10 @@ final class RootViewModel: ObservableObject {
 
     /// Проверяет, доступен ли fullscreen баннер для показа
     var fullscreenBannerIsAvailable: Bool {
-        isOnboardingShown && requestReviewWasShown && numberOfOpenings.isMultiple(of: 3)
+        featureFlags.fullscreenBanner &&
+            isOnboardingShown &&
+            requestReviewWasShown &&
+            numberOfOpenings.isMultiple(of: 3)
     }
 }
 
@@ -175,12 +176,13 @@ private extension RootViewModel {
     }
 
     func showFullscreenBannerIfAvailable() {
-        guard RootConstants.isBannerFetchEnabled, fullscreenBannerIsAvailable else { return }
+        guard featureFlags.bannerFetch, fullscreenBannerIsAvailable else { return }
         guard bannerCacheChecker() else { return }
         fullscreenBannerIsPresented = true
     }
 
     func requestReviewIfNeeded() {
+        guard featureFlags.reviewPrompt else { return }
 #if !DEBUG
         Task {
             await delay.sleep(nanoseconds: RootConstants.reviewRequestDelay)
@@ -205,14 +207,14 @@ private extension RootViewModel {
     }
 
     func updateOnboardingShownInternal(_ value: Bool) {
-        guard isOnboardingEnabled else {
+        guard featureFlags.onboarding else {
             return
         }
         onboardingIsShown = value
     }
 
     func fetchBannerIfNeeded() {
-        guard RootConstants.isBannerFetchEnabled, bannerFetchTask == nil else { return }
+        guard featureFlags.bannerFetch, bannerFetchTask == nil else { return }
         bannerFetchTask = Task { @MainActor [weak self] in
             guard let self else { return }
             let bannerFetcher = self.bannerFetcher
@@ -225,7 +227,7 @@ private extension RootViewModel {
     }
 
     func fetchSurveyIfNeeded() {
-        guard isSurveyEnabled, surveyFetchTask == nil else { return }
+        guard featureFlags.survey, surveyFetchTask == nil else { return }
         guard activeSurvey == nil else { return }
 
         surveyFetchTask = Task { @MainActor [weak self] in
@@ -250,7 +252,7 @@ private extension RootViewModel {
     }
 
     func presentSurveyIfPossible() {
-        guard isSurveyEnabled else { return }
+        guard featureFlags.survey else { return }
         guard !surveyShownInSession else { return }
         guard surveyPresentationTask == nil else { return }
 
@@ -264,7 +266,7 @@ private extension RootViewModel {
             await delay.sleep(nanoseconds: RootConstants.surveyPresentationDelay)
 
             guard !Task.isCancelled else { return }
-            guard self.isSurveyEnabled else { return }
+            guard self.featureFlags.survey else { return }
             guard !self.surveyShownInSession else { return }
             guard let survey = self.activeSurvey else { return }
             guard !self.handledSurveyIDs.contains(survey.id) else { return }

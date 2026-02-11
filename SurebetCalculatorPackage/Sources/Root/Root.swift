@@ -1,5 +1,6 @@
 import AnalyticsManager
 import AppMetricaCore
+import FeatureToggles
 import Onboarding
 import ReviewHandler
 import Settings
@@ -26,13 +27,13 @@ private final class RootDependencies: ObservableObject {
         let analyticsService = AnalyticsManager()
         let reviewService = ReviewHandler()
         let surveyService = Self.makeSurveyService()
+        let featureFlagsProvider = DefaultFeatureFlagsProvider()
         viewModel = RootViewModel(
             analyticsService: analyticsService,
             reviewService: reviewService,
-            isOnboardingEnabled: RootConstants.isOnboardingEnabled,
+            featureFlags: featureFlagsProvider.snapshot(),
             surveyService: surveyService,
-            surveyLocaleProvider: Self.selectedSurveyLocaleIdentifier,
-            isSurveyEnabled: RootConstants.isSurveyEnabled
+            surveyLocaleProvider: Self.selectedSurveyLocaleIdentifier
         )
         onboardingAnalytics = OnboardingAnalyticsAdapter(
             analyticsService: analyticsService

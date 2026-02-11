@@ -70,6 +70,13 @@
         "identifier" : "SurveyTests",
         "name" : "SurveyTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:SurebetCalculatorPackage",
+        "identifier" : "FeatureTogglesTests",
+        "name" : "FeatureTogglesTests"
+      }
     }
   ],
   "version" : 1

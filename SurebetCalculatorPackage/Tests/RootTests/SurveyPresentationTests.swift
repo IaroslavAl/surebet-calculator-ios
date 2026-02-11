@@ -1,4 +1,5 @@
 import Foundation
+import FeatureToggles
 import MainMenu
 import Survey
 import Testing
@@ -29,10 +30,16 @@ struct SurveyPresentationTests {
             analyticsService: analytics,
             reviewService: MockReviewService(),
             delay: ImmediateDelay(),
+            featureFlags: FeatureFlags(
+                onboarding: true,
+                survey: true,
+                reviewPrompt: true,
+                bannerFetch: true,
+                fullscreenBanner: true
+            ),
             surveyService: service,
             surveyLocaleProvider: { "en" },
-            surveyDefaults: defaults,
-            isSurveyEnabled: true
+            surveyDefaults: defaults
         )
 
         // When
@@ -90,10 +97,16 @@ struct SurveyPresentationTests {
             analyticsService: analytics,
             reviewService: MockReviewService(),
             delay: ImmediateDelay(),
+            featureFlags: FeatureFlags(
+                onboarding: true,
+                survey: true,
+                reviewPrompt: true,
+                bannerFetch: true,
+                fullscreenBanner: true
+            ),
             surveyService: service,
             surveyLocaleProvider: { "en" },
-            surveyDefaults: defaults,
-            isSurveyEnabled: true
+            surveyDefaults: defaults
         )
 
         // When
