@@ -45,7 +45,7 @@ enum RootConstants {
     static let handledSurveyIDsKey = "handled_survey_ids"
 
     /// Источник данных для опросов (mock/remote).
-    static let surveyDataSource: SurveyDataSource = .mock
+    static let surveyDataSource: SurveyDataSource = .remote
 
     /// Базовый URL API для remote-опросов.
     static let surveyAPIBaseURL = "http://api.surebet-calculator.ru"

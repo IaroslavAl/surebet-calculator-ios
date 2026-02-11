@@ -11,7 +11,7 @@ public enum MainMenu {
     @MainActor
     public static func view(
         calculatorAnalytics: CalculatorAnalytics,
-        onSectionOpened: (@Sendable (MainMenuSection) -> Void)? = nil
+        onSectionOpened: ((MainMenuSection) -> Void)? = nil
     ) -> some View {
         MainMenuView(
             calculatorAnalytics: calculatorAnalytics,

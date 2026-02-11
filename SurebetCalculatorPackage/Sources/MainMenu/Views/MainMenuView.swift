@@ -8,7 +8,7 @@ struct MainMenuView: View {
     // MARK: - Properties
 
     let calculatorAnalytics: CalculatorAnalytics
-    let onSectionOpened: (@Sendable (MainMenuSection) -> Void)?
+    let onSectionOpened: ((MainMenuSection) -> Void)?
     @Environment(\.locale) private var locale
     @Environment(\.openURL) private var openURL
 
