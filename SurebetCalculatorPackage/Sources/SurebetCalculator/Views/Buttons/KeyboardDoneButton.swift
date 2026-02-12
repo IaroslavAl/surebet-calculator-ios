@@ -26,5 +26,11 @@ private extension KeyboardDoneButton {
 
 #Preview {
     KeyboardDoneButton()
-        .environmentObject(SurebetCalculatorViewModel())
+        .environmentObject(
+            SurebetCalculatorViewModel(
+                calculationService: DefaultCalculationService(),
+                analytics: NoopCalculatorAnalytics(),
+                delay: SystemCalculationAnalyticsDelay()
+            )
+        )
 }

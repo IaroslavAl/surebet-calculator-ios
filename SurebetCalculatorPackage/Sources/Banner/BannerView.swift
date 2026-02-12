@@ -1,3 +1,4 @@
+import AnalyticsManager
 import SDWebImageSwiftUI
 import SwiftUI
 import DesignSystem
@@ -70,5 +71,10 @@ private extension BannerView {
 }
 
 #Preview {
-    BannerView(viewModel: BannerViewModel())
+    BannerView(
+        viewModel: BannerViewModel(
+            analyticsService: AnalyticsManager(),
+            urlOpener: DefaultURLOpener()
+        )
+    )
 }

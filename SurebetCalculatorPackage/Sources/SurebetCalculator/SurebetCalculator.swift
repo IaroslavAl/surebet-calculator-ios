@@ -1,13 +1,19 @@
 import SwiftUI
 
 public enum SurebetCalculator {
+    public struct Dependencies: Sendable {
+        public let analytics: any CalculatorAnalytics
+
+        public init(analytics: any CalculatorAnalytics) {
+            self.analytics = analytics
+        }
+    }
+
     // MARK: - Public Methods
 
     @MainActor
-    public static func view(
-        analytics: CalculatorAnalytics = NoopCalculatorAnalytics()
-    ) -> some View {
-        SurebetCalculatorContainerView(analytics: analytics)
+    public static func view(dependencies: Dependencies) -> some View {
+        SurebetCalculatorContainerView(dependencies: dependencies)
     }
 }
 
@@ -18,8 +24,14 @@ private struct SurebetCalculatorContainerView: View {
     // (AttributeGraph), и экран меню/калькулятора перестает быть интерактивным.
     @StateObject private var viewModel: SurebetCalculatorViewModel
 
-    init(analytics: CalculatorAnalytics) {
-        _viewModel = StateObject(wrappedValue: SurebetCalculatorViewModel(analytics: analytics))
+    init(dependencies: SurebetCalculator.Dependencies) {
+        _viewModel = StateObject(
+            wrappedValue: SurebetCalculatorViewModel(
+                calculationService: DefaultCalculationService(),
+                analytics: dependencies.analytics,
+                delay: SystemCalculationAnalyticsDelay()
+            )
+        )
     }
 
     var body: some View {

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import DesignSystem
+import AnalyticsManager
 
 struct FullscreenBannerView: View {
     // MARK: - Properties
@@ -73,7 +74,10 @@ private extension FullscreenBannerView {
 #Preview {
     FullscreenBannerView(
         viewModel: FullscreenBannerViewModel(
-            isPresented: PresentationBinding.constant(true)
+            isPresented: PresentationBinding.constant(true),
+            service: Service(),
+            analyticsService: AnalyticsManager(),
+            urlOpener: DefaultURLOpener()
         )
     )
 }

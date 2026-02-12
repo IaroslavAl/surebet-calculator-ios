@@ -13,7 +13,7 @@ enum BannerError: Error, Sendable {
     case invalidImageURL
 }
 
-struct Service: BannerService, @unchecked Sendable {
+public struct Service: BannerService, @unchecked Sendable {
     // MARK: - Properties
 
     private let baseURL: URL
@@ -24,7 +24,7 @@ struct Service: BannerService, @unchecked Sendable {
 
     // MARK: - Initialization
 
-    init(
+    public init(
         baseURL: URL? = nil,
         session: URLSession = .shared,
         defaults: UserDefaults = .standard,
@@ -56,7 +56,7 @@ struct Service: BannerService, @unchecked Sendable {
 
     // MARK: - Public Methods
 
-    func fetchBannerAndImage() async throws {
+    public func fetchBannerAndImage() async throws {
         BannerLogger.service.debug("Запрос баннера и картинки начат")
 
         do {
@@ -93,7 +93,7 @@ struct Service: BannerService, @unchecked Sendable {
         }
     }
 
-    func fetchBanner() async throws -> BannerModel {
+    public func fetchBanner() async throws -> BannerModel {
         let url = baseURL.appendingPathComponent("banner")
         BannerLogger.service.debug("Отправляем GET \(url.absoluteString, privacy: .public)")
 
@@ -129,7 +129,7 @@ struct Service: BannerService, @unchecked Sendable {
         return banner
     }
 
-    func saveBannerToDefaults(_ banner: BannerModel) {
+    public func saveBannerToDefaults(_ banner: BannerModel) {
         BannerLogger.service.debug("Сохранение баннера в UserDefaults…")
         let encoder = JSONEncoder()
         if let data = try? encoder.encode(banner) {
@@ -140,7 +140,7 @@ struct Service: BannerService, @unchecked Sendable {
         }
     }
 
-    func getBannerFromDefaults() -> BannerModel? {
+    public func getBannerFromDefaults() -> BannerModel? {
         BannerLogger.service.debug("Чтение баннера из UserDefaults")
         guard let data = defaults.data(forKey: UserDefaultsKeys.banner) else {
             BannerLogger.service.debug("Баннер не найден в UserDefaults")
@@ -153,12 +153,12 @@ struct Service: BannerService, @unchecked Sendable {
         return banner
     }
 
-    func clearBannerFromDefaults() {
+    public func clearBannerFromDefaults() {
         BannerLogger.service.debug("Удаление баннера из UserDefaults")
         defaults.removeObject(forKey: UserDefaultsKeys.banner)
     }
 
-    func downloadImage(from url: URL) async throws {
+    public func downloadImage(from url: URL) async throws {
         BannerLogger.service.debug("Скачивание картинки: \(url.absoluteString, privacy: .public)")
 
         // Используем URLRequest вместо прямого URL для совместимости с MockURLProtocol
@@ -195,7 +195,7 @@ struct Service: BannerService, @unchecked Sendable {
         defaults.set(imageURL.absoluteString, forKey: UserDefaultsKeys.bannerImageURLString)
     }
 
-    func getStoredBannerImageData() -> Data? {
+    public func getStoredBannerImageData() -> Data? {
         BannerLogger.service.debug("Получение картинки из кэша")
         if let cachedData = loadBannerImageDataFromDisk() {
             BannerLogger.service.debug("Картинка найдена в кэше: true")
@@ -213,7 +213,7 @@ struct Service: BannerService, @unchecked Sendable {
         return nil
     }
 
-    func getStoredBannerImageURL() -> URL? {
+    public func getStoredBannerImageURL() -> URL? {
         BannerLogger.service.debug("Получение URL картинки из UserDefaults")
         guard let urlString = defaults.string(forKey: UserDefaultsKeys.bannerImageURLString) else {
             BannerLogger.service.debug("URL картинки не найден")
@@ -224,7 +224,7 @@ struct Service: BannerService, @unchecked Sendable {
         return url
     }
 
-    func isBannerFullyCached() -> Bool {
+    public func isBannerFullyCached() -> Bool {
         BannerLogger.service.debug("Проверка полного кэша баннера и картинки")
         guard getBannerFromDefaults() != nil else {
             BannerLogger.service.debug("Баннер отсутствует в кэше")

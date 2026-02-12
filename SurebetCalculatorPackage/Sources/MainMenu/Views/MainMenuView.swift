@@ -7,7 +7,7 @@ import Settings
 struct MainMenuView: View {
     // MARK: - Properties
 
-    let calculatorAnalytics: CalculatorAnalytics
+    let dependencies: MainMenu.Dependencies
     let onSectionOpened: ((MainMenuSection) -> Void)?
     @Environment(\.locale) private var locale
     @Environment(\.openURL) private var openURL
@@ -82,7 +82,7 @@ private extension MainMenuView {
                 onSectionOpened?(.calculator)
             }
         ) {
-            SurebetCalculator.view(analytics: calculatorAnalytics)
+            SurebetCalculator.view(dependencies: dependencies.calculator)
         }
     }
 
@@ -107,7 +107,7 @@ private extension MainMenuView {
                 onSectionOpened?(.settings)
             }
         ) {
-            Settings.view()
+            Settings.view(dependencies: dependencies.settings)
         }
     }
 
@@ -228,7 +228,10 @@ private extension MainMenuView {
 #Preview {
     NavigationStack {
         MainMenuView(
-            calculatorAnalytics: NoopCalculatorAnalytics(),
+            dependencies: MainMenu.Dependencies(
+                calculator: SurebetCalculator.Dependencies(analytics: NoopCalculatorAnalytics()),
+                settings: Settings.Dependencies(themeStore: UserDefaultsThemeStore())
+            ),
             onSectionOpened: nil
         )
     }

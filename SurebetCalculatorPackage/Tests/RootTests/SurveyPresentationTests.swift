@@ -37,9 +37,11 @@ struct SurveyPresentationTests {
                 bannerFetch: true,
                 fullscreenBanner: true
             ),
+            bannerFetcher: { },
+            bannerCacheChecker: { false },
             surveyService: service,
             surveyLocaleProvider: { "en" },
-            surveyDefaults: defaults
+            rootStateStore: UserDefaultsRootStateStore(userDefaults: defaults)
         )
 
         // When
@@ -104,9 +106,11 @@ struct SurveyPresentationTests {
                 bannerFetch: true,
                 fullscreenBanner: true
             ),
+            bannerFetcher: { },
+            bannerCacheChecker: { false },
             surveyService: service,
             surveyLocaleProvider: { "en" },
-            surveyDefaults: defaults
+            rootStateStore: UserDefaultsRootStateStore(userDefaults: defaults)
         )
 
         // When

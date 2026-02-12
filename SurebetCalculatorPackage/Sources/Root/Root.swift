@@ -1,82 +1,38 @@
-import AnalyticsManager
 import AppMetricaCore
-import FeatureToggles
+import Banner
+import MainMenu
 import Onboarding
-import ReviewHandler
-import Settings
 import SwiftUI
-import SurebetCalculator
-import Survey
 
 public enum Root {
     // MARK: - Public Methods
 
     @MainActor
-    public static func view() -> some View {
-        RootContainerView()
+    public static func view(container: AppContainer = .live()) -> some View {
+        RootContainerView(container: container)
     }
 }
 
 @MainActor
-private final class RootDependencies: ObservableObject {
-    let viewModel: RootViewModel
-    let onboardingAnalytics: OnboardingAnalytics
-    let calculatorAnalytics: CalculatorAnalytics
-
-    init() {
-        let analyticsService = AnalyticsManager()
-        let reviewService = ReviewHandler()
-        let surveyService = Self.makeSurveyService()
-        let featureFlagsProvider = DefaultFeatureFlagsProvider()
-        viewModel = RootViewModel(
-            analyticsService: analyticsService,
-            reviewService: reviewService,
-            featureFlags: featureFlagsProvider.snapshot(),
-            surveyService: surveyService,
-            surveyLocaleProvider: Self.selectedSurveyLocaleIdentifier
-        )
-        onboardingAnalytics = OnboardingAnalyticsAdapter(
-            analyticsService: analyticsService
-        )
-        calculatorAnalytics = CalculatorAnalyticsAdapter(
-            analyticsService: analyticsService
-        )
-    }
-
-    private static func makeSurveyService() -> SurveyService {
-        switch RootConstants.surveyDataSource {
-        case .mock:
-            return MockSurveyService(scenario: RootConstants.surveyMockScenario)
-        case .remote:
-            guard let baseURL = URL(string: RootConstants.surveyAPIBaseURL) else {
-                return MockSurveyService(scenario: RootConstants.surveyMockScenario)
-            }
-            return RemoteSurveyService(baseURL: baseURL)
-        }
-    }
-
-    nonisolated private static func selectedSurveyLocaleIdentifier() -> String {
-        let rawValue = UserDefaults.standard.string(forKey: SettingsStorage.languageKey)
-            ?? SettingsLanguage.system.rawValue
-        let selectedLanguage = SettingsLanguage(rawValue: rawValue) ?? .system
-
-        switch selectedLanguage {
-        case .system:
-            return Locale.autoupdatingCurrent.identifier
-        default:
-            return selectedLanguage.rawValue
-        }
-    }
-}
-
 private struct RootContainerView: View {
-    @StateObject private var dependencies = RootDependencies()
+    @StateObject private var viewModel: RootViewModel
+    private let onboardingAnalytics: OnboardingAnalytics
+    private let mainMenuDependencies: MainMenu.Dependencies
+    private let bannerDependencies: Banner.Dependencies
+
+    init(container: AppContainer) {
+        _viewModel = StateObject(wrappedValue: container.makeRootViewModel())
+        onboardingAnalytics = container.onboardingAnalytics
+        mainMenuDependencies = container.mainMenuDependencies
+        bannerDependencies = container.bannerDependencies
+    }
 
     var body: some View {
         RootView(
-            viewModel: dependencies.viewModel,
-            onboardingAnalytics: dependencies.onboardingAnalytics,
-            calculatorAnalytics: dependencies.calculatorAnalytics
+            viewModel: viewModel,
+            onboardingAnalytics: onboardingAnalytics,
+            mainMenuDependencies: mainMenuDependencies,
+            bannerDependencies: bannerDependencies
         )
     }
 }

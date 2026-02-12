@@ -6,13 +6,13 @@ final class SettingsViewModel: ObservableObject {
     // MARK: - Properties
 
     @Published private(set) var selectedTheme: SettingsTheme = .system
-
-    @AppStorage(SettingsStorage.themeKey) private var themeRawValue = SettingsTheme.system.rawValue
+    private let themeStore: any ThemeStore
 
     // MARK: - Initialization
 
-    init() {
-        selectedTheme = SettingsTheme(rawValue: themeRawValue) ?? .system
+    init(themeStore: any ThemeStore) {
+        self.themeStore = themeStore
+        selectedTheme = themeStore.loadTheme()
     }
 
     // MARK: - Public Methods
@@ -35,6 +35,6 @@ private extension SettingsViewModel {
     func setTheme(_ theme: SettingsTheme) {
         guard selectedTheme != theme else { return }
         selectedTheme = theme
-        themeRawValue = theme.rawValue
+        themeStore.saveTheme(theme)
     }
 }

@@ -3,10 +3,13 @@
 Краткие контракты модулей и их ответственность.
 
 ## Root
-- Public API: `Root.view()`.
+- Public API:
+  - `Root.view(container:)`
+  - `AppContainer.live(userDefaults:)`
 - Роль: композиция модулей, onboarding/review/fullscreen-banner/survey orchestration.
 - Важные файлы:
   - `SurebetCalculatorPackage/Sources/Root/Root.swift`
+  - `SurebetCalculatorPackage/Sources/Root/DI/AppContainer.swift`
   - `SurebetCalculatorPackage/Sources/Root/RootView.swift`
   - `SurebetCalculatorPackage/Sources/Root/RootViewModel.swift`
 
@@ -21,19 +24,24 @@
 - Поведение: `DefaultFeatureFlagsProvider` делает snapshot на старте; после изменения override требуется переинициализация зависимостей (обычно перезапуск экрана/приложения).
 
 ## MainMenu
-- Public API: `MainMenu.view(calculatorAnalytics:)`.
+- Public API:
+  - `MainMenu.Dependencies`
+  - `MainMenu.view(dependencies:onSectionOpened:)`
 - Роль: первый экран и переходы в разделы.
 
 ## SurebetCalculator
-- Public API: `SurebetCalculator.view(analytics:)`.
+- Public API:
+  - `SurebetCalculator.Dependencies`
+  - `SurebetCalculator.view(dependencies:)`
 - Роль: состояние калькулятора, выбор режима расчета, бизнес-логика.
 
 ## Banner
 - Public API:
-  - `Banner.bannerView`
-  - `Banner.fullscreenBannerView(isPresented:)`
-  - `Banner.fetchBanner()`
-  - `Banner.isBannerFullyCached`
+  - `Banner.Dependencies`
+  - `Banner.bannerView(dependencies:)`
+  - `Banner.fullscreenBannerView(isPresented:dependencies:)`
+  - `Banner.fetchBanner(service:)`
+  - `Banner.isBannerFullyCached(service:)`
 - Роль: inline/fullscreen баннеры, сеть `/banner`, кэш модели и изображения.
 
 ## Survey
@@ -48,7 +56,11 @@
 - Роль: flow онбординга, аналитика шагов и завершения.
 
 ## Settings
-- Public API: `Settings.view()`.
+- Public API:
+  - `Settings.Dependencies`
+  - `Settings.view(dependencies:)`
+  - `ThemeStore`, `UserDefaultsThemeStore`
+  - `LanguageStoreAdapter`
 - Роль: тема/язык и соответствующее хранение состояния.
 
 ## ReviewHandler

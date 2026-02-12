@@ -196,6 +196,18 @@ let package = Package(
             ]
         ),
         .testTarget(
+            name: "SettingsTests",
+            dependencies: [
+                "Settings",
+            ],
+            plugins: [
+                .plugin(
+                    name: "SwiftLintBuildToolPlugin",
+                    package: "SwiftLint"
+                )
+            ]
+        ),
+        .testTarget(
             name: "SurebetCalculatorTests",
             dependencies: [
                 "SurebetCalculator",

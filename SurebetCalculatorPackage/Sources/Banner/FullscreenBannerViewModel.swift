@@ -19,16 +19,16 @@ final class FullscreenBannerViewModel: ObservableObject {
 
     private let service: BannerService
     private let analyticsService: AnalyticsService
-    private let urlOpener: URLOpener
+    private let urlOpener: any URLOpener
     private let isPresented: PresentationBinding
 
     // MARK: - Initialization
 
     init(
         isPresented: PresentationBinding,
-        service: BannerService = Service(),
-        analyticsService: AnalyticsService = AnalyticsManager(),
-        urlOpener: URLOpener = DefaultURLOpener()
+        service: BannerService,
+        analyticsService: AnalyticsService,
+        urlOpener: any URLOpener
     ) {
         self.state = State(
             isPresented: isPresented.value,

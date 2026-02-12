@@ -6,6 +6,7 @@ import Testing
 @testable import Banner
 @testable import FeatureToggles
 @testable import SurebetCalculator
+@testable import Survey
 
 // swiftlint:disable file_length
 
@@ -22,7 +23,8 @@ struct RootViewModelTests {
         delay: Delay? = nil,
         featureFlags: FeatureFlags? = nil,
         bannerFetcher: (@Sendable () async -> Void)? = nil,
-        bannerCacheChecker: (@Sendable () -> Bool)? = nil
+        bannerCacheChecker: (@Sendable () -> Bool)? = nil,
+        rootStateStore: RootStateStore = UserDefaultsRootStateStore()
     ) -> RootViewModel {
         let analytics = analyticsService ?? MockAnalyticsService()
         let review = reviewService ?? MockReviewService()
@@ -34,7 +36,10 @@ struct RootViewModelTests {
             delay: reviewDelay,
             featureFlags: flags,
             bannerFetcher: bannerFetcher ?? { },
-            bannerCacheChecker: bannerCacheChecker ?? { false }
+            bannerCacheChecker: bannerCacheChecker ?? { false },
+            surveyService: MockSurveyService(scenario: .none),
+            surveyLocaleProvider: { Locale.autoupdatingCurrent.identifier },
+            rootStateStore: rootStateStore
         )
     }
 
