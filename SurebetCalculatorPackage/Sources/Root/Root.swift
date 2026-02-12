@@ -19,12 +19,14 @@ private struct RootContainerView: View {
     private let onboardingAnalytics: OnboardingAnalytics
     private let mainMenuDependencies: MainMenu.Dependencies
     private let bannerDependencies: Banner.Dependencies
+    private let userDefaults: UserDefaults
 
     init(container: AppContainer) {
         _viewModel = StateObject(wrappedValue: container.makeRootViewModel())
         onboardingAnalytics = container.onboardingAnalytics
         mainMenuDependencies = container.mainMenuDependencies
         bannerDependencies = container.bannerDependencies
+        userDefaults = container.userDefaults
     }
 
     var body: some View {
@@ -32,7 +34,8 @@ private struct RootContainerView: View {
             viewModel: viewModel,
             onboardingAnalytics: onboardingAnalytics,
             mainMenuDependencies: mainMenuDependencies,
-            bannerDependencies: bannerDependencies
+            bannerDependencies: bannerDependencies,
+            themeUserDefaults: userDefaults
         )
     }
 }

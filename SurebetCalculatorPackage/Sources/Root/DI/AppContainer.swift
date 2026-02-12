@@ -34,6 +34,7 @@ public final class AppContainer {
     let mainMenuDependencies: MainMenu.Dependencies
     let bannerDependencies: Banner.Dependencies
     let onboardingAnalytics: OnboardingAnalytics
+    let userDefaults: UserDefaults
 
     private let makeRootViewModelClosure: @MainActor () -> RootViewModel
 
@@ -41,11 +42,13 @@ public final class AppContainer {
         mainMenuDependencies: MainMenu.Dependencies,
         bannerDependencies: Banner.Dependencies,
         onboardingAnalytics: OnboardingAnalytics,
+        userDefaults: UserDefaults,
         makeRootViewModel: @escaping @MainActor () -> RootViewModel
     ) {
         self.mainMenuDependencies = mainMenuDependencies
         self.bannerDependencies = bannerDependencies
         self.onboardingAnalytics = onboardingAnalytics
+        self.userDefaults = userDefaults
         makeRootViewModelClosure = makeRootViewModel
     }
 
@@ -102,6 +105,7 @@ public final class AppContainer {
             mainMenuDependencies: mainMenuDependencies,
             bannerDependencies: bannerDependencies,
             onboardingAnalytics: onboardingAnalytics,
+            userDefaults: userDefaults,
             makeRootViewModel: {
                 RootViewModel(
                     analyticsService: analyticsService,

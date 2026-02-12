@@ -2,6 +2,7 @@ import AnalyticsManager
 import Banner
 import DesignSystem
 import FeatureToggles
+import Foundation
 import MainMenu
 import Onboarding
 import ReviewHandler
@@ -18,7 +19,7 @@ struct RootView: View {
     private let onboardingAnalytics: OnboardingAnalytics
     private let mainMenuDependencies: MainMenu.Dependencies
     private let bannerDependencies: Banner.Dependencies
-    @AppStorage(SettingsStorage.themeKey) private var themeRawValue = SettingsTheme.system.rawValue
+    @AppStorage private var themeRawValue: String
 
     // MARK: - Initialization
 
@@ -26,12 +27,18 @@ struct RootView: View {
         viewModel: RootViewModel,
         onboardingAnalytics: OnboardingAnalytics,
         mainMenuDependencies: MainMenu.Dependencies,
-        bannerDependencies: Banner.Dependencies
+        bannerDependencies: Banner.Dependencies,
+        themeUserDefaults: UserDefaults = .standard
     ) {
         self.viewModel = viewModel
         self.onboardingAnalytics = onboardingAnalytics
         self.mainMenuDependencies = mainMenuDependencies
         self.bannerDependencies = bannerDependencies
+        _themeRawValue = AppStorage(
+            wrappedValue: SettingsTheme.system.rawValue,
+            SettingsStorage.themeKey,
+            store: themeUserDefaults
+        )
     }
 
     // MARK: - Body
