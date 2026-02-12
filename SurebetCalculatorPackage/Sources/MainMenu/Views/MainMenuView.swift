@@ -1,14 +1,11 @@
 import Foundation
-import SurebetCalculator
 import SwiftUI
 import DesignSystem
-import Settings
 
 struct MainMenuView: View {
     // MARK: - Properties
 
-    let dependencies: MainMenu.Dependencies
-    let onSectionOpened: ((MainMenuSection) -> Void)?
+    let onRouteRequested: (MainMenuRoute) -> Void
     @Environment(\.locale) private var locale
     @Environment(\.openURL) private var openURL
 
@@ -71,7 +68,7 @@ private extension MainMenuView {
     }
 
     func calculatorAction(_ layout: MenuLayout) -> some View {
-        MenuCardLink(
+        MenuCardAction(
             title: menuCalculatorTitle,
             subtitle: menuCalculatorSubtitle,
             systemImage: "plus.slash.minus",
@@ -79,11 +76,9 @@ private extension MainMenuView {
             layout: layout,
             showsSubtitle: layout.showsPrimarySubtitle,
             onTap: {
-                onSectionOpened?(.calculator)
+                onRouteRequested(.section(.calculator))
             }
-        ) {
-            SurebetCalculator.view(dependencies: dependencies.calculator)
-        }
+        )
     }
 
     func secondaryActions(_ layout: MenuLayout) -> some View {
@@ -96,7 +91,7 @@ private extension MainMenuView {
     }
 
     func settingsAction(_ layout: MenuLayout) -> some View {
-        MenuCardLink(
+        MenuCardAction(
             title: menuSettingsTitle,
             subtitle: menuSettingsSubtitle,
             systemImage: "slider.horizontal.3",
@@ -104,15 +99,13 @@ private extension MainMenuView {
             layout: layout,
             showsSubtitle: layout.showsSecondarySubtitle,
             onTap: {
-                onSectionOpened?(.settings)
+                onRouteRequested(.section(.settings))
             }
-        ) {
-            Settings.view(dependencies: dependencies.settings)
-        }
+        )
     }
 
     func instructionsAction(_ layout: MenuLayout) -> some View {
-        MenuCardLink(
+        MenuCardAction(
             title: menuInstructionsTitle,
             subtitle: menuInstructionsSubtitle,
             systemImage: "book.closed",
@@ -120,11 +113,9 @@ private extension MainMenuView {
             layout: layout,
             showsSubtitle: layout.showsSecondarySubtitle,
             onTap: {
-                onSectionOpened?(.instructions)
+                onRouteRequested(.section(.instructions))
             }
-        ) {
-            MenuInstructionsView()
-        }
+        )
     }
 
     func feedbackAction(_ layout: MenuLayout) -> some View {
@@ -141,21 +132,17 @@ private extension MainMenuView {
     }
 
     func disableAdsAction(_ layout: MenuLayout) -> some View {
-        MenuCardLink(
+        MenuCardAction(
             title: menuDisableAdsTitle,
             subtitle: menuDisableAdsSubtitle,
             systemImage: "cart",
             style: .highlight,
             layout: layout,
             showsSubtitle: layout.showsSecondarySubtitle,
-            onTap: nil
-        ) {
-            MenuPlaceholderView(
-                titleKey: .menuDisableAdsTitle,
-                messageKey: .menuDisableAdsDescription,
-                systemImage: "nosign"
-            )
-        }
+            onTap: {
+                onRouteRequested(.disableAds)
+            }
+        )
     }
 
     func sectionSpacing(_ layout: MenuLayout) -> CGFloat {
@@ -228,11 +215,7 @@ private extension MainMenuView {
 #Preview {
     NavigationStack {
         MainMenuView(
-            dependencies: MainMenu.Dependencies(
-                calculator: SurebetCalculator.Dependencies(analytics: NoopCalculatorAnalytics()),
-                settings: Settings.Dependencies(themeStore: UserDefaultsThemeStore())
-            ),
-            onSectionOpened: nil
+            onRouteRequested: { _ in }
         )
     }
 }
