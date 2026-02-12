@@ -46,7 +46,7 @@ struct SurveyPresentationTests {
 
         // When
         viewModel.send(.fetchSurvey)
-        viewModel.send(.sectionOpened(.calculator))
+        viewModel.send(.mainMenuRouteRequested(.section(.calculator)))
         #expect(await awaitCondition { viewModel.surveyIsPresented })
 
         // Then
@@ -62,7 +62,7 @@ struct SurveyPresentationTests {
         // When
         viewModel.send(.setSurveyPresented(false))
         viewModel.send(.surveySheetDismissed)
-        viewModel.send(.sectionOpened(.settings))
+        viewModel.send(.mainMenuRouteRequested(.section(.settings)))
         #expect(await awaitCondition {
             defaults.stringArray(forKey: RootConstants.handledSurveyIDsKey)?.contains("survey_id_1") == true
         })
@@ -115,7 +115,7 @@ struct SurveyPresentationTests {
 
         // When
         viewModel.send(.fetchSurvey)
-        viewModel.send(.sectionOpened(.instructions))
+        viewModel.send(.mainMenuRouteRequested(.section(.instructions)))
         #expect(await awaitCondition { viewModel.surveyIsPresented })
 
         let submission = SurveySubmission(
@@ -136,7 +136,7 @@ struct SurveyPresentationTests {
         #expect(viewModel.surveyIsPresented == false)
 
         // When
-        viewModel.send(.sectionOpened(.calculator))
+        viewModel.send(.mainMenuRouteRequested(.section(.calculator)))
 
         // Then
         #expect(viewModel.surveyIsPresented == false)

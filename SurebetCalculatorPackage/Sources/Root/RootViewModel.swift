@@ -16,6 +16,7 @@ final class RootViewModel: ObservableObject {
     @Published private(set) var isAnimation = false
     @Published private(set) var surveyIsPresented = false
     @Published private(set) var activeSurvey: SurveyModel?
+    @Published private(set) var navigationPath: [AppRoute] = []
 
     private var onboardingIsShown: Bool
     private var numberOfOpenings: Int
@@ -67,13 +68,14 @@ final class RootViewModel: ObservableObject {
     // MARK: - Public Methods
 
     enum Action {
+        case rootLifecycleStarted
         case onAppear
         case showOnboardingView
         case showRequestReview
         case showFullscreenBanner
         case fetchBanner
         case fetchSurvey
-        case sectionOpened(MainMenuSection)
+        case mainMenuRouteRequested(MainMenuRoute)
         case surveySubmitted(SurveySubmission)
         case surveyCloseTapped
         case surveySheetDismissed
@@ -83,46 +85,17 @@ final class RootViewModel: ObservableObject {
         case setAlertPresented(Bool)
         case setFullscreenBannerPresented(Bool)
         case setSurveyPresented(Bool)
+        case setNavigationPath([AppRoute])
     }
 
     func send(_ action: Action) {
-        switch action {
-        case .onAppear:
-            handleOnAppear()
-        case .showOnboardingView:
-            enableOnboardingAnimation()
-        case .showRequestReview:
-            requestReviewIfNeeded()
-        case .showFullscreenBanner:
-            showFullscreenBannerIfAvailable()
-        case .fetchBanner:
-            fetchBannerIfNeeded()
-        case .fetchSurvey:
-            fetchSurveyIfNeeded()
-        case let .sectionOpened(section):
-            handleSectionOpened(section)
-        case let .surveySubmitted(submission):
-            handleSurveySubmitted(submission)
-        case .surveyCloseTapped:
-            handleSurveyCloseTapped()
-        case .surveySheetDismissed:
-            handleSurveySheetDismissed()
-        case .handleReviewNo:
-            handleReviewNoInternal()
-        case .handleReviewYes:
-            Task { await handleReviewYesInternal() }
-        case let .updateOnboardingShown(value):
-            updateOnboardingShownInternal(value)
-        case let .setAlertPresented(isPresented):
-            guard alertIsPresented != isPresented else { return }
-            alertIsPresented = isPresented
-        case let .setFullscreenBannerPresented(isPresented):
-            guard fullscreenBannerIsPresented != isPresented else { return }
-            fullscreenBannerIsPresented = isPresented
-        case let .setSurveyPresented(isPresented):
-            guard surveyIsPresented != isPresented else { return }
-            surveyIsPresented = isPresented
+        if handleLifecycleAndNavigationAction(action) {
+            return
         }
+        if handleSurveyAndReviewAction(action) {
+            return
+        }
+        handlePresentationAction(action)
     }
 
     /// Проверяет, нужно ли показать onboarding
@@ -171,10 +144,96 @@ private extension RootViewModel {
         rootStateStore.handledSurveyIDs()
     }
 
+    @discardableResult
+    func handleLifecycleAndNavigationAction(_ action: Action) -> Bool {
+        switch action {
+        case .rootLifecycleStarted:
+            handleRootLifecycleStarted()
+            return true
+        case .onAppear:
+            handleOnAppear()
+            return true
+        case .showOnboardingView:
+            enableOnboardingAnimation()
+            return true
+        case .showRequestReview:
+            requestReviewIfNeeded()
+            return true
+        case .showFullscreenBanner:
+            showFullscreenBannerIfAvailable()
+            return true
+        case .fetchBanner:
+            fetchBannerIfNeeded()
+            return true
+        case .fetchSurvey:
+            fetchSurveyIfNeeded()
+            return true
+        case let .mainMenuRouteRequested(route):
+            handleMainMenuRouteRequested(route)
+            return true
+        default:
+            return false
+        }
+    }
+
+    @discardableResult
+    func handleSurveyAndReviewAction(_ action: Action) -> Bool {
+        switch action {
+        case let .surveySubmitted(submission):
+            handleSurveySubmitted(submission)
+            return true
+        case .surveyCloseTapped:
+            handleSurveyCloseTapped()
+            return true
+        case .surveySheetDismissed:
+            handleSurveySheetDismissed()
+            return true
+        case .handleReviewNo:
+            handleReviewNoInternal()
+            return true
+        case .handleReviewYes:
+            Task { await handleReviewYesInternal() }
+            return true
+        case let .updateOnboardingShown(value):
+            updateOnboardingShownInternal(value)
+            return true
+        default:
+            return false
+        }
+    }
+
+    func handlePresentationAction(_ action: Action) {
+        switch action {
+        case let .setAlertPresented(isPresented):
+            guard alertIsPresented != isPresented else { return }
+            alertIsPresented = isPresented
+        case let .setFullscreenBannerPresented(isPresented):
+            guard fullscreenBannerIsPresented != isPresented else { return }
+            fullscreenBannerIsPresented = isPresented
+        case let .setSurveyPresented(isPresented):
+            guard surveyIsPresented != isPresented else { return }
+            surveyIsPresented = isPresented
+        case let .setNavigationPath(path):
+            guard navigationPath != path else { return }
+            navigationPath = path
+        default:
+            break
+        }
+    }
+
     func handleOnAppear() {
         numberOfOpenings += 1
         rootStateStore.setNumberOfOpenings(numberOfOpenings)
         analyticsService.log(event: .appOpened(sessionNumber: numberOfOpenings))
+    }
+
+    func handleRootLifecycleStarted() {
+        handleOnAppear()
+        enableOnboardingAnimation()
+        requestReviewIfNeeded()
+        showFullscreenBannerIfAvailable()
+        fetchBannerIfNeeded()
+        fetchSurveyIfNeeded()
     }
 
     func enableOnboardingAnimation() {
@@ -253,7 +312,16 @@ private extension RootViewModel {
         }
     }
 
-    func handleSectionOpened(_ section: MainMenuSection) {
+    func handleMainMenuRouteRequested(_ route: MainMenuRoute) {
+        let appRoute = AppRoute.mainMenu(route)
+        if navigationPath.last != appRoute {
+            navigationPath.append(appRoute)
+        }
+
+        guard case let .section(section) = route else {
+            return
+        }
+
         latestOpenedSection = section
         presentSurveyIfPossible()
     }

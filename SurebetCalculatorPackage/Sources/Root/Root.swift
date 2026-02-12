@@ -1,7 +1,8 @@
 import AppMetricaCore
 import Banner
-import MainMenu
 import Onboarding
+import Settings
+import SurebetCalculator
 import SwiftUI
 
 public enum Root {
@@ -17,14 +18,16 @@ public enum Root {
 private struct RootContainerView: View {
     @StateObject private var viewModel: RootViewModel
     private let onboardingAnalytics: OnboardingAnalytics
-    private let mainMenuDependencies: MainMenu.Dependencies
+    private let calculatorDependencies: SurebetCalculator.Dependencies
+    private let settingsDependencies: Settings.Dependencies
     private let bannerDependencies: Banner.Dependencies
     private let userDefaults: UserDefaults
 
     init(container: AppContainer) {
         _viewModel = StateObject(wrappedValue: container.makeRootViewModel())
         onboardingAnalytics = container.onboardingAnalytics
-        mainMenuDependencies = container.mainMenuDependencies
+        calculatorDependencies = container.calculatorDependencies
+        settingsDependencies = container.settingsDependencies
         bannerDependencies = container.bannerDependencies
         userDefaults = container.userDefaults
     }
@@ -33,7 +36,8 @@ private struct RootContainerView: View {
         RootView(
             viewModel: viewModel,
             onboardingAnalytics: onboardingAnalytics,
-            mainMenuDependencies: mainMenuDependencies,
+            calculatorDependencies: calculatorDependencies,
+            settingsDependencies: settingsDependencies,
             bannerDependencies: bannerDependencies,
             themeUserDefaults: userDefaults
         )

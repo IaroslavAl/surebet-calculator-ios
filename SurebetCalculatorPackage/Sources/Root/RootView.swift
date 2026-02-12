@@ -17,7 +17,8 @@ struct RootView: View {
 
     @ObservedObject private var viewModel: RootViewModel
     private let onboardingAnalytics: OnboardingAnalytics
-    private let mainMenuDependencies: MainMenu.Dependencies
+    private let calculatorDependencies: SurebetCalculator.Dependencies
+    private let settingsDependencies: Settings.Dependencies
     private let bannerDependencies: Banner.Dependencies
     @AppStorage private var themeRawValue: String
 
@@ -26,13 +27,15 @@ struct RootView: View {
     init(
         viewModel: RootViewModel,
         onboardingAnalytics: OnboardingAnalytics,
-        mainMenuDependencies: MainMenu.Dependencies,
+        calculatorDependencies: SurebetCalculator.Dependencies,
+        settingsDependencies: Settings.Dependencies,
         bannerDependencies: Banner.Dependencies,
         themeUserDefaults: UserDefaults = .standard
     ) {
         self.viewModel = viewModel
         self.onboardingAnalytics = onboardingAnalytics
-        self.mainMenuDependencies = mainMenuDependencies
+        self.calculatorDependencies = calculatorDependencies
+        self.settingsDependencies = settingsDependencies
         self.bannerDependencies = bannerDependencies
         _themeRawValue = AppStorage(
             wrappedValue: SettingsTheme.system.rawValue,
@@ -74,13 +77,15 @@ private extension RootView {
     }
 
     var menuView: some View {
-        NavigationStack {
+        NavigationStack(path: navigationPathBinding) {
             MainMenu.view(
-                dependencies: mainMenuDependencies,
-                onSectionOpened: { section in
-                    viewModel.send(.sectionOpened(section))
+                onRouteRequested: { route in
+                    viewModel.send(.mainMenuRouteRequested(route))
                 }
             )
+            .navigationDestination(for: AppRoute.self) { route in
+                destination(for: route)
+            }
         }
         .allowsHitTesting(!viewModel.shouldShowOnboardingWithAnimation)
         .accessibilityHidden(viewModel.shouldShowOnboardingWithAnimation)
@@ -110,6 +115,38 @@ private extension RootView {
             }
         )
     }
+
+    var navigationPathBinding: Binding<[AppRoute]> {
+        Binding(
+            get: { viewModel.navigationPath },
+            set: { viewModel.send(.setNavigationPath($0)) }
+        )
+    }
+
+    @ViewBuilder
+    func destination(for route: AppRoute) -> some View {
+        switch route {
+        case let .mainMenu(mainMenuRoute):
+            mainMenuDestination(for: mainMenuRoute)
+        }
+    }
+
+    @ViewBuilder
+    func mainMenuDestination(for route: MainMenuRoute) -> some View {
+        switch route {
+        case let .section(section):
+            switch section {
+            case .calculator:
+                SurebetCalculator.view(dependencies: calculatorDependencies)
+            case .settings:
+                Settings.view(dependencies: settingsDependencies)
+            case .instructions:
+                MainMenu.instructionsView()
+            }
+        case .disableAds:
+            MainMenu.disableAdsPlaceholderView()
+        }
+    }
 }
 
 // MARK: - View Modifiers
@@ -120,24 +157,7 @@ private struct LifecycleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onAppear {
-                viewModel.send(.onAppear)
-            }
-            .onAppear {
-                withAnimation(DesignSystem.Animation.smoothTransition) {
-                    viewModel.send(.showOnboardingView)
-                }
-            }
-            .onAppear {
-                viewModel.send(.showRequestReview)
-            }
-            .onAppear {
-                viewModel.send(.showFullscreenBanner)
-            }
-            .onAppear {
-                viewModel.send(.fetchBanner)
-            }
-            .onAppear {
-                viewModel.send(.fetchSurvey)
+                viewModel.send(.rootLifecycleStarted)
             }
     }
 }
@@ -247,10 +267,8 @@ private struct SurveySheetModifier: ViewModifier {
             rootStateStore: UserDefaultsRootStateStore()
         ),
         onboardingAnalytics: NoopOnboardingAnalytics(),
-        mainMenuDependencies: MainMenu.Dependencies(
-            calculator: SurebetCalculator.Dependencies(analytics: NoopCalculatorAnalytics()),
-            settings: Settings.Dependencies(themeStore: UserDefaultsThemeStore())
-        ),
+        calculatorDependencies: SurebetCalculator.Dependencies(analytics: NoopCalculatorAnalytics()),
+        settingsDependencies: Settings.Dependencies(themeStore: UserDefaultsThemeStore()),
         bannerDependencies: Banner.Dependencies(
             service: Service(),
             analyticsService: AnalyticsManager(),

@@ -24,6 +24,8 @@ struct RootViewModelTests {
         featureFlags: FeatureFlags? = nil,
         bannerFetcher: (@Sendable () async -> Void)? = nil,
         bannerCacheChecker: (@Sendable () -> Bool)? = nil,
+        surveyService: SurveyService = MockSurveyService(scenario: .none),
+        surveyLocaleProvider: @escaping () -> String = { Locale.autoupdatingCurrent.identifier },
         rootStateStore: RootStateStore = UserDefaultsRootStateStore()
     ) -> RootViewModel {
         let analytics = analyticsService ?? MockAnalyticsService()
@@ -37,8 +39,8 @@ struct RootViewModelTests {
             featureFlags: flags,
             bannerFetcher: bannerFetcher ?? { },
             bannerCacheChecker: bannerCacheChecker ?? { false },
-            surveyService: MockSurveyService(scenario: .none),
-            surveyLocaleProvider: { Locale.autoupdatingCurrent.identifier },
+            surveyService: surveyService,
+            surveyLocaleProvider: surveyLocaleProvider,
             rootStateStore: rootStateStore
         )
     }
@@ -206,6 +208,123 @@ struct RootViewModelTests {
         // Then
         // Проверяем через fullscreenBannerIsAvailable (numberOfOpenings % 3 == 0)
         #expect(viewModel.fullscreenBannerIsAvailable == false) // onboarding не показан, review не показан
+    }
+
+    /// Тест lifecycle fan-out через единый action rootLifecycleStarted.
+    @Test
+    func rootLifecycleStartedTriggersInitialOrchestration() {
+        // Given
+        clearTestUserDefaults()
+        let analytics = MockAnalyticsService()
+        let viewModel = createViewModel(
+            analyticsService: analytics,
+            featureFlags: makeFeatureFlags(
+                survey: false,
+                reviewPrompt: false,
+                bannerFetch: false
+            )
+        )
+
+        // When
+        viewModel.send(.rootLifecycleStarted)
+
+        // Then
+        #expect(viewModel.shouldShowOnboardingWithAnimation == true)
+        #expect(analytics.logEventCallCount == 1)
+        #expect(analytics.lastEvent == .appOpened(sessionNumber: 1))
+    }
+
+    // MARK: - Navigation Path Tests
+
+    @Test
+    func mainMenuRouteRequestedAppendsNavigationPath() {
+        // Given
+        clearTestUserDefaults()
+        let viewModel = createViewModel()
+
+        // When
+        viewModel.send(.mainMenuRouteRequested(.section(.calculator)))
+
+        // Then
+        #expect(viewModel.navigationPath == [.mainMenu(.section(.calculator))])
+    }
+
+    @Test
+    func mainMenuRouteRequestedDoesNotDuplicateTopRoute() {
+        // Given
+        clearTestUserDefaults()
+        let viewModel = createViewModel()
+
+        // When
+        viewModel.send(.mainMenuRouteRequested(.section(.settings)))
+        viewModel.send(.mainMenuRouteRequested(.section(.settings)))
+
+        // Then
+        #expect(viewModel.navigationPath == [.mainMenu(.section(.settings))])
+    }
+
+    @Test
+    func setNavigationPathSynchronizesBackNavigationState() {
+        // Given
+        clearTestUserDefaults()
+        let viewModel = createViewModel()
+        viewModel.send(.mainMenuRouteRequested(.section(.calculator)))
+        viewModel.send(.mainMenuRouteRequested(.section(.instructions)))
+
+        // When
+        viewModel.send(.setNavigationPath([.mainMenu(.section(.calculator))]))
+
+        // Then
+        #expect(viewModel.navigationPath == [.mainMenu(.section(.calculator))])
+    }
+
+    @Test
+    func surveySourceUpdatesOnlyForSectionRoutes() async {
+        // Given
+        let suiteName = "root-navigation-tests-\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            Issue.record("Failed to create isolated UserDefaults suite")
+            return
+        }
+        defer {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+        defaults.removeObject(forKey: RootConstants.handledSurveyIDsKey)
+
+        let survey = SurveyModel(
+            id: "route_survey_1",
+            version: 1,
+            title: "Title",
+            body: "Body",
+            submitButtonTitle: "Submit",
+            fields: []
+        )
+        let viewModel = createViewModel(
+            featureFlags: makeFeatureFlags(
+                survey: true,
+                reviewPrompt: false,
+                bannerFetch: false
+            ),
+            surveyService: StaticSurveyService(survey: survey),
+            surveyLocaleProvider: { "en" },
+            rootStateStore: UserDefaultsRootStateStore(userDefaults: defaults)
+        )
+
+        // When
+        viewModel.send(.fetchSurvey)
+        await awaitCondition { viewModel.activeSurvey != nil }
+        viewModel.send(.mainMenuRouteRequested(.disableAds))
+        await awaitCondition { !viewModel.surveyIsPresented }
+
+        // Then
+        #expect(viewModel.surveyIsPresented == false)
+
+        // When
+        viewModel.send(.mainMenuRouteRequested(.section(.calculator)))
+        await awaitCondition { viewModel.surveyIsPresented }
+
+        // Then
+        #expect(viewModel.surveyIsPresented == true)
     }
 
     // MARK: - showOnboardingView() Tests
@@ -602,5 +721,13 @@ struct RootViewModelTests {
         let title = viewModel.requestReviewTitle(locale: Locale(identifier: "en"))
         #expect(!title.isEmpty)
         #expect(title != "review_request_title")
+    }
+}
+
+private struct StaticSurveyService: SurveyService {
+    let survey: SurveyModel?
+
+    func fetchActiveSurvey(localeIdentifier: String) async throws -> SurveyModel? {
+        survey
     }
 }

@@ -2,7 +2,6 @@ import AnalyticsManager
 import Banner
 import FeatureToggles
 import Foundation
-import MainMenu
 import Onboarding
 import ReviewHandler
 import Settings
@@ -31,7 +30,8 @@ struct SystemLocaleProvider: LocaleProvider {
 
 @MainActor
 public final class AppContainer {
-    let mainMenuDependencies: MainMenu.Dependencies
+    let calculatorDependencies: SurebetCalculator.Dependencies
+    let settingsDependencies: Settings.Dependencies
     let bannerDependencies: Banner.Dependencies
     let onboardingAnalytics: OnboardingAnalytics
     let userDefaults: UserDefaults
@@ -39,13 +39,15 @@ public final class AppContainer {
     private let makeRootViewModelClosure: @MainActor () -> RootViewModel
 
     init(
-        mainMenuDependencies: MainMenu.Dependencies,
+        calculatorDependencies: SurebetCalculator.Dependencies,
+        settingsDependencies: Settings.Dependencies,
         bannerDependencies: Banner.Dependencies,
         onboardingAnalytics: OnboardingAnalytics,
         userDefaults: UserDefaults,
         makeRootViewModel: @escaping @MainActor () -> RootViewModel
     ) {
-        self.mainMenuDependencies = mainMenuDependencies
+        self.calculatorDependencies = calculatorDependencies
+        self.settingsDependencies = settingsDependencies
         self.bannerDependencies = bannerDependencies
         self.onboardingAnalytics = onboardingAnalytics
         self.userDefaults = userDefaults
@@ -87,13 +89,11 @@ public final class AppContainer {
         let calculatorAnalytics = CalculatorAnalyticsAdapter(
             analyticsService: analyticsService
         )
-        let mainMenuDependencies = MainMenu.Dependencies(
-            calculator: SurebetCalculator.Dependencies(
-                analytics: calculatorAnalytics
-            ),
-            settings: Settings.Dependencies(
-                themeStore: UserDefaultsThemeStore(userDefaults: userDefaults)
-            )
+        let calculatorDependencies = SurebetCalculator.Dependencies(
+            analytics: calculatorAnalytics
+        )
+        let settingsDependencies = Settings.Dependencies(
+            themeStore: UserDefaultsThemeStore(userDefaults: userDefaults)
         )
         let bannerDependencies = Banner.Dependencies(
             service: bannerService,
@@ -102,7 +102,8 @@ public final class AppContainer {
         )
 
         return AppContainer(
-            mainMenuDependencies: mainMenuDependencies,
+            calculatorDependencies: calculatorDependencies,
+            settingsDependencies: settingsDependencies,
             bannerDependencies: bannerDependencies,
             onboardingAnalytics: onboardingAnalytics,
             userDefaults: userDefaults,

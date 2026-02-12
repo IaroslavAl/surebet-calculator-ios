@@ -19,7 +19,7 @@ public enum SurebetCalculator {
 
 @MainActor
 private struct SurebetCalculatorContainerView: View {
-    // Важно для iOS 16: destination в NavigationLink может пересоздаваться.
+    // Важно для iOS 16: push destination builder может пересоздаваться.
     // Если создавать VM в builder-е destination, SwiftUI уходит в update cycle
     // (AttributeGraph), и экран меню/калькулятора перестает быть интерактивным.
     @StateObject private var viewModel: SurebetCalculatorViewModel
