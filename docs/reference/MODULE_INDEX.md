@@ -6,7 +6,7 @@
 - Public API:
   - `Root.view(container:)`
   - `AppContainer.live(userDefaults:)`
-- Роль: композиция модулей, onboarding/review/fullscreen-banner/survey orchestration.
+- Роль: композиция модулей, data-driven push navigation (`NavigationStack(path:)`) и onboarding/review/fullscreen-banner/survey orchestration.
 - Важные файлы:
   - `SurebetCalculatorPackage/Sources/Root/Root.swift`
   - `SurebetCalculatorPackage/Sources/Root/DI/AppContainer.swift`
@@ -25,9 +25,12 @@
 
 ## MainMenu
 - Public API:
-  - `MainMenu.Dependencies`
-  - `MainMenu.view(dependencies:onSectionOpened:)`
-- Роль: первый экран и переходы в разделы.
+  - `MainMenuSection`
+  - `MainMenuRoute`
+  - `MainMenu.view(onRouteRequested:)`
+  - `MainMenu.instructionsView()`
+  - `MainMenu.disableAdsPlaceholderView()`
+- Роль: первый экран-меню с route events; push-destination orchestration выполняется в `Root`.
 
 ## SurebetCalculator
 - Public API:
@@ -81,4 +84,4 @@
 2. Обновить релевантный playbook.
 3. Добавить ADR при изменении архитектурного решения.
 
-Последнее обновление: 2026-02-11
+Последнее обновление: 2026-02-12

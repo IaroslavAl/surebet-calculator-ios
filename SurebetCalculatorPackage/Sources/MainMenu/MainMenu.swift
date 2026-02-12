@@ -1,5 +1,3 @@
-import Settings
-import SurebetCalculator
 import SwiftUI
 
 public enum MainMenuSection: String, Sendable {
@@ -8,28 +6,32 @@ public enum MainMenuSection: String, Sendable {
     case instructions
 }
 
-public enum MainMenu {
-    public struct Dependencies: Sendable {
-        public let calculator: SurebetCalculator.Dependencies
-        public let settings: Settings.Dependencies
+public enum MainMenuRoute: Hashable, Sendable {
+    case section(MainMenuSection)
+    case disableAds
+}
 
-        public init(
-            calculator: SurebetCalculator.Dependencies,
-            settings: Settings.Dependencies
-        ) {
-            self.calculator = calculator
-            self.settings = settings
-        }
+public enum MainMenu {
+    @MainActor
+    public static func view(
+        onRouteRequested: @escaping (MainMenuRoute) -> Void
+    ) -> some View {
+        MainMenuView(
+            onRouteRequested: onRouteRequested
+        )
     }
 
     @MainActor
-    public static func view(
-        dependencies: Dependencies,
-        onSectionOpened: ((MainMenuSection) -> Void)? = nil
-    ) -> some View {
-        MainMenuView(
-            dependencies: dependencies,
-            onSectionOpened: onSectionOpened
+    public static func instructionsView() -> some View {
+        MenuInstructionsView()
+    }
+
+    @MainActor
+    public static func disableAdsPlaceholderView() -> some View {
+        MenuPlaceholderView(
+            titleKey: .menuDisableAdsTitle,
+            messageKey: .menuDisableAdsDescription,
+            systemImage: "nosign"
         )
     }
 }

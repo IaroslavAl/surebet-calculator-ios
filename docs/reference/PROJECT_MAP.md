@@ -14,11 +14,12 @@
 - Root module API: `SurebetCalculatorPackage/Sources/Root/Root.swift`
 - Root DI container: `SurebetCalculatorPackage/Sources/Root/DI/AppContainer.swift`
 - Root VM: `SurebetCalculatorPackage/Sources/Root/RootViewModel.swift`
+- Root routes: `SurebetCalculatorPackage/Sources/Root/AppRoute.swift`
 - Calculator VM: `SurebetCalculatorPackage/Sources/SurebetCalculator/ViewModels/SurebetCalculatorViewModel.swift`
 
 ## Где что менять
 - Навигация/оркестрация экранов: `Sources/Root/*`.
-- Главное меню и маршруты разделов: `Sources/MainMenu/*`.
+- Главное меню и route события: `Sources/MainMenu/*`.
 - Калькулятор и расчет: `Sources/SurebetCalculator/*`.
 - Баннеры, сеть, кэш: `Sources/Banner/*`.
 - Онбординг: `Sources/Onboarding/*`.
@@ -38,4 +39,4 @@
 - `SurebetCalculatorPackage/Tests/AnalyticsManagerTests/*`
 - `SurebetCalculatorPackage/Tests/SurveyTests/*`
 
-Последнее обновление: 2026-02-11
+Последнее обновление: 2026-02-12

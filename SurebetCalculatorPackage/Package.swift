@@ -106,8 +106,6 @@ let package = Package(
             name: "MainMenu",
             dependencies: [
                 "DesignSystem",
-                "Settings",
-                "SurebetCalculator",
             ],
             resources: [.process("Resources")],
             plugins: [

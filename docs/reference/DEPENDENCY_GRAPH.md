@@ -16,8 +16,6 @@ graph TD
     Root --> DesignSystem
     Root --> AppMetricaCore
 
-    MainMenu --> SurebetCalculator
-    MainMenu --> Settings
     MainMenu --> DesignSystem
 
     SurebetCalculator --> Banner
@@ -44,4 +42,4 @@ graph TD
 - Нельзя добавлять неиспользуемые пакетные зависимости.
 - Для всех targets подключать SwiftLint plugin консистентно.
 
-Последнее обновление: 2026-02-11
+Последнее обновление: 2026-02-12

@@ -1,21 +1,17 @@
-import SurebetCalculator
 import SwiftUI
 import DesignSystem
 
-struct MenuCardLink<Destination: View>: View {
+struct MenuCardAction: View {
     let title: String
     let subtitle: String
     let systemImage: String
     let style: MenuCardStyle
     let layout: MenuLayout
     let showsSubtitle: Bool
-    let onTap: (() -> Void)?
-    let destination: () -> Destination
+    let onTap: () -> Void
 
     var body: some View {
-        NavigationLink {
-            destination()
-        } label: {
+        Button(action: onTap) {
             MenuCard(
                 title: title,
                 subtitle: subtitle,
@@ -25,11 +21,6 @@ struct MenuCardLink<Destination: View>: View {
                 showsSubtitle: showsSubtitle
             )
         }
-        .simultaneousGesture(
-            TapGesture().onEnded {
-                onTap?()
-            }
-        )
         .buttonStyle(MenuCardButtonStyle())
     }
 }
