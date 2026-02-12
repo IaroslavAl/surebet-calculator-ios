@@ -179,7 +179,10 @@ struct SurebetCalculatorViewModelTests {
             rowsById: rowsById,
             orderedRowIds: [row1, row1, unknown],
             selectedNumberOfRows: .three,
-            selection: .none
+            selection: .none,
+            calculationService: DefaultCalculationService(),
+            analytics: NoopCalculatorAnalytics(),
+            delay: SystemCalculationAnalyticsDelay()
         )
 
         // Then

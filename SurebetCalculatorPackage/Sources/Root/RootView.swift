@@ -1,7 +1,11 @@
+import AnalyticsManager
 import Banner
 import DesignSystem
+import FeatureToggles
+import Foundation
 import MainMenu
 import Onboarding
+import ReviewHandler
 import Settings
 import SurebetCalculator
 import Survey
@@ -11,21 +15,30 @@ import SwiftUI
 struct RootView: View {
     // MARK: - Properties
 
-    @StateObject private var viewModel: RootViewModel
+    @ObservedObject private var viewModel: RootViewModel
     private let onboardingAnalytics: OnboardingAnalytics
-    private let calculatorAnalytics: CalculatorAnalytics
-    @AppStorage(SettingsStorage.themeKey) private var themeRawValue = SettingsTheme.system.rawValue
+    private let mainMenuDependencies: MainMenu.Dependencies
+    private let bannerDependencies: Banner.Dependencies
+    @AppStorage private var themeRawValue: String
 
     // MARK: - Initialization
 
     init(
         viewModel: RootViewModel,
         onboardingAnalytics: OnboardingAnalytics,
-        calculatorAnalytics: CalculatorAnalytics
+        mainMenuDependencies: MainMenu.Dependencies,
+        bannerDependencies: Banner.Dependencies,
+        themeUserDefaults: UserDefaults = .standard
     ) {
-        self._viewModel = StateObject(wrappedValue: viewModel)
+        self.viewModel = viewModel
         self.onboardingAnalytics = onboardingAnalytics
-        self.calculatorAnalytics = calculatorAnalytics
+        self.mainMenuDependencies = mainMenuDependencies
+        self.bannerDependencies = bannerDependencies
+        _themeRawValue = AppStorage(
+            wrappedValue: SettingsTheme.system.rawValue,
+            SettingsStorage.themeKey,
+            store: themeUserDefaults
+        )
     }
 
     // MARK: - Body
@@ -35,7 +48,12 @@ struct RootView: View {
             .preferredColorScheme(selectedTheme.preferredColorScheme)
             .modifier(LifecycleModifier(viewModel: viewModel))
             .modifier(ReviewAlertModifier(viewModel: viewModel))
-            .modifier(FullscreenBannerOverlayModifier(viewModel: viewModel))
+            .modifier(
+                FullscreenBannerOverlayModifier(
+                    viewModel: viewModel,
+                    bannerDependencies: bannerDependencies
+                )
+            )
             .modifier(SurveySheetModifier(viewModel: viewModel))
             .modifier(AnimationModifier(viewModel: viewModel))
     }
@@ -58,7 +76,7 @@ private extension RootView {
     var menuView: some View {
         NavigationStack {
             MainMenu.view(
-                calculatorAnalytics: calculatorAnalytics,
+                dependencies: mainMenuDependencies,
                 onSectionOpened: { section in
                     viewModel.send(.sectionOpened(section))
                 }
@@ -149,6 +167,7 @@ private struct ReviewAlertModifier: ViewModifier {
 
 private struct FullscreenBannerOverlayModifier: ViewModifier {
     @ObservedObject var viewModel: RootViewModel
+    let bannerDependencies: Banner.Dependencies
     private var fullscreenBannerBinding: Binding<Bool> {
         Binding(
             get: { viewModel.fullscreenBannerIsPresented },
@@ -160,7 +179,10 @@ private struct FullscreenBannerOverlayModifier: ViewModifier {
         content
             .overlay {
                 if viewModel.fullscreenBannerIsPresented {
-                    Banner.fullscreenBannerView(isPresented: fullscreenBannerBinding)
+                    Banner.fullscreenBannerView(
+                        isPresented: fullscreenBannerBinding,
+                        dependencies: bannerDependencies
+                    )
                         .transition(DesignSystem.Animation.moveFromBottom)
                 }
             }
@@ -213,8 +235,26 @@ private struct SurveySheetModifier: ViewModifier {
 
 #Preview {
     RootView(
-        viewModel: RootViewModel(),
+        viewModel: RootViewModel(
+            analyticsService: AnalyticsManager(),
+            reviewService: ReviewHandler(),
+            delay: SystemDelay(),
+            featureFlags: .releaseDefaults,
+            bannerFetcher: { },
+            bannerCacheChecker: { false },
+            surveyService: MockSurveyService(scenario: .none),
+            surveyLocaleProvider: { Locale.autoupdatingCurrent.identifier },
+            rootStateStore: UserDefaultsRootStateStore()
+        ),
         onboardingAnalytics: NoopOnboardingAnalytics(),
-        calculatorAnalytics: NoopCalculatorAnalytics()
+        mainMenuDependencies: MainMenu.Dependencies(
+            calculator: SurebetCalculator.Dependencies(analytics: NoopCalculatorAnalytics()),
+            settings: Settings.Dependencies(themeStore: UserDefaultsThemeStore())
+        ),
+        bannerDependencies: Banner.Dependencies(
+            service: Service(),
+            analyticsService: AnalyticsManager(),
+            urlOpener: DefaultURLOpener()
+        )
     )
 }

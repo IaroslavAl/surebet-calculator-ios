@@ -24,5 +24,11 @@ struct KeyboardClearButton: View {
 
 #Preview {
     KeyboardClearButton()
-        .environmentObject(SurebetCalculatorViewModel())
+        .environmentObject(
+            SurebetCalculatorViewModel(
+                calculationService: DefaultCalculationService(),
+                analytics: NoopCalculatorAnalytics(),
+                delay: SystemCalculationAnalyticsDelay()
+            )
+        )
 }

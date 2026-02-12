@@ -14,13 +14,13 @@ final class BannerViewModel: ObservableObject {
     @Published private(set) var state: State
 
     private let analyticsService: AnalyticsService
-    private let urlOpener: URLOpener
+    private let urlOpener: any URLOpener
 
     // MARK: - Initialization
 
     init(
-        analyticsService: AnalyticsService = AnalyticsManager(),
-        urlOpener: URLOpener = DefaultURLOpener()
+        analyticsService: AnalyticsService,
+        urlOpener: any URLOpener
     ) {
         self.state = State(isPresented: true)
         self.analyticsService = analyticsService

@@ -173,10 +173,22 @@ private extension SurebetCalculatorView {
 }
 
 #Preview {
-    SurebetCalculatorView(viewModel: SurebetCalculatorViewModel())
+    SurebetCalculatorView(
+        viewModel: SurebetCalculatorViewModel(
+            calculationService: DefaultCalculationService(),
+            analytics: NoopCalculatorAnalytics(),
+            delay: SystemCalculationAnalyticsDelay()
+        )
+    )
 }
 
 #Preview("RU") {
-    SurebetCalculatorView(viewModel: SurebetCalculatorViewModel())
+    SurebetCalculatorView(
+        viewModel: SurebetCalculatorViewModel(
+            calculationService: DefaultCalculationService(),
+            analytics: NoopCalculatorAnalytics(),
+            delay: SystemCalculationAnalyticsDelay()
+        )
+    )
         .environment(\.locale, Locale(identifier: "ru"))
 }

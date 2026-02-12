@@ -33,9 +33,9 @@ final class SurebetCalculatorViewModel: ObservableObject {
         selectedNumberOfRows: NumberOfRows = .two,
         selection: Selection = .total,
         focus: FocusableField? = nil,
-        calculationService: CalculationService = DefaultCalculationService(),
-        analytics: CalculatorAnalytics = NoopCalculatorAnalytics(),
-        delay: CalculationAnalyticsDelay = SystemCalculationAnalyticsDelay()
+        calculationService: CalculationService,
+        analytics: CalculatorAnalytics,
+        delay: CalculationAnalyticsDelay
     ) {
         let resolvedRows: (rowsById: [RowID: Row], orderedRowIds: [RowID])
         if let rowsById, let orderedRowIds {

@@ -1,12 +1,14 @@
 import UIKit
 
 @MainActor
-struct DefaultURLOpener: URLOpener {
-    func open(_ url: URL) {
+public struct DefaultURLOpener: URLOpener {
+    public init() {}
+
+    public func open(_ url: URL) {
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
 
-    func open(_ urlString: String) {
+    public func open(_ urlString: String) {
         guard let url = URL(string: urlString) else { return }
         open(url)
     }

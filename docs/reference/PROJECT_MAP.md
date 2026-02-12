@@ -12,6 +12,7 @@
 - App entry: `SurebetCalculator/SurebetCalculatorApp.swift`
 - Package config: `SurebetCalculatorPackage/Package.swift`
 - Root module API: `SurebetCalculatorPackage/Sources/Root/Root.swift`
+- Root DI container: `SurebetCalculatorPackage/Sources/Root/DI/AppContainer.swift`
 - Root VM: `SurebetCalculatorPackage/Sources/Root/RootViewModel.swift`
 - Calculator VM: `SurebetCalculatorPackage/Sources/SurebetCalculator/ViewModels/SurebetCalculatorViewModel.swift`
 

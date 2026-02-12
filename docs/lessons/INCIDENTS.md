@@ -13,6 +13,15 @@
 - Исправление: перенос события открытия раздела на источник взаимодействия (tap по карточке через `simultaneousGesture`), сохранение стабильного владения `ObservableObject` через контейнеры с `@StateObject`, добавление guard `newValue != currentValue` в action-сеттеры UI-флагов.
 - Guardrail: не запускать root orchestration из destination `.onAppear` для экранов, открываемых через `NavigationLink`; в биндинговых action-сеттерах всегда фильтровать no-op присваивания.
 
+## 2026-02-12 — Повторяющиеся non-fatal AttributeGraph cycles в Root оркестрации
+- Симптом: в runtime-консоли повторяются сообщения вида `AttributeGraph: cycle detected through attribute ...`, но без гарантированного фриза UI.
+- Корневая причина: пересечение нескольких root-side effect потоков в одном жизненном цикле экрана (navigation tap + sheet/overlay/alert + lifecycle-trigger), из-за чего SwiftUI получает re-entrant обновления графа в пределах одной транзакции. Дополнительный шум возникает, когда несколько lifecycle hooks (`onAppear`) дергают orchestration-путь одновременно.
+- Исправление: централизовать root orchestration через единый entry-point действия, публиковать presentation-state только через `send(_:)` action-сеттеры с no-op guard, запускать чувствительные к навигации presentation-изменения только после отделения от tap/navigation цикла (`Task.yield()`/короткая задержка).
+- Guardrail:
+  - диагностировать цикл через symbolic breakpoint `AG::Graph::print_cycle` и backtrace, а не по номеру `attribute`;
+  - не смешивать в одном транзакционном шаге push-навигацию и принудительный показ sheet/overlay;
+  - для root lifecycle использовать один trigger c внутренним fan-out, вместо набора независимых `onAppear`.
+
 ## 2026-02-01 — Потеря transition при закрытии онбординга
 - Симптом: `.move(edge: .bottom)` работал нестабильно.
 - Корневая причина: анимировался контейнер, а не overlay-слой.

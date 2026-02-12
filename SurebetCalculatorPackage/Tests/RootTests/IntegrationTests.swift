@@ -5,6 +5,7 @@ import Testing
 @testable import SurebetCalculator
 @testable import AnalyticsManager
 @testable import ReviewHandler
+@testable import Survey
 
 /// Интеграционные тесты для проверки взаимодействия модулей
 @MainActor
@@ -22,7 +23,8 @@ struct IntegrationTests {
 
     func createRootViewModel(
         analyticsService: AnalyticsService? = nil,
-        reviewService: ReviewService? = nil
+        reviewService: ReviewService? = nil,
+        rootStateStore: RootStateStore = UserDefaultsRootStateStore()
     ) -> RootViewModel {
         RootViewModel(
             analyticsService: analyticsService ?? MockAnalyticsService(),
@@ -34,7 +36,12 @@ struct IntegrationTests {
                 reviewPrompt: true,
                 bannerFetch: true,
                 fullscreenBanner: true
-            )
+            ),
+            bannerFetcher: { },
+            bannerCacheChecker: { false },
+            surveyService: MockSurveyService(scenario: .none),
+            surveyLocaleProvider: { Locale.autoupdatingCurrent.identifier },
+            rootStateStore: rootStateStore
         )
     }
 
@@ -59,7 +66,11 @@ struct IntegrationTests {
         #expect(rootViewModel.shouldShowOnboarding == !rootViewModel.isOnboardingShown)
 
         // Проверяем, что можем создать SurebetCalculatorViewModel
-        let calculatorViewModel = SurebetCalculatorViewModel()
+        let calculatorViewModel = SurebetCalculatorViewModel(
+            calculationService: DefaultCalculationService(),
+            analytics: NoopCalculatorAnalytics(),
+            delay: ImmediateCalculationAnalyticsDelay()
+        )
         #expect(calculatorViewModel.selectedNumberOfRows == .two)
         #expect(calculatorViewModel.selection == .total)
     }
@@ -68,7 +79,12 @@ struct IntegrationTests {
     @Test
     func dataFlowThroughCalculationService() {
         // Given
-        let calculatorViewModel = SurebetCalculatorViewModel(selection: .none)
+        let calculatorViewModel = SurebetCalculatorViewModel(
+            selection: .none,
+            calculationService: DefaultCalculationService(),
+            analytics: NoopCalculatorAnalytics(),
+            delay: ImmediateCalculationAnalyticsDelay()
+        )
 
         // When
         calculatorViewModel.send(.setTextFieldText(.rowCoefficient(RowID(rawValue: 0)), "2.5"))
@@ -89,7 +105,11 @@ struct IntegrationTests {
     @Test
     func uiUpdateWhenStateChanges() {
         // Given
-        let calculatorViewModel = SurebetCalculatorViewModel()
+        let calculatorViewModel = SurebetCalculatorViewModel(
+            calculationService: DefaultCalculationService(),
+            analytics: NoopCalculatorAnalytics(),
+            delay: ImmediateCalculationAnalyticsDelay()
+        )
 
         // When
         calculatorViewModel.send(.selectRow(.row(RowID(rawValue: 0))))
@@ -106,7 +126,11 @@ struct IntegrationTests {
         clearTestUserDefaults()
         // Оба ViewModel должны инициализироваться на MainActor
         let rootViewModel = createRootViewModel()
-        let calculatorViewModel = SurebetCalculatorViewModel()
+        let calculatorViewModel = SurebetCalculatorViewModel(
+            calculationService: DefaultCalculationService(),
+            analytics: NoopCalculatorAnalytics(),
+            delay: ImmediateCalculationAnalyticsDelay()
+        )
 
         // Then
         // Проверяем, что нет дедлоков и оба ViewModel работают
@@ -130,7 +154,11 @@ struct IntegrationTests {
         clearTestUserDefaults()
         let rootViewModel = createRootViewModel()
         rootViewModel.send(.updateOnboardingShown(true))
-        let calculatorViewModel = SurebetCalculatorViewModel()
+        let calculatorViewModel = SurebetCalculatorViewModel(
+            calculationService: DefaultCalculationService(),
+            analytics: NoopCalculatorAnalytics(),
+            delay: ImmediateCalculationAnalyticsDelay()
+        )
 
         // When
         // Пользователь вводит данные в калькулятор
@@ -241,4 +269,8 @@ struct IntegrationTests {
         #expect(mockReview.requestReviewCallCount == 1)
         #expect(mockReview.lastRequestReviewTime != nil)
     }
+}
+
+private struct ImmediateCalculationAnalyticsDelay: CalculationAnalyticsDelay {
+    func sleep(nanoseconds _: UInt64) async {}
 }

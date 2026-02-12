@@ -1,5 +1,4 @@
 import AnalyticsManager
-import Banner
 import FeatureToggles
 import Foundation
 import MainMenu
@@ -18,9 +17,8 @@ final class RootViewModel: ObservableObject {
     @Published private(set) var surveyIsPresented = false
     @Published private(set) var activeSurvey: SurveyModel?
 
-    @AppStorage("onboardingIsShown") private var onboardingIsShown = false
-    @AppStorage("1.7.0") private var requestReviewWasShown = false
-    @AppStorage("numberOfOpenings") private var numberOfOpenings = 0
+    private var onboardingIsShown: Bool
+    private var numberOfOpenings: Int
 
     private let analyticsService: AnalyticsService
     private let reviewService: ReviewService
@@ -29,8 +27,8 @@ final class RootViewModel: ObservableObject {
     private let bannerFetcher: @Sendable () async -> Void
     private let bannerCacheChecker: @Sendable () -> Bool
     private let surveyService: SurveyService
-    private let surveyLocaleProvider: @Sendable () -> String
-    private let surveyDefaults: UserDefaults
+    private let surveyLocaleProvider: () -> String
+    private let rootStateStore: RootStateStore
 
     private var bannerFetchTask: Task<Void, Never>?
     private var surveyFetchTask: Task<Void, Never>?
@@ -43,15 +41,15 @@ final class RootViewModel: ObservableObject {
     // MARK: - Initialization
 
     init(
-        analyticsService: AnalyticsService = AnalyticsManager(),
-        reviewService: ReviewService = ReviewHandler(),
-        delay: Delay = SystemDelay(),
-        featureFlags: FeatureFlags = .releaseDefaults,
-        bannerFetcher: @escaping @Sendable () async -> Void = { try? await Banner.fetchBanner() },
-        bannerCacheChecker: @escaping @Sendable () -> Bool = { Banner.isBannerFullyCached },
-        surveyService: SurveyService = MockSurveyService(scenario: .rotation),
-        surveyLocaleProvider: @escaping @Sendable () -> String = { Locale.autoupdatingCurrent.identifier },
-        surveyDefaults: UserDefaults = .standard
+        analyticsService: AnalyticsService,
+        reviewService: ReviewService,
+        delay: Delay,
+        featureFlags: FeatureFlags,
+        bannerFetcher: @escaping @Sendable () async -> Void,
+        bannerCacheChecker: @escaping @Sendable () -> Bool,
+        surveyService: SurveyService,
+        surveyLocaleProvider: @escaping () -> String,
+        rootStateStore: RootStateStore
     ) {
         self.analyticsService = analyticsService
         self.reviewService = reviewService
@@ -61,7 +59,9 @@ final class RootViewModel: ObservableObject {
         self.bannerCacheChecker = bannerCacheChecker
         self.surveyService = surveyService
         self.surveyLocaleProvider = surveyLocaleProvider
-        self.surveyDefaults = surveyDefaults
+        self.rootStateStore = rootStateStore
+        onboardingIsShown = rootStateStore.onboardingIsShown()
+        numberOfOpenings = rootStateStore.numberOfOpenings()
     }
 
     // MARK: - Public Methods
@@ -162,12 +162,18 @@ private extension RootViewModel {
         case closed
     }
 
+    var requestReviewWasShown: Bool {
+        get { rootStateStore.requestReviewWasShown() }
+        set { rootStateStore.setRequestReviewWasShown(newValue) }
+    }
+
     var handledSurveyIDs: Set<String> {
-        Set(surveyDefaults.stringArray(forKey: RootConstants.handledSurveyIDsKey) ?? [])
+        rootStateStore.handledSurveyIDs()
     }
 
     func handleOnAppear() {
         numberOfOpenings += 1
+        rootStateStore.setNumberOfOpenings(numberOfOpenings)
         analyticsService.log(event: .appOpened(sessionNumber: numberOfOpenings))
     }
 
@@ -211,6 +217,7 @@ private extension RootViewModel {
             return
         }
         onboardingIsShown = value
+        rootStateStore.setOnboardingIsShown(value)
     }
 
     func fetchBannerIfNeeded() {
@@ -341,7 +348,7 @@ private extension RootViewModel {
     func markSurveyHandled(_ surveyID: String) {
         var ids = handledSurveyIDs
         ids.insert(surveyID)
-        surveyDefaults.set(Array(ids).sorted(), forKey: RootConstants.handledSurveyIDsKey)
+        rootStateStore.setHandledSurveyIDs(ids)
     }
 
     func buildSurveyAnalyticsAnswers(

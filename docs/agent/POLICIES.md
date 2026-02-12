@@ -26,12 +26,15 @@
 - MUST: UI-строки только через `String(localized:)`.
 - MUST: не добавлять новые hardcoded user-facing строки.
 - SHOULD: большие `View` декомпозировать на компоненты.
+- SHOULD: для root-экранов orchestration lifecycle использовать один публичный триггер (`onAppear`/`task`) с fan-out внутри `send(_:)`, а не несколько независимых `onAppear`-цепочек в View.
+- MUST: не запускать presentation-state мутации (`sheet`/`overlay`/`alert`) в том же навигационном транзакционном шаге, что и переход по разделу; отделять через `Task.yield()` или контролируемую задержку.
 
 ## 4. DI и границы слоев
 - MUST: зависимости передаются через `init`.
 - MUST: сигнатуры инициализаторов — протоколы, defaults — боевые реализации.
 - MUST: View не собирает вручную сложные зависимости.
 - MUST: для экранов, открываемых через `NavigationLink`, orchestration-события root-уровня (показ sheet/overlay, аналитические события входа в раздел) не запускать из destination `.onAppear`; источник — tap/navigation state на стороне экрана-источника.
+- SHOULD: для сложной навигации предпочитать data-driven orchestration (navigation state/path + `navigationDestination`) вместо логики в destination lifecycle.
 
 ## 5. Тестирование
 - MUST: использовать `Swift Testing` (`import Testing`) для package-тестов.

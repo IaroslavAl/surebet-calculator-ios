@@ -141,14 +141,14 @@ private extension SettingsView {
 
 #Preview {
     NavigationStack {
-        SettingsView(viewModel: SettingsViewModel())
+        SettingsView(viewModel: SettingsViewModel(themeStore: UserDefaultsThemeStore()))
     }
     .environmentObject(AppLanguageStore())
 }
 
 #Preview("RU") {
     NavigationStack {
-        SettingsView(viewModel: SettingsViewModel())
+        SettingsView(viewModel: SettingsViewModel(themeStore: UserDefaultsThemeStore()))
             .environment(\.locale, Locale(identifier: "ru"))
     }
     .environmentObject(AppLanguageStore())
