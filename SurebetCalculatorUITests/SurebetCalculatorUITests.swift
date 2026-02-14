@@ -53,38 +53,26 @@ final class SurebetCalculatorUITests: XCTestCase {
         }
 
         // Страница 0: "More details"
-        let moreDetailsButton = app.buttons["More details"]
-        XCTAssertTrue(
-            moreDetailsButton.waitForExistence(timeout: 2),
-            "Кнопка 'More details' должна отображаться"
-        )
-        moreDetailsButton.tap()
-        Thread.sleep(forTimeInterval: 0.3)
-
-        // Страница 1: "Next"
-        let nextButton = app.buttons["Next"]
-        XCTAssertTrue(
-            nextButton.waitForExistence(timeout: 2),
-            "Кнопка 'Next' должна отображаться"
-        )
+        let nextButton = app.buttons["More details"]
+        XCTAssertTrue(nextButton.waitForExistence(timeout: 2), "Кнопка онбординга должна отображаться")
         nextButton.tap()
         Thread.sleep(forTimeInterval: 0.3)
 
-        // Страница 2: "Close" - на последней странице есть две кнопки:
-        // X ("Close onboarding") и основная ("Close")
-        // Ищем все кнопки с текстом "Close" и берём ту, которая не "Close onboarding"
+        // Страница 1: "Next"
+        let continueButton = app.buttons["Next"]
+        XCTAssertTrue(continueButton.waitForExistence(timeout: 2), "Кнопка 'Next' должна отображаться")
+        continueButton.tap()
+        Thread.sleep(forTimeInterval: 0.3)
+
+        // Страница 2: "Close"
         let closeButtons = app.buttons.matching(NSPredicate(format: "label == 'Close'"))
-        XCTAssertTrue(
-            closeButtons.count > 0,
-            "Кнопка 'Close' должна отображаться"
-        )
+        XCTAssertTrue(closeButtons.count > 0, "Кнопка 'Close' должна отображаться")
         closeButtons.firstMatch.tap()
 
-        // После закрытия онбординга должен появиться калькулятор
-        let navBar = app.navigationBars["Surebet calculator"]
+        let calculatorAction = app.buttons[Identifiers.MainMenu.calculatorAction]
         XCTAssertTrue(
-            navBar.waitForExistence(timeout: 5),
-            "Калькулятор должен отображаться после онбординга"
+            calculatorAction.waitForExistence(timeout: 5),
+            "Главное меню должно отображаться после онбординга"
         )
     }
 
@@ -108,10 +96,10 @@ final class SurebetCalculatorUITests: XCTestCase {
         )
         closeButton.tap()
 
-        let navBar = app.navigationBars["Surebet calculator"]
+        let calculatorAction = app.buttons[Identifiers.MainMenu.calculatorAction]
         XCTAssertTrue(
-            navBar.waitForExistence(timeout: 5),
-            "Калькулятор должен отображаться после закрытия онбординга"
+            calculatorAction.waitForExistence(timeout: 5),
+            "Главное меню должно отображаться после закрытия онбординга"
         )
     }
 
@@ -351,12 +339,64 @@ final class SurebetCalculatorUITests: XCTestCase {
     private func launchAppWithoutOnboarding() {
         app.launchArguments = ["-disableOnboarding", "-onboardingIsShown"]
         app.launch()
+        openCalculatorFromMainMenu()
+    }
 
-        let navBar = app.navigationBars["Surebet calculator"]
+    @MainActor
+    private func openCalculatorFromMainMenu() {
+        waitForOnboardingToDisappearIfNeeded()
+
+        let calculatorActions = app.buttons.matching(identifier: Identifiers.MainMenu.calculatorAction)
+        let calculatorAction = calculatorActions.firstMatch
         XCTAssertTrue(
-            navBar.waitForExistence(timeout: 5),
-            "Калькулятор должен отображаться"
+            calculatorAction.waitForExistence(timeout: 5),
+            "Главное меню должно отображаться"
         )
+
+        var didTap = false
+        let candidateCount = min(calculatorActions.count, 3)
+        if candidateCount > 1 {
+            for index in 0..<candidateCount {
+                let candidate = calculatorActions.element(boundBy: index)
+                if candidate.exists, candidate.isHittable {
+                    candidate.tap()
+                    didTap = true
+                    break
+                }
+            }
+        }
+
+        if !didTap {
+            calculatorAction.tap()
+        }
+
+        if !isCalculatorVisible(timeout: 2) {
+            // Fallback для случая, когда XCUITest выбирает неактивный дубликат
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)).tap()
+        }
+
+        assertCalculatorIsVisible()
+    }
+
+    @MainActor
+    private func assertCalculatorIsVisible() {
+        XCTAssertTrue(isCalculatorVisible(timeout: 5), "Калькулятор должен отображаться")
+    }
+
+    @MainActor
+    private func isCalculatorVisible(timeout: TimeInterval) -> Bool {
+        let row0Coefficient = app.textFields[Identifiers.Row.coefficientTextField(0)]
+        return row0Coefficient.waitForExistence(timeout: timeout)
+    }
+
+    @MainActor
+    private func waitForOnboardingToDisappearIfNeeded() {
+        let onboardingView = app.otherElements[Identifiers.Onboarding.view]
+        guard onboardingView.exists else { return }
+
+        let predicate = NSPredicate(format: "exists == false")
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: onboardingView)
+        _ = XCTWaiter().wait(for: [expectation], timeout: 5)
     }
 
     @MainActor
@@ -407,6 +447,10 @@ final class SurebetCalculatorUITests: XCTestCase {
 /// Идентификаторы доступности для UI тестов.
 /// Должны соответствовать идентификаторам в коде приложения.
 private enum Identifiers {
+    enum MainMenu {
+        static let calculatorAction = "main_menu_calculator_action"
+    }
+
     enum Onboarding {
         static let view = "onboarding_view"
         static let closeButton = "onboarding_close_button"
