@@ -8,7 +8,6 @@ public enum MainMenuSection: String, Sendable {
 
 public enum MainMenuRoute: Hashable, Sendable {
     case section(MainMenuSection)
-    case disableAds
 }
 
 public enum MainMenu {
@@ -24,14 +23,5 @@ public enum MainMenu {
     @MainActor
     public static func instructionsView() -> some View {
         MenuInstructionsView()
-    }
-
-    @MainActor
-    public static func disableAdsPlaceholderView() -> some View {
-        MenuPlaceholderView(
-            titleKey: .menuDisableAdsTitle,
-            messageKey: .menuDisableAdsDescription,
-            systemImage: "nosign"
-        )
     }
 }

@@ -7,8 +7,6 @@ protocol RootStateStore: Sendable {
     func setRequestReviewWasShown(_ value: Bool)
     func numberOfOpenings() -> Int
     func setNumberOfOpenings(_ value: Int)
-    func handledSurveyIDs() -> Set<String>
-    func setHandledSurveyIDs(_ ids: Set<String>)
 }
 
 struct UserDefaultsRootStateStore: RootStateStore, @unchecked Sendable {
@@ -40,13 +38,5 @@ struct UserDefaultsRootStateStore: RootStateStore, @unchecked Sendable {
 
     func setNumberOfOpenings(_ value: Int) {
         userDefaults.set(value, forKey: RootConstants.numberOfOpeningsKey)
-    }
-
-    func handledSurveyIDs() -> Set<String> {
-        Set(userDefaults.stringArray(forKey: RootConstants.handledSurveyIDsKey) ?? [])
-    }
-
-    func setHandledSurveyIDs(_ ids: Set<String>) {
-        userDefaults.set(Array(ids).sorted(), forKey: RootConstants.handledSurveyIDsKey)
     }
 }

@@ -92,17 +92,6 @@ public extension DesignSystem {
 
         /// Цвет кнопки закрытия онбординга.
         public static var onboardingCloseButton: SwiftUI.Color { token(.onboardingCloseButton) }
-
-        // MARK: - Banner
-
-        /// Цвет кнопки закрытия inline баннера.
-        public static var bannerCloseButtonInline: SwiftUI.Color { token(.bannerCloseInline) }
-
-        /// Цвет кнопки закрытия fullscreen баннера.
-        public static var bannerCloseButtonFullscreen: SwiftUI.Color { token(.bannerCloseFullscreen) }
-
-        /// Фон fullscreen баннера.
-        public static var bannerFullscreenBackground: SwiftUI.Color { token(.bannerOverlay) }
     }
 }
 
@@ -132,9 +121,6 @@ private extension DesignSystem.Color {
         case onboardingIndicatorActive = "OnboardingIndicatorActive"
         case onboardingIndicatorInactive = "OnboardingIndicatorInactive"
         case onboardingCloseButton = "OnboardingCloseButton"
-        case bannerCloseInline = "BannerCloseInline"
-        case bannerCloseFullscreen = "BannerCloseFullscreen"
-        case bannerOverlay = "BannerOverlay"
     }
 
     static func token(_ token: Token) -> SwiftUI.Color {

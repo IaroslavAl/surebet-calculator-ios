@@ -52,8 +52,6 @@ private extension MainMenuView {
     var menuInstructionsSubtitle: String { MainMenuLocalizationKey.menuInstructionsSubtitle.localized(locale) }
     var menuFeedbackTitle: String { MainMenuLocalizationKey.menuFeedbackTitle.localized(locale) }
     var menuFeedbackSubtitle: String { MainMenuLocalizationKey.menuFeedbackSubtitle.localized(locale) }
-    var menuDisableAdsTitle: String { MainMenuLocalizationKey.menuDisableAdsTitle.localized(locale) }
-    var menuDisableAdsSubtitle: String { MainMenuLocalizationKey.menuDisableAdsSubtitle.localized(locale) }
 
     func header() -> some View {
         VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
@@ -75,6 +73,7 @@ private extension MainMenuView {
             style: .primary,
             layout: layout,
             showsSubtitle: layout.showsPrimarySubtitle,
+            accessibilityIdentifier: MainMenuAccessibilityIdentifiers.calculatorAction,
             onTap: {
                 onRouteRequested(.section(.calculator))
             }
@@ -86,7 +85,6 @@ private extension MainMenuView {
             settingsAction(layout)
             instructionsAction(layout)
             feedbackAction(layout)
-            disableAdsAction(layout)
         }
     }
 
@@ -98,6 +96,7 @@ private extension MainMenuView {
             style: .standard,
             layout: layout,
             showsSubtitle: layout.showsSecondarySubtitle,
+            accessibilityIdentifier: MainMenuAccessibilityIdentifiers.settingsAction,
             onTap: {
                 onRouteRequested(.section(.settings))
             }
@@ -112,6 +111,7 @@ private extension MainMenuView {
             style: .standard,
             layout: layout,
             showsSubtitle: layout.showsSecondarySubtitle,
+            accessibilityIdentifier: MainMenuAccessibilityIdentifiers.instructionsAction,
             onTap: {
                 onRouteRequested(.section(.instructions))
             }
@@ -125,24 +125,11 @@ private extension MainMenuView {
             systemImage: "envelope",
             style: .standard,
             layout: layout,
-            showsSubtitle: layout.showsSecondarySubtitle
+            showsSubtitle: layout.showsSecondarySubtitle,
+            accessibilityIdentifier: MainMenuAccessibilityIdentifiers.feedbackAction
         ) {
             openFeedbackMail()
         }
-    }
-
-    func disableAdsAction(_ layout: MenuLayout) -> some View {
-        MenuCardAction(
-            title: menuDisableAdsTitle,
-            subtitle: menuDisableAdsSubtitle,
-            systemImage: "cart",
-            style: .highlight,
-            layout: layout,
-            showsSubtitle: layout.showsSecondarySubtitle,
-            onTap: {
-                onRouteRequested(.disableAds)
-            }
-        )
     }
 
     func sectionSpacing(_ layout: MenuLayout) -> CGFloat {
@@ -209,7 +196,6 @@ private extension MainMenuView {
         guard let url = feedbackMailURL() else { return }
         openURL(url)
     }
-
 }
 
 #Preview {

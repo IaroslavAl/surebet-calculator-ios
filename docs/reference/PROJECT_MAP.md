@@ -21,11 +21,9 @@
 - Навигация/оркестрация экранов: `Sources/Root/*`.
 - Главное меню и route события: `Sources/MainMenu/*`.
 - Калькулятор и расчет: `Sources/SurebetCalculator/*`.
-- Баннеры, сеть, кэш: `Sources/Banner/*`.
 - Онбординг: `Sources/Onboarding/*`.
 - Настройки языка/темы: `Sources/Settings/*`.
 - Фича-флаги и overrides: `Sources/FeatureToggles/*`.
-- In-app опросы: `Sources/Survey/*`.
 - Review flow: `Sources/ReviewHandler/*`.
 - Аналитика: `Sources/AnalyticsManager/*`.
 - Дизайн-токены/базовые компоненты: `Sources/DesignSystem/*`.
@@ -33,10 +31,10 @@
 ## Тестовые директории
 - `SurebetCalculatorPackage/Tests/RootTests/*`
 - `SurebetCalculatorPackage/Tests/SurebetCalculatorTests/*`
-- `SurebetCalculatorPackage/Tests/BannerTests/*`
 - `SurebetCalculatorPackage/Tests/OnboardingTests/*`
 - `SurebetCalculatorPackage/Tests/ReviewHandlerTests/*`
 - `SurebetCalculatorPackage/Tests/AnalyticsManagerTests/*`
-- `SurebetCalculatorPackage/Tests/SurveyTests/*`
+- `SurebetCalculatorPackage/Tests/SettingsTests/*`
+- `SurebetCalculatorPackage/Tests/FeatureTogglesTests/*`
 
-Последнее обновление: 2026-02-12
+Последнее обновление: 2026-02-14

@@ -8,6 +8,7 @@ struct MenuCardAction: View {
     let style: MenuCardStyle
     let layout: MenuLayout
     let showsSubtitle: Bool
+    let accessibilityIdentifier: String?
     let onTap: () -> Void
 
     var body: some View {
@@ -22,6 +23,7 @@ struct MenuCardAction: View {
             )
         }
         .buttonStyle(MenuCardButtonStyle())
+        .accessibilityIdentifier(accessibilityIdentifier ?? "")
     }
 }
 
@@ -32,6 +34,7 @@ struct MenuCardButton: View {
     let style: MenuCardStyle
     let layout: MenuLayout
     let showsSubtitle: Bool
+    let accessibilityIdentifier: String?
     let action: () -> Void
 
     var body: some View {
@@ -46,6 +49,7 @@ struct MenuCardButton: View {
             )
         }
         .buttonStyle(MenuCardButtonStyle())
+        .accessibilityIdentifier(accessibilityIdentifier ?? "")
     }
 }
 

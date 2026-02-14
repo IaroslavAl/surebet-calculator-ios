@@ -1,5 +1,4 @@
 import AppMetricaCore
-import Banner
 import Onboarding
 import Settings
 import SurebetCalculator
@@ -20,7 +19,6 @@ private struct RootContainerView: View {
     private let onboardingAnalytics: OnboardingAnalytics
     private let calculatorDependencies: SurebetCalculator.Dependencies
     private let settingsDependencies: Settings.Dependencies
-    private let bannerDependencies: Banner.Dependencies
     private let userDefaults: UserDefaults
 
     init(container: AppContainer) {
@@ -28,7 +26,6 @@ private struct RootContainerView: View {
         onboardingAnalytics = container.onboardingAnalytics
         calculatorDependencies = container.calculatorDependencies
         settingsDependencies = container.settingsDependencies
-        bannerDependencies = container.bannerDependencies
         userDefaults = container.userDefaults
     }
 
@@ -38,7 +35,6 @@ private struct RootContainerView: View {
             onboardingAnalytics: onboardingAnalytics,
             calculatorDependencies: calculatorDependencies,
             settingsDependencies: settingsDependencies,
-            bannerDependencies: bannerDependencies,
             themeUserDefaults: userDefaults
         )
     }

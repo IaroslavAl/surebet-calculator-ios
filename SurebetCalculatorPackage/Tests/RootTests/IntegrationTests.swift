@@ -5,7 +5,6 @@ import Testing
 @testable import SurebetCalculator
 @testable import AnalyticsManager
 @testable import ReviewHandler
-@testable import Survey
 
 /// Интеграционные тесты для проверки взаимодействия модулей
 @MainActor
@@ -32,15 +31,8 @@ struct IntegrationTests {
             delay: ImmediateDelay(),
             featureFlags: FeatureFlags(
                 onboarding: true,
-                survey: false,
-                reviewPrompt: true,
-                bannerFetch: true,
-                fullscreenBanner: true
+                reviewPrompt: true
             ),
-            bannerFetcher: { },
-            bannerCacheChecker: { false },
-            surveyService: MockSurveyService(scenario: .none),
-            surveyLocaleProvider: { Locale.autoupdatingCurrent.identifier },
             rootStateStore: rootStateStore
         )
     }
@@ -51,21 +43,15 @@ struct IntegrationTests {
 
     // MARK: - Root -> Calculator Flow
 
-    /// Тест полного flow: RootViewModel -> SurebetCalculatorViewModel -> CalculationService
     @Test
     func rootToCalculatorFlowWhenInitialized() {
         // Given
         clearTestUserDefaults()
         let rootViewModel = createRootViewModel()
 
-        // When
-        // Инициализация завершена
-
         // Then
-        // RootViewModel готов к работе
         #expect(rootViewModel.shouldShowOnboarding == !rootViewModel.isOnboardingShown)
 
-        // Проверяем, что можем создать SurebetCalculatorViewModel
         let calculatorViewModel = SurebetCalculatorViewModel(
             calculationService: DefaultCalculationService(),
             analytics: NoopCalculatorAnalytics(),
@@ -75,7 +61,6 @@ struct IntegrationTests {
         #expect(calculatorViewModel.selection == .total)
     }
 
-    /// Тест передачи данных между модулями через CalculationService
     @Test
     func dataFlowThroughCalculationService() {
         // Given
@@ -93,7 +78,6 @@ struct IntegrationTests {
         calculatorViewModel.send(.setTextFieldText(.rowBetSize(RowID(rawValue: 1)), "500"))
 
         // Then
-        // Проверяем, что данные передались через CalculationService
         #expect(calculatorViewModel.total.betSize == "1000")
         #expect(calculatorViewModel.rowsById[RowID(rawValue: 0)]?.coefficient == "2.5")
         #expect(calculatorViewModel.rowsById[RowID(rawValue: 0)]?.betSize == "500")
@@ -101,7 +85,6 @@ struct IntegrationTests {
         #expect(calculatorViewModel.rowsById[RowID(rawValue: 1)]?.betSize == "500")
     }
 
-    /// Тест обновления UI при изменении состояния
     @Test
     func uiUpdateWhenStateChanges() {
         // Given
@@ -119,12 +102,10 @@ struct IntegrationTests {
         #expect(calculatorViewModel.rowsById[RowID(rawValue: 0)]?.isON == true)
     }
 
-    /// Тест MainActor isolation для инициализации обоих ViewModel
     @Test
     func mainActorIsolationWhenInitializingViewModels() async {
         // Given & When
         clearTestUserDefaults()
-        // Оба ViewModel должны инициализироваться на MainActor
         let rootViewModel = createRootViewModel()
         let calculatorViewModel = SurebetCalculatorViewModel(
             calculationService: DefaultCalculationService(),
@@ -133,21 +114,17 @@ struct IntegrationTests {
         )
 
         // Then
-        // Проверяем, что нет дедлоков и оба ViewModel работают
         #expect(rootViewModel.shouldShowOnboarding == !rootViewModel.isOnboardingShown)
         #expect(calculatorViewModel.selectedNumberOfRows == .two)
 
-        // Проверяем, что можем выполнить действия на MainActor
         await MainActor.run {
             rootViewModel.send(.onAppear)
             calculatorViewModel.send(.addRow)
         }
 
-        // Проверяем, что действия выполнились корректно
         #expect(calculatorViewModel.selectedNumberOfRows == .three)
     }
 
-    /// Тест полного flow: RootViewModel -> SurebetCalculatorViewModel -> CalculationService -> результат
     @Test
     func fullFlowFromRootToCalculation() {
         // Given
@@ -161,24 +138,19 @@ struct IntegrationTests {
         )
 
         // When
-        // Пользователь вводит данные в калькулятор
         calculatorViewModel.send(.setTextFieldText(.totalBetSize, "1000"))
         calculatorViewModel.send(.setTextFieldText(.rowCoefficient(RowID(rawValue: 0)), "2.0"))
         calculatorViewModel.send(.setTextFieldText(.rowCoefficient(RowID(rawValue: 1)), "2.0"))
 
         // Then
-        // Проверяем, что расчет выполнен через CalculationService
         #expect(calculatorViewModel.total.betSize == "1000")
         #expect(calculatorViewModel.rowsById[RowID(rawValue: 0)]?.coefficient == "2.0")
         #expect(calculatorViewModel.rowsById[RowID(rawValue: 1)]?.coefficient == "2.0")
-
-        // Проверяем, что RootViewModel готов показать калькулятор
         #expect(rootViewModel.isOnboardingShown == true)
     }
 
     // MARK: - Services Integration
 
-    /// Тест сквозной аналитики: RootViewModel -> AnalyticsService
     @Test
     func analyticsIntegrationWhenReviewNo() {
         // Given
@@ -201,7 +173,6 @@ struct IntegrationTests {
         }
     }
 
-    /// Тест сквозной аналитики: RootViewModel -> AnalyticsService при согласии на отзыв
     @Test
     func analyticsIntegrationWhenReviewYes() async {
         // Given
@@ -225,35 +196,6 @@ struct IntegrationTests {
         }
     }
 
-    /// Тест бизнес-правила: 3 запуска приложения -> ReviewService.requestReview()
-    @Test
-    func reviewServiceTriggerAfterThreeOpenings() async {
-        // Given
-        clearTestUserDefaults()
-        let mockReview = MockReviewService()
-        let rootViewModel = createRootViewModel(reviewService: mockReview)
-
-        // Устанавливаем начальные условия
-        rootViewModel.send(.updateOnboardingShown(true))
-        UserDefaults.standard.set(true, forKey: "1.7.0") // requestReviewWasShown = true
-
-        // When
-        // Симулируем 3 запуска приложения
-        rootViewModel.send(.onAppear) // 1
-        rootViewModel.send(.onAppear) // 2
-        rootViewModel.send(.onAppear) // 3
-
-        // Then
-        // Проверяем, что fullscreenBannerIsAvailable == true (numberOfOpenings % 3 == 0)
-        #expect(rootViewModel.fullscreenBannerIsAvailable == true)
-
-        // Проверяем, что при вызове handleReviewYes ReviewService вызывается
-        rootViewModel.send(.handleReviewYes)
-        await awaitAsyncTasks()
-        #expect(mockReview.requestReviewCallCount == 1)
-    }
-
-    /// Тест бизнес-правила: ReviewService вызывается при handleReviewYes
     @Test
     func reviewServiceCalledWhenHandleReviewYes() async {
         // Given

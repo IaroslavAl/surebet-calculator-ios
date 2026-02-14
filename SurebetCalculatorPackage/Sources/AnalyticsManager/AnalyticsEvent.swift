@@ -43,26 +43,6 @@ public enum AnalyticsEvent: Sendable, Equatable {
     ///   - profitPercentage: Процент прибыли
     case calculationPerformed(rowCount: Int, profitPercentage: Double)
 
-    // MARK: - Banner
-
-    /// Баннер показан пользователю
-    /// - Parameters:
-    ///   - bannerId: Идентификатор баннера
-    ///   - bannerType: Тип баннера (fullscreen/inline)
-    case bannerViewed(bannerId: String, bannerType: BannerType)
-
-    /// Пользователь нажал на баннер
-    /// - Parameters:
-    ///   - bannerId: Идентификатор баннера
-    ///   - bannerType: Тип баннера (fullscreen/inline)
-    case bannerClicked(bannerId: String, bannerType: BannerType)
-
-    /// Пользователь закрыл баннер
-    /// - Parameters:
-    ///   - bannerId: Идентификатор баннера
-    ///   - bannerType: Тип баннера (fullscreen/inline)
-    case bannerClosed(bannerId: String, bannerType: BannerType)
-
     // MARK: - Review
 
     /// Показан запрос на оценку приложения
@@ -72,50 +52,11 @@ public enum AnalyticsEvent: Sendable, Equatable {
     /// - Parameter enjoyingApp: Нравится ли пользователю приложение
     case reviewResponse(enjoyingApp: Bool)
 
-    // MARK: - Survey
-
-    /// Опрос показан пользователю
-    /// - Parameters:
-    ///   - surveyId: Идентификатор опроса
-    ///   - surveyVersion: Версия опроса
-    ///   - sourceScreen: Экран, на котором показан опрос
-    case surveyShown(surveyId: String, surveyVersion: Int?, sourceScreen: String)
-
-    /// Опрос закрыт без отправки
-    /// - Parameters:
-    ///   - surveyId: Идентификатор опроса
-    ///   - surveyVersion: Версия опроса
-    ///   - sourceScreen: Экран, на котором закрыт опрос
-    case surveyClosed(surveyId: String, surveyVersion: Int?, sourceScreen: String)
-
-    /// Опрос успешно отправлен
-    /// - Parameters:
-    ///   - surveyId: Идентификатор опроса
-    ///   - surveyVersion: Версия опроса
-    ///   - sourceScreen: Экран, на котором отправлен опрос
-    ///   - answers: Ответы в формате field_id -> value
-    case surveySubmitted(
-        surveyId: String,
-        surveyVersion: Int?,
-        sourceScreen: String,
-        answers: [String: AnalyticsParameterValue]
-    )
-
     // MARK: - App
 
     /// Приложение открыто
     /// - Parameter sessionNumber: Номер сессии
     case appOpened(sessionNumber: Int)
-}
-
-// MARK: - Banner Type
-
-/// Тип баннера для аналитики
-public enum BannerType: String, Sendable, Equatable {
-    /// Полноэкранный баннер
-    case fullscreen
-    /// Встроенный баннер
-    case inline
 }
 
 // MARK: - Event Properties
@@ -140,22 +81,10 @@ extension AnalyticsEvent {
             return "calculator_cleared"
         case .calculationPerformed:
             return "calculation_performed"
-        case .bannerViewed:
-            return "banner_viewed"
-        case .bannerClicked:
-            return "banner_clicked"
-        case .bannerClosed:
-            return "banner_closed"
         case .reviewPromptShown:
             return "review_prompt_shown"
         case .reviewResponse:
             return "review_response"
-        case .surveyShown:
-            return "survey_shown"
-        case .surveyClosed:
-            return "survey_closed"
-        case .surveySubmitted:
-            return "survey_submitted"
         case .appOpened:
             return "app_opened"
         }
@@ -191,41 +120,8 @@ extension AnalyticsEvent {
                 "profit_percentage": .double(profitPercentage)
             ]
 
-        case .bannerViewed(let bannerId, let bannerType),
-             .bannerClicked(let bannerId, let bannerType),
-             .bannerClosed(let bannerId, let bannerType):
-            return [
-                "banner_id": .string(bannerId),
-                "banner_type": .string(bannerType.rawValue)
-            ]
-
         case .reviewResponse(let enjoyingApp):
             return ["enjoying_app": .bool(enjoyingApp)]
-
-        case let .surveyShown(surveyId, surveyVersion, sourceScreen),
-             let .surveyClosed(surveyId, surveyVersion, sourceScreen):
-            var result: [String: AnalyticsParameterValue] = [
-                "survey_id": .string(surveyId),
-                "source_screen": .string(sourceScreen)
-            ]
-            if let surveyVersion {
-                result["survey_version"] = .int(surveyVersion)
-            }
-            return result
-
-        case let .surveySubmitted(surveyId, surveyVersion, sourceScreen, answers):
-            var result: [String: AnalyticsParameterValue] = [
-                "survey_id": .string(surveyId),
-                "source_screen": .string(sourceScreen),
-                "answers_count": .int(answers.count)
-            ]
-            if let surveyVersion {
-                result["survey_version"] = .int(surveyVersion)
-            }
-            for (key, value) in answers {
-                result[key] = value
-            }
-            return result
 
         case .appOpened(let sessionNumber):
             return ["session_number": .int(sessionNumber)]
