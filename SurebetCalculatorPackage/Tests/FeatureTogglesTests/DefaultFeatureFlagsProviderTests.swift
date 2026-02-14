@@ -28,7 +28,7 @@ struct DefaultFeatureFlagsProviderTests {
             launchArguments: [
                 "-enableOnboarding",
                 "-enableReviewPrompt",
-                "-disableReviewPrompt",
+                "-disableReviewPrompt"
             ],
             userDefaults: defaults
         )
@@ -49,7 +49,7 @@ struct DefaultFeatureFlagsProviderTests {
         let provider = DefaultFeatureFlagsProvider(
             launchArguments: [
                 "-enableOnboarding",
-                "-disableReviewPrompt",
+                "-disableReviewPrompt"
             ],
             userDefaults: defaults
         )
