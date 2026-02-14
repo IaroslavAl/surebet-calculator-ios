@@ -20,6 +20,7 @@ struct AppContainerTests {
 
         viewModel.send(.onAppear)
 
-        #expect(viewModel.fullscreenBannerIsPresented == false)
+        #expect(viewModel.navigationPath.isEmpty)
+        #expect(viewModel.alertIsPresented == false)
     }
 }

@@ -6,7 +6,7 @@
 - Public API:
   - `Root.view(container:)`
   - `AppContainer.live(userDefaults:)`
-- Роль: композиция модулей, data-driven push navigation (`NavigationStack(path:)`) и onboarding/review/fullscreen-banner/survey orchestration.
+- Роль: композиция модулей, data-driven push navigation (`NavigationStack(path:)`) и orchestration onboarding/review.
 - Важные файлы:
   - `SurebetCalculatorPackage/Sources/Root/Root.swift`
   - `SurebetCalculatorPackage/Sources/Root/DI/AppContainer.swift`
@@ -29,7 +29,6 @@
   - `MainMenuRoute`
   - `MainMenu.view(onRouteRequested:)`
   - `MainMenu.instructionsView()`
-  - `MainMenu.disableAdsPlaceholderView()`
 - Роль: первый экран-меню с route events; push-destination orchestration выполняется в `Root`.
 
 ## SurebetCalculator
@@ -37,22 +36,6 @@
   - `SurebetCalculator.Dependencies`
   - `SurebetCalculator.view(dependencies:)`
 - Роль: состояние калькулятора, выбор режима расчета, бизнес-логика.
-
-## Banner
-- Public API:
-  - `Banner.Dependencies`
-  - `Banner.bannerView(dependencies:)`
-  - `Banner.fullscreenBannerView(isPresented:dependencies:)`
-  - `Banner.fetchBanner(service:)`
-  - `Banner.isBannerFullyCached(service:)`
-- Роль: inline/fullscreen баннеры, сеть `/banner`, кэш модели и изображения.
-
-## Survey
-- Public API:
-  - `Survey.sheet(survey:onSubmit:onClose:)`
-  - `SurveyService`, `RemoteSurveyService`, `MockSurveyService`
-  - `SurveyModel`, `SurveySubmission`
-- Роль: in-app опросы, динамические поля, валидация required/optional, mock/remote data source.
 
 ## Onboarding
 - Public API: `Onboarding.view(onboardingIsShown:analytics:)`.
@@ -72,7 +55,7 @@
 
 ## AnalyticsManager
 - Public API: `AnalyticsService`, `AnalyticsManager`, `AnalyticsEvent`.
-- Роль: типобезопасные события и адаптер к AppMetrica (включая survey events).
+- Роль: типобезопасные события и адаптер к AppMetrica.
 
 ## DesignSystem
 - Public API: `DesignSystem` + токены/базовые компоненты.
@@ -84,4 +67,4 @@
 2. Обновить релевантный playbook.
 3. Добавить ADR при изменении архитектурного решения.
 
-Последнее обновление: 2026-02-12
+Последнее обновление: 2026-02-14

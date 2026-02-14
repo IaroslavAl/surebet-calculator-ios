@@ -22,26 +22,8 @@ public struct DefaultFeatureFlagsProvider: FeatureFlagsProvider, Sendable {
                 userDefaults: userDefaults,
                 defaults: defaults
             ),
-            survey: Self.resolveValue(
-                for: .survey,
-                launchArguments: launchArguments,
-                userDefaults: userDefaults,
-                defaults: defaults
-            ),
             reviewPrompt: Self.resolveValue(
                 for: .reviewPrompt,
-                launchArguments: launchArguments,
-                userDefaults: userDefaults,
-                defaults: defaults
-            ),
-            bannerFetch: Self.resolveValue(
-                for: .bannerFetch,
-                launchArguments: launchArguments,
-                userDefaults: userDefaults,
-                defaults: defaults
-            ),
-            fullscreenBanner: Self.resolveValue(
-                for: .fullscreenBanner,
                 launchArguments: launchArguments,
                 userDefaults: userDefaults,
                 defaults: defaults

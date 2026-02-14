@@ -1,83 +1,67 @@
 {
-  "configurations" : [
+  "configurations": [
     {
-      "id" : "7F66E489-9C0D-4E0D-8D63-5B2292035B9E",
-      "name" : "Test Scheme Action",
-      "options" : {
-
-      }
+      "id": "7F66E489-9C0D-4E0D-8D63-5B2292035B9E",
+      "name": "Test Scheme Action",
+      "options": {}
     }
   ],
-  "defaultOptions" : {
-    "environmentVariableEntries" : [
+  "defaultOptions": {
+    "environmentVariableEntries": [
       {
-        "key" : "AppMetrica_Key",
-        "value" : "f7e1f335-475a-4b6c-ba4a-77988745bc7a"
+        "key": "AppMetrica_Key",
+        "value": "f7e1f335-475a-4b6c-ba4a-77988745bc7a"
       }
     ],
-    "targetForVariableExpansion" : {
-      "containerPath" : "container:surebet-calculator.xcodeproj",
-      "identifier" : "C462066B297BFAC900E70051",
-      "name" : "surebet-calculator"
+    "targetForVariableExpansion": {
+      "containerPath": "container:surebet-calculator.xcodeproj",
+      "identifier": "C462066B297BFAC900E70051",
+      "name": "surebet-calculator"
     }
   },
-  "testTargets" : [
+  "testTargets": [
     {
-      "target" : {
-        "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "RootTests",
-        "name" : "RootTests"
+      "target": {
+        "containerPath": "container:SurebetCalculatorPackage",
+        "identifier": "RootTests",
+        "name": "RootTests"
       }
     },
     {
-      "target" : {
-        "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "SurebetCalculatorTests",
-        "name" : "SurebetCalculatorTests"
+      "target": {
+        "containerPath": "container:SurebetCalculatorPackage",
+        "identifier": "SurebetCalculatorTests",
+        "name": "SurebetCalculatorTests"
       }
     },
     {
-      "target" : {
-        "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "AnalyticsManagerTests",
-        "name" : "AnalyticsManagerTests"
+      "target": {
+        "containerPath": "container:SurebetCalculatorPackage",
+        "identifier": "AnalyticsManagerTests",
+        "name": "AnalyticsManagerTests"
       }
     },
     {
-      "target" : {
-        "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "BannerTests",
-        "name" : "BannerTests"
+      "target": {
+        "containerPath": "container:SurebetCalculatorPackage",
+        "identifier": "OnboardingTests",
+        "name": "OnboardingTests"
       }
     },
     {
-      "target" : {
-        "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "OnboardingTests",
-        "name" : "OnboardingTests"
+      "target": {
+        "containerPath": "container:SurebetCalculatorPackage",
+        "identifier": "ReviewHandlerTests",
+        "name": "ReviewHandlerTests"
       }
     },
     {
-      "target" : {
-        "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "ReviewHandlerTests",
-        "name" : "ReviewHandlerTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "SurveyTests",
-        "name" : "SurveyTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:SurebetCalculatorPackage",
-        "identifier" : "FeatureTogglesTests",
-        "name" : "FeatureTogglesTests"
+      "target": {
+        "containerPath": "container:SurebetCalculatorPackage",
+        "identifier": "FeatureTogglesTests",
+        "name": "FeatureTogglesTests"
       }
     }
   ],
-  "version" : 1
+  "version": 1
 }

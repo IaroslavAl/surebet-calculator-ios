@@ -41,46 +41,33 @@ final class TestDelay: CalculationAnalyticsDelay, @unchecked Sendable {
     }
 }
 
+private func rowId(_ value: Int) -> RowID {
+    RowID(rawValue: UInt64(value))
+}
+
+private func makeRows(_ rows: [Row]) -> (rowsById: [RowID: Row], orderedRowIds: [RowID]) {
+    let orderedRowIds = rows.map(\.id)
+    let rowsById = Dictionary(uniqueKeysWithValues: rows.map { ($0.id, $0) })
+    return (rowsById: rowsById, orderedRowIds: orderedRowIds)
+}
+
 @MainActor
-struct SurebetCalculatorViewModelTests {
-    // MARK: - Helpers
-
-    private func rowId(_ value: Int) -> RowID {
-        RowID(rawValue: UInt64(value))
-    }
-
-    private func makeRows(_ rows: [Row]) -> (rowsById: [RowID: Row], orderedRowIds: [RowID]) {
-        let orderedRowIds = rows.map(\.id)
-        let rowsById = Dictionary(uniqueKeysWithValues: rows.map { ($0.id, $0) })
-        return (rowsById: rowsById, orderedRowIds: orderedRowIds)
-    }
-
-    private func makeViewModel(
-        total: TotalRow = TotalRow(),
-        rows: [Row]? = nil,
-        selectedNumberOfRows: NumberOfRows = .two,
-        selection: Selection = .total,
-        focus: FocusableField? = nil,
-        calculationService: CalculationService = DefaultCalculationService(),
-        analytics: CalculatorAnalytics = NoopCalculatorAnalytics(),
-        delay: CalculationAnalyticsDelay = SystemCalculationAnalyticsDelay()
-    ) -> SurebetCalculatorViewModel {
-        if let rows {
-            let data = makeRows(rows)
-            return SurebetCalculatorViewModel(
-                total: total,
-                rowsById: data.rowsById,
-                orderedRowIds: data.orderedRowIds,
-                selectedNumberOfRows: selectedNumberOfRows,
-                selection: selection,
-                focus: focus,
-                calculationService: calculationService,
-                analytics: analytics,
-                delay: delay
-            )
-        }
+private func makeViewModel(
+    total: TotalRow = TotalRow(),
+    rows: [Row]? = nil,
+    selectedNumberOfRows: NumberOfRows = .two,
+    selection: Selection = .total,
+    focus: FocusableField? = nil,
+    calculationService: CalculationService = DefaultCalculationService(),
+    analytics: CalculatorAnalytics = NoopCalculatorAnalytics(),
+    delay: CalculationAnalyticsDelay = SystemCalculationAnalyticsDelay()
+) -> SurebetCalculatorViewModel {
+    if let rows {
+        let data = makeRows(rows)
         return SurebetCalculatorViewModel(
             total: total,
+            rowsById: data.rowsById,
+            orderedRowIds: data.orderedRowIds,
             selectedNumberOfRows: selectedNumberOfRows,
             selection: selection,
             focus: focus,
@@ -89,31 +76,44 @@ struct SurebetCalculatorViewModelTests {
             delay: delay
         )
     }
+    return SurebetCalculatorViewModel(
+        total: total,
+        selectedNumberOfRows: selectedNumberOfRows,
+        selection: selection,
+        focus: focus,
+        calculationService: calculationService,
+        analytics: analytics,
+        delay: delay
+    )
+}
 
-    private func row(_ viewModel: SurebetCalculatorViewModel, _ id: Int) -> Row {
-        viewModel.rowsById[rowId(id)] ?? Row(id: rowId(id))
-    }
+@MainActor
+private func row(_ viewModel: SurebetCalculatorViewModel, _ id: Int) -> Row {
+    viewModel.rowsById[rowId(id)] ?? Row(id: rowId(id))
+}
 
-    /// Форматирует число в строку с учётом текущей локали (для тестов).
-    private func formatNumber(_ value: Double, isPercent: Bool = false) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .none
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
-        formatter.locale = Locale.current
-        let formatted = formatter.string(from: value as NSNumber) ?? ""
-        return isPercent ? formatted + "%" : formatted
-    }
+/// Форматирует число в строку с учётом текущей локали (для тестов).
+private func formatNumber(_ value: Double, isPercent: Bool = false) -> String {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .none
+    formatter.minimumFractionDigits = 0
+    formatter.maximumFractionDigits = 2
+    formatter.locale = Locale.current
+    let formatted = formatter.string(from: value as NSNumber) ?? ""
+    return isPercent ? formatted + "%" : formatted
+}
 
-    /// Форматирует коэффициент для ввода в тестах.
-    private func formatCoefficient(_ value: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale.current
-        formatter.maximumFractionDigits = 2
-        return formatter.string(from: value as NSNumber) ?? ""
-    }
+/// Форматирует коэффициент для ввода в тестах.
+private func formatCoefficient(_ value: Double) -> String {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .decimal
+    formatter.locale = Locale.current
+    formatter.maximumFractionDigits = 2
+    return formatter.string(from: value as NSNumber) ?? ""
+}
 
+@MainActor
+struct SurebetCalculatorViewModelTests {
     // MARK: - Tests
 
     @Test

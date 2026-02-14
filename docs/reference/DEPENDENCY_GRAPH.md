@@ -5,12 +5,10 @@
 ```mermaid
 graph TD
     Root --> SurebetCalculator
-    Root --> Banner
     Root --> MainMenu
     Root --> Onboarding
     Root --> Settings
     Root --> ReviewHandler
-    Root --> Survey
     Root --> FeatureToggles
     Root --> AnalyticsManager
     Root --> DesignSystem
@@ -18,23 +16,16 @@ graph TD
 
     MainMenu --> DesignSystem
 
-    SurebetCalculator --> Banner
     SurebetCalculator --> DesignSystem
-
-    Banner --> AnalyticsManager
-    Banner --> SDWebImageSwiftUI
-    Banner --> DesignSystem
 
     Onboarding --> DesignSystem
     Settings --> DesignSystem
-    Survey --> DesignSystem
 
     AnalyticsManager --> AppMetricaCore
 ```
 
 ## Внешние зависимости
 - `appmetrica-sdk-ios` (`AppMetricaCore`)
-- `SDWebImageSwiftUI`
 - `SwiftLint` (`SwiftLintBuildToolPlugin`)
 
 ## Правила
@@ -42,4 +33,4 @@ graph TD
 - Нельзя добавлять неиспользуемые пакетные зависимости.
 - Для всех targets подключать SwiftLint plugin консистентно.
 
-Последнее обновление: 2026-02-12
+Последнее обновление: 2026-02-14

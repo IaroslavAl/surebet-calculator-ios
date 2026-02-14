@@ -4,7 +4,7 @@
 - Приложение масштабируется, а текущий DI был частично распределен по модулям:
   - часть зависимостей создавалась в `Root`, часть внутри feature entry points;
   - `RootViewModel` и `SettingsViewModel` использовали `@AppStorage`, что усложняло изоляцию и тестирование;
-  - публичные `view()` entry points скрыто создавали прод-зависимости (`Service()`, `AnalyticsManager()`), что затрудняло контроль графа и эволюцию модулей.
+  - публичные `view()` entry points скрыто создавали прод-зависимости, что затрудняло контроль графа и эволюцию модулей.
 - Требование: сохранить простоту и производительность, избежать service locator и runtime-магии.
 
 ## Решение
@@ -13,12 +13,10 @@
   - `Root.view(container: AppContainer = .live())`;
   - сборка live-графа зависимостей централизована в `AppContainer.live(userDefaults:)`.
 - Для feature entry points введены явные dependency-контракты:
-  - `MainMenu.Dependencies`;
   - `SurebetCalculator.Dependencies`;
-  - `Settings.Dependencies`;
-  - `Banner.Dependencies`.
+  - `Settings.Dependencies`.
 - ViewModel больше не создают прод-зависимости по умолчанию:
-  - `RootViewModel`, `SettingsViewModel`, `SurebetCalculatorViewModel`, `BannerViewModel`, `FullscreenBannerViewModel`.
+  - `RootViewModel`, `SettingsViewModel`, `SurebetCalculatorViewModel`.
 - Persisted state для Root вынесен в `RootStateStore`, тема — в `ThemeStore`.
 
 ## Последствия

@@ -1,5 +1,4 @@
 import AnalyticsManager
-import Banner
 import DesignSystem
 import FeatureToggles
 import Foundation
@@ -8,7 +7,6 @@ import Onboarding
 import ReviewHandler
 import Settings
 import SurebetCalculator
-import Survey
 import SwiftUI
 
 @MainActor
@@ -19,7 +17,6 @@ struct RootView: View {
     private let onboardingAnalytics: OnboardingAnalytics
     private let calculatorDependencies: SurebetCalculator.Dependencies
     private let settingsDependencies: Settings.Dependencies
-    private let bannerDependencies: Banner.Dependencies
     @AppStorage private var themeRawValue: String
 
     // MARK: - Initialization
@@ -29,14 +26,12 @@ struct RootView: View {
         onboardingAnalytics: OnboardingAnalytics,
         calculatorDependencies: SurebetCalculator.Dependencies,
         settingsDependencies: Settings.Dependencies,
-        bannerDependencies: Banner.Dependencies,
         themeUserDefaults: UserDefaults = .standard
     ) {
         self.viewModel = viewModel
         self.onboardingAnalytics = onboardingAnalytics
         self.calculatorDependencies = calculatorDependencies
         self.settingsDependencies = settingsDependencies
-        self.bannerDependencies = bannerDependencies
         _themeRawValue = AppStorage(
             wrappedValue: SettingsTheme.system.rawValue,
             SettingsStorage.themeKey,
@@ -51,14 +46,6 @@ struct RootView: View {
             .preferredColorScheme(selectedTheme.preferredColorScheme)
             .modifier(LifecycleModifier(viewModel: viewModel))
             .modifier(ReviewAlertModifier(viewModel: viewModel))
-            .modifier(
-                FullscreenBannerOverlayModifier(
-                    viewModel: viewModel,
-                    bannerDependencies: bannerDependencies
-                )
-            )
-            .modifier(SurveySheetModifier(viewModel: viewModel))
-            .modifier(AnimationModifier(viewModel: viewModel))
     }
 }
 
@@ -143,8 +130,6 @@ private extension RootView {
             case .instructions:
                 MainMenu.instructionsView()
             }
-        case .disableAds:
-            MainMenu.disableAdsPlaceholderView()
         }
     }
 }
@@ -185,72 +170,6 @@ private struct ReviewAlertModifier: ViewModifier {
     }
 }
 
-private struct FullscreenBannerOverlayModifier: ViewModifier {
-    @ObservedObject var viewModel: RootViewModel
-    let bannerDependencies: Banner.Dependencies
-    private var fullscreenBannerBinding: Binding<Bool> {
-        Binding(
-            get: { viewModel.fullscreenBannerIsPresented },
-            set: { viewModel.send(.setFullscreenBannerPresented($0)) }
-        )
-    }
-
-    func body(content: Content) -> some View {
-        content
-            .overlay {
-                if viewModel.fullscreenBannerIsPresented {
-                    Banner.fullscreenBannerView(
-                        isPresented: fullscreenBannerBinding,
-                        dependencies: bannerDependencies
-                    )
-                        .transition(DesignSystem.Animation.moveFromBottom)
-                }
-            }
-    }
-}
-
-private struct AnimationModifier: ViewModifier {
-    @ObservedObject var viewModel: RootViewModel
-
-    func body(content: Content) -> some View {
-        content
-            .animation(DesignSystem.Animation.smoothTransition, value: viewModel.fullscreenBannerIsPresented)
-    }
-}
-
-private struct SurveySheetModifier: ViewModifier {
-    @ObservedObject var viewModel: RootViewModel
-
-    private var surveyIsPresentedBinding: Binding<Bool> {
-        Binding(
-            get: { viewModel.surveyIsPresented },
-            set: { viewModel.send(.setSurveyPresented($0)) }
-        )
-    }
-
-    func body(content: Content) -> some View {
-        content
-            .sheet(
-                isPresented: surveyIsPresentedBinding,
-                onDismiss: {
-                    viewModel.send(.surveySheetDismissed)
-                }
-            ) {
-                if let survey = viewModel.activeSurvey {
-                    Survey.sheet(
-                        survey: survey,
-                        onSubmit: { submission in
-                            viewModel.send(.surveySubmitted(submission))
-                        },
-                        onClose: {
-                            viewModel.send(.surveyCloseTapped)
-                        }
-                    )
-                }
-            }
-    }
-}
-
 // MARK: - Preview
 
 #Preview {
@@ -260,19 +179,10 @@ private struct SurveySheetModifier: ViewModifier {
             reviewService: ReviewHandler(),
             delay: SystemDelay(),
             featureFlags: .releaseDefaults,
-            bannerFetcher: { },
-            bannerCacheChecker: { false },
-            surveyService: MockSurveyService(scenario: .none),
-            surveyLocaleProvider: { Locale.autoupdatingCurrent.identifier },
             rootStateStore: UserDefaultsRootStateStore()
         ),
         onboardingAnalytics: NoopOnboardingAnalytics(),
         calculatorDependencies: SurebetCalculator.Dependencies(analytics: NoopCalculatorAnalytics()),
-        settingsDependencies: Settings.Dependencies(themeStore: UserDefaultsThemeStore()),
-        bannerDependencies: Banner.Dependencies(
-            service: Service(),
-            analyticsService: AnalyticsManager(),
-            urlOpener: DefaultURLOpener()
-        )
+        settingsDependencies: Settings.Dependencies(themeStore: UserDefaultsThemeStore())
     )
 }

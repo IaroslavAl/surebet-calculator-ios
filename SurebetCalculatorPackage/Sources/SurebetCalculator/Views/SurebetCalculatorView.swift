@@ -29,6 +29,7 @@ struct SurebetCalculatorView: View {
         .toolbar(content: toolbar)
         .frame(minHeight: .zero, maxHeight: .infinity, alignment: .top)
         .font(DesignSystem.Typography.body)
+        .accessibilityIdentifier(AccessibilityIdentifiers.Calculator.view)
         .onAppear {
             keyboardActionProxy.update(
                 onClear: { viewModel.send(.clearFocusableField) },

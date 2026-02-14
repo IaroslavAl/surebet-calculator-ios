@@ -16,10 +16,7 @@ struct DefaultFeatureFlagsProviderTests {
 
         #expect(provider.snapshot() == .releaseDefaults)
         #expect(provider.isEnabled(.onboarding) == false)
-        #expect(provider.isEnabled(.survey) == true)
         #expect(provider.isEnabled(.reviewPrompt) == true)
-        #expect(provider.isEnabled(.bannerFetch) == true)
-        #expect(provider.isEnabled(.fullscreenBanner) == true)
     }
 
     @Test
@@ -30,21 +27,15 @@ struct DefaultFeatureFlagsProviderTests {
         let provider = DefaultFeatureFlagsProvider(
             launchArguments: [
                 "-enableOnboarding",
-                "-disableSurvey",
                 "-enableReviewPrompt",
-                "-disableReviewPrompt",
-                "-disableBannerFetch",
-                "-enableFullscreenBanner",
+                "-disableReviewPrompt"
             ],
             userDefaults: defaults
         )
 
         #expect(provider.isEnabled(.onboarding) == true)
-        #expect(provider.isEnabled(.survey) == false)
         // disable wins over enable for deterministic conflict resolution
         #expect(provider.isEnabled(.reviewPrompt) == false)
-        #expect(provider.isEnabled(.bannerFetch) == false)
-        #expect(provider.isEnabled(.fullscreenBanner) == true)
     }
 
     @Test
@@ -53,21 +44,18 @@ struct DefaultFeatureFlagsProviderTests {
         defer { cleanupDefaults(suiteName: suiteName) }
 
         FeatureFlagOverrideStore.set(false, for: .onboarding, userDefaults: defaults)
-        FeatureFlagOverrideStore.set(true, for: .survey, userDefaults: defaults)
-        FeatureFlagOverrideStore.set(true, for: .bannerFetch, userDefaults: defaults)
+        FeatureFlagOverrideStore.set(true, for: .reviewPrompt, userDefaults: defaults)
 
         let provider = DefaultFeatureFlagsProvider(
             launchArguments: [
                 "-enableOnboarding",
-                "-disableSurvey",
-                "-disableBannerFetch",
+                "-disableReviewPrompt"
             ],
             userDefaults: defaults
         )
 
         #expect(provider.isEnabled(.onboarding) == false)
-        #expect(provider.isEnabled(.survey) == true)
-        #expect(provider.isEnabled(.bannerFetch) == true)
+        #expect(provider.isEnabled(.reviewPrompt) == true)
     }
 
     @Test
@@ -76,7 +64,7 @@ struct DefaultFeatureFlagsProviderTests {
         defer { cleanupDefaults(suiteName: suiteName) }
 
         FeatureFlagOverrideStore.set(true, for: .onboarding, userDefaults: defaults)
-        FeatureFlagOverrideStore.set(false, for: .survey, userDefaults: defaults)
+        FeatureFlagOverrideStore.set(false, for: .reviewPrompt, userDefaults: defaults)
 
         let provider = DefaultFeatureFlagsProvider(
             launchArguments: ["-resetFeatureOverrides"],
@@ -84,7 +72,7 @@ struct DefaultFeatureFlagsProviderTests {
         )
 
         #expect(FeatureFlagOverrideStore.value(for: .onboarding, userDefaults: defaults) == nil)
-        #expect(FeatureFlagOverrideStore.value(for: .survey, userDefaults: defaults) == nil)
+        #expect(FeatureFlagOverrideStore.value(for: .reviewPrompt, userDefaults: defaults) == nil)
         #expect(provider.snapshot() == .releaseDefaults)
     }
 

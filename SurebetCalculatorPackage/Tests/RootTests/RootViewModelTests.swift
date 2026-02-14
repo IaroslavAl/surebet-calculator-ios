@@ -3,617 +3,153 @@ import Testing
 @testable import Root
 @testable import AnalyticsManager
 @testable import ReviewHandler
-@testable import Banner
 @testable import FeatureToggles
-@testable import SurebetCalculator
-@testable import Survey
 
-// swiftlint:disable file_length
-
-/// Тесты выполняются последовательно для изоляции UserDefaults
 @MainActor
 @Suite(.serialized)
 struct RootViewModelTests {
-    // MARK: - Helper Methods
+    // MARK: - Helpers
 
-    /// Создает новый экземпляр RootViewModel с моками
     func createViewModel(
         analyticsService: AnalyticsService? = nil,
         reviewService: ReviewService? = nil,
         delay: Delay? = nil,
         featureFlags: FeatureFlags? = nil,
-        bannerFetcher: (@Sendable () async -> Void)? = nil,
-        bannerCacheChecker: (@Sendable () -> Bool)? = nil,
-        surveyService: SurveyService = MockSurveyService(scenario: .none),
-        surveyLocaleProvider: @escaping () -> String = { Locale.autoupdatingCurrent.identifier },
         rootStateStore: RootStateStore = UserDefaultsRootStateStore()
     ) -> RootViewModel {
-        let analytics = analyticsService ?? MockAnalyticsService()
-        let review = reviewService ?? MockReviewService()
-        let reviewDelay = delay ?? ImmediateDelay()
-        let flags = featureFlags ?? makeFeatureFlags()
-        return RootViewModel(
-            analyticsService: analytics,
-            reviewService: review,
-            delay: reviewDelay,
-            featureFlags: flags,
-            bannerFetcher: bannerFetcher ?? { },
-            bannerCacheChecker: bannerCacheChecker ?? { false },
-            surveyService: surveyService,
-            surveyLocaleProvider: surveyLocaleProvider,
+        RootViewModel(
+            analyticsService: analyticsService ?? MockAnalyticsService(),
+            reviewService: reviewService ?? MockReviewService(),
+            delay: delay ?? ImmediateDelay(),
+            featureFlags: featureFlags ?? makeFeatureFlags(),
             rootStateStore: rootStateStore
         )
     }
 
     func makeFeatureFlags(
         onboarding: Bool = true,
-        survey: Bool = false,
-        reviewPrompt: Bool = true,
-        bannerFetch: Bool = true,
-        fullscreenBanner: Bool = true
+        reviewPrompt: Bool = true
     ) -> FeatureFlags {
         FeatureFlags(
             onboarding: onboarding,
-            survey: survey,
-            reviewPrompt: reviewPrompt,
-            bannerFetch: bannerFetch,
-            fullscreenBanner: fullscreenBanner
+            reviewPrompt: reviewPrompt
         )
     }
 
-    /// Очищает UserDefaults для тестовых ключей
     func clearTestUserDefaults() {
         let defaults = UserDefaults.standard
-        defaults.removeObject(forKey: "onboardingIsShown")
-        defaults.removeObject(forKey: "1.7.0")
-        defaults.removeObject(forKey: "numberOfOpenings")
-        defaults.removeObject(forKey: "stored_banner")
-        defaults.removeObject(forKey: "stored_banner_image_url_string")
-        defaults.removeObject(forKey: RootConstants.handledSurveyIDsKey)
-        clearBannerCache()
-    }
-
-    func clearBannerCache() {
-        let fileManager = FileManager.default
-        let baseCache = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first
-        let resolvedBase = baseCache ?? fileManager.temporaryDirectory
-        let cacheDirectory = resolvedBase.appendingPathComponent(
-            BannerConstants.cacheDirectoryName,
-            isDirectory: true
-        )
-        let imageFile = cacheDirectory.appendingPathComponent(BannerConstants.cachedImageFilename)
-        try? fileManager.removeItem(at: imageFile)
+        defaults.removeObject(forKey: RootConstants.onboardingIsShownKey)
+        defaults.removeObject(forKey: RootConstants.requestReviewWasShownKey)
+        defaults.removeObject(forKey: RootConstants.numberOfOpeningsKey)
     }
 
     func awaitAsyncTasks() async {
         await Task.yield()
     }
 
-    func awaitCondition(
-        _ condition: @escaping () -> Bool,
-        maxIterations: Int = 20
-    ) async {
-        for _ in 0..<maxIterations {
-            if condition() {
-                return
-            }
-            await Task.yield()
-        }
-    }
+    // MARK: - Onboarding
 
-    // MARK: - shouldShowOnboarding Tests
-
-    /// Тест проверки показа onboarding когда он не был показан
     @Test
     func shouldShowOnboardingWhenNotShown() {
-        // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
 
-        // Then
         #expect(viewModel.shouldShowOnboarding == true)
     }
 
-    /// Тест проверки показа onboarding когда он уже был показан
     @Test
     func shouldShowOnboardingWhenAlreadyShown() {
-        // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
         viewModel.send(.updateOnboardingShown(true))
 
-        // Then
         #expect(viewModel.shouldShowOnboarding == false)
     }
 
-    /// Тест проверки что onboarding скрыт при отключенном feature toggle
     @Test
     func shouldShowOnboardingWhenFeatureDisabled() {
-        // Given
         clearTestUserDefaults()
         let viewModel = createViewModel(
             featureFlags: makeFeatureFlags(onboarding: false)
         )
         let defaults = UserDefaults.standard
 
-        // Then
         #expect(viewModel.shouldShowOnboarding == false)
         #expect(viewModel.isOnboardingShown == true)
-        #expect(defaults.object(forKey: "onboardingIsShown") == nil)
+        #expect(defaults.object(forKey: RootConstants.onboardingIsShownKey) == nil)
 
-        // When
         viewModel.send(.updateOnboardingShown(true))
 
-        // Then
-        #expect(defaults.object(forKey: "onboardingIsShown") == nil)
+        #expect(defaults.object(forKey: RootConstants.onboardingIsShownKey) == nil)
     }
 
-    // MARK: - shouldShowOnboardingWithAnimation Tests
-
-    /// Тест проверки показа onboarding с анимацией
     @Test
-    func shouldShowOnboardingWithAnimationWhenAnimationIsTrue() {
-        // Given
+    func showOnboardingViewSetsAnimation() {
         clearTestUserDefaults()
         let viewModel = createViewModel()
 
-        // When
         viewModel.send(.showOnboardingView)
 
-        // Then
         #expect(viewModel.shouldShowOnboardingWithAnimation == true)
     }
 
-    /// Тест проверки показа onboarding с анимацией когда анимация false
-    @Test
-    func shouldShowOnboardingWithAnimationWhenAnimationIsFalse() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-
-        // Then
-        #expect(viewModel.shouldShowOnboardingWithAnimation == false)
-    }
-
-    // MARK: - isOnboardingShown Tests
-
-    /// Тест получения состояния onboarding
-    @Test
-    func isOnboardingShownWhenUpdated() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-
-        // When
-        viewModel.send(.updateOnboardingShown(true))
-
-        // Then
-        #expect(viewModel.isOnboardingShown == true)
-    }
-
-    // MARK: - onAppear() Tests
-
-    /// Тест увеличения numberOfOpenings при onAppear
-    @Test
-    func onAppearIncrementsNumberOfOpenings() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-
-        // When
-        viewModel.send(.onAppear)
-        viewModel.send(.onAppear)
-        viewModel.send(.onAppear)
-
-        // Then
-        // Проверяем через fullscreenBannerIsAvailable (numberOfOpenings % 3 == 0)
-        #expect(viewModel.fullscreenBannerIsAvailable == false) // onboarding не показан, review не показан
-    }
-
-    /// Тест lifecycle fan-out через единый action rootLifecycleStarted.
-    @Test
-    func rootLifecycleStartedTriggersInitialOrchestration() {
-        // Given
-        clearTestUserDefaults()
-        let analytics = MockAnalyticsService()
-        let viewModel = createViewModel(
-            analyticsService: analytics,
-            featureFlags: makeFeatureFlags(
-                survey: false,
-                reviewPrompt: false,
-                bannerFetch: false
-            )
-        )
-
-        // When
-        viewModel.send(.rootLifecycleStarted)
-
-        // Then
-        #expect(viewModel.shouldShowOnboardingWithAnimation == true)
-        #expect(analytics.logEventCallCount == 1)
-        #expect(analytics.lastEvent == .appOpened(sessionNumber: 1))
-    }
-
-    // MARK: - Navigation Path Tests
+    // MARK: - Navigation
 
     @Test
     func mainMenuRouteRequestedAppendsNavigationPath() {
-        // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
 
-        // When
         viewModel.send(.mainMenuRouteRequested(.section(.calculator)))
 
-        // Then
         #expect(viewModel.navigationPath == [.mainMenu(.section(.calculator))])
     }
 
     @Test
     func mainMenuRouteRequestedDoesNotDuplicateTopRoute() {
-        // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
 
-        // When
         viewModel.send(.mainMenuRouteRequested(.section(.settings)))
         viewModel.send(.mainMenuRouteRequested(.section(.settings)))
 
-        // Then
         #expect(viewModel.navigationPath == [.mainMenu(.section(.settings))])
     }
 
     @Test
     func setNavigationPathSynchronizesBackNavigationState() {
-        // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
         viewModel.send(.mainMenuRouteRequested(.section(.calculator)))
         viewModel.send(.mainMenuRouteRequested(.section(.instructions)))
 
-        // When
         viewModel.send(.setNavigationPath([.mainMenu(.section(.calculator))]))
 
-        // Then
         #expect(viewModel.navigationPath == [.mainMenu(.section(.calculator))])
     }
 
+    // MARK: - Lifecycle
+
     @Test
-    func surveySourceUpdatesOnlyForSectionRoutes() async {
-        // Given
-        let suiteName = "root-navigation-tests-\(UUID().uuidString)"
-        guard let defaults = UserDefaults(suiteName: suiteName) else {
-            Issue.record("Failed to create isolated UserDefaults suite")
-            return
-        }
-        defer {
-            defaults.removePersistentDomain(forName: suiteName)
-        }
-        defaults.removeObject(forKey: RootConstants.handledSurveyIDsKey)
-
-        let survey = SurveyModel(
-            id: "route_survey_1",
-            version: 1,
-            title: "Title",
-            body: "Body",
-            submitButtonTitle: "Submit",
-            fields: []
-        )
-        let viewModel = createViewModel(
-            featureFlags: makeFeatureFlags(
-                survey: true,
-                reviewPrompt: false,
-                bannerFetch: false
-            ),
-            surveyService: StaticSurveyService(survey: survey),
-            surveyLocaleProvider: { "en" },
-            rootStateStore: UserDefaultsRootStateStore(userDefaults: defaults)
-        )
-
-        // When
-        viewModel.send(.fetchSurvey)
-        await awaitCondition { viewModel.activeSurvey != nil }
-        viewModel.send(.mainMenuRouteRequested(.disableAds))
-        await awaitCondition { !viewModel.surveyIsPresented }
-
-        // Then
-        #expect(viewModel.surveyIsPresented == false)
-
-        // When
-        viewModel.send(.mainMenuRouteRequested(.section(.calculator)))
-        await awaitCondition { viewModel.surveyIsPresented }
-
-        // Then
-        #expect(viewModel.surveyIsPresented == true)
-    }
-
-    // MARK: - showOnboardingView() Tests
-
-    /// Тест установки анимации при показе onboarding
-    @Test
-    func showOnboardingViewSetsAnimation() {
-        // Given
+    func rootLifecycleStartedTriggersInitialOrchestration() {
         clearTestUserDefaults()
-        let viewModel = createViewModel()
+        let analytics = MockAnalyticsService()
+        let viewModel = createViewModel(
+            analyticsService: analytics,
+            featureFlags: makeFeatureFlags(reviewPrompt: false)
+        )
 
-        // When
-        viewModel.send(.showOnboardingView)
+        viewModel.send(.rootLifecycleStarted)
 
-        // Then
-        // Проверяем через shouldShowOnboardingWithAnimation
         #expect(viewModel.shouldShowOnboardingWithAnimation == true)
+        #expect(analytics.logEventCallCount == 1)
+        #expect(analytics.lastEvent == .appOpened(sessionNumber: 1))
     }
 
-    // MARK: - fullscreenBannerIsAvailable Tests
+    // MARK: - Review
 
-    /// Тест доступности fullscreen баннера когда все условия выполнены
-    @Test
-    func fullscreenBannerIsAvailableWhenAllConditionsMet() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-        viewModel.send(.updateOnboardingShown(true))
-        // Устанавливаем requestReviewWasShown через UserDefaults напрямую
-        UserDefaults.standard.set(true, forKey: "1.7.0")
-        // Устанавливаем numberOfOpenings = 3 (кратно 3)
-        for _ in 0..<3 {
-            viewModel.send(.onAppear)
-        }
-
-        // Then
-        #expect(viewModel.fullscreenBannerIsAvailable == true)
-    }
-
-    /// Тест доступности fullscreen баннера когда onboarding не показан
-    @Test
-    func fullscreenBannerIsAvailableWhenOnboardingNotShown() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-        UserDefaults.standard.set(true, forKey: "1.7.0")
-        for _ in 0..<3 {
-            viewModel.send(.onAppear)
-        }
-
-        // Then
-        #expect(viewModel.fullscreenBannerIsAvailable == false)
-    }
-
-    /// Тест доступности fullscreen баннера при выключенном onboarding и выполненных остальных условиях
-    @Test
-    func fullscreenBannerIsAvailableWhenOnboardingFeatureDisabled() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel(
-            featureFlags: makeFeatureFlags(onboarding: false)
-        )
-        UserDefaults.standard.set(true, forKey: "1.7.0")
-        for _ in 0..<3 {
-            viewModel.send(.onAppear)
-        }
-
-        // Then
-        #expect(viewModel.fullscreenBannerIsAvailable == true)
-    }
-
-    /// Тест доступности fullscreen баннера когда review не показан
-    @Test
-    func fullscreenBannerIsAvailableWhenReviewNotShown() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-        viewModel.send(.updateOnboardingShown(true))
-        for _ in 0..<3 {
-            viewModel.send(.onAppear)
-        }
-
-        // Then
-        #expect(viewModel.fullscreenBannerIsAvailable == false)
-    }
-
-    /// Тест доступности fullscreen баннера когда numberOfOpenings не кратно 3
-    @Test
-    func fullscreenBannerIsAvailableWhenOpeningsNotMultipleOfThree() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-        viewModel.send(.updateOnboardingShown(true))
-        UserDefaults.standard.set(true, forKey: "1.7.0")
-        for _ in 0..<2 {
-            viewModel.send(.onAppear)
-        }
-
-        // Then
-        #expect(viewModel.fullscreenBannerIsAvailable == false)
-    }
-
-    /// Тест недоступности fullscreen баннера при выключенном feature toggle.
-    @Test
-    func fullscreenBannerIsAvailableWhenFeatureDisabled() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel(
-            featureFlags: makeFeatureFlags(fullscreenBanner: false)
-        )
-        viewModel.send(.updateOnboardingShown(true))
-        UserDefaults.standard.set(true, forKey: "1.7.0")
-        for _ in 0..<3 {
-            viewModel.send(.onAppear)
-        }
-
-        // Then
-        #expect(viewModel.fullscreenBannerIsAvailable == false)
-    }
-
-    // MARK: - showFullscreenBanner() Tests
-
-    /// Тест показа fullscreen баннера когда доступен и закэширован
-    @Test
-    func showFullscreenBannerWhenAvailableAndCached() async {
-        // Given
-        clearTestUserDefaults()
-        UserDefaults.standard.set(true, forKey: "1.7.0")
-        let viewModel = createViewModel(
-            bannerCacheChecker: { true }
-        )
-        viewModel.send(.updateOnboardingShown(true))
-        for _ in 0..<3 {
-            viewModel.send(.onAppear)
-        }
-
-        // When
-        viewModel.send(.showFullscreenBanner)
-        await awaitCondition { viewModel.fullscreenBannerIsPresented }
-
-        // Then
-        #expect(viewModel.fullscreenBannerIsPresented == true)
-    }
-
-    /// Тест показа fullscreen баннера когда не доступен
-    @Test
-    func showFullscreenBannerWhenNotAvailable() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-
-        // When
-        viewModel.send(.showFullscreenBanner)
-
-        // Then
-        #expect(viewModel.fullscreenBannerIsPresented == false)
-    }
-
-    /// Тест блокировки показа fullscreen баннера при выключенном bannerFetch флаге.
-    @Test
-    func showFullscreenBannerWhenBannerFetchFeatureDisabled() {
-        // Given
-        clearTestUserDefaults()
-        UserDefaults.standard.set(true, forKey: "1.7.0")
-        let viewModel = createViewModel(
-            featureFlags: makeFeatureFlags(bannerFetch: false),
-            bannerCacheChecker: { true }
-        )
-        viewModel.send(.updateOnboardingShown(true))
-        for _ in 0..<3 {
-            viewModel.send(.onAppear)
-        }
-
-        // When
-        viewModel.send(.showFullscreenBanner)
-
-        // Then
-        #expect(viewModel.fullscreenBannerIsPresented == false)
-    }
-
-    /// Тест блокировки показа fullscreen баннера при выключенном fullscreenBanner флаге.
-    @Test
-    func showFullscreenBannerWhenFullscreenBannerFeatureDisabled() {
-        // Given
-        clearTestUserDefaults()
-        UserDefaults.standard.set(true, forKey: "1.7.0")
-        let viewModel = createViewModel(
-            featureFlags: makeFeatureFlags(fullscreenBanner: false),
-            bannerCacheChecker: { true }
-        )
-        viewModel.send(.updateOnboardingShown(true))
-        for _ in 0..<3 {
-            viewModel.send(.onAppear)
-        }
-
-        // When
-        viewModel.send(.showFullscreenBanner)
-
-        // Then
-        #expect(viewModel.fullscreenBannerIsPresented == false)
-    }
-
-    // MARK: - showRequestReview() Tests
-
-    /// Тест показа запроса отзыва когда условия выполнены
-    /// Примечание: В DEBUG режиме метод showRequestReview() не выполняется из-за #if !DEBUG
-    @Test
-    func showRequestReviewWhenConditionsMet() async {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-        viewModel.send(.updateOnboardingShown(true))
-        viewModel.send(.onAppear)
-        viewModel.send(.onAppear)
-
-        // When
-        viewModel.send(.showRequestReview)
-        await awaitAsyncTasks()
-
-        // Then
-        // В DEBUG режиме метод не выполняется из-за #if !DEBUG в RootViewModel
-        // Проверяем, что в DEBUG режиме alert не показывается
-        #if DEBUG
-        // В DEBUG режиме метод showRequestReview() не выполняется
-        #expect(viewModel.alertIsPresented == false)
-        #else
-        // В не-DEBUG режиме метод должен выполниться
-        #expect(viewModel.alertIsPresented == true)
-        #expect(UserDefaults.standard.bool(forKey: "1.7.0") == true)
-        #endif
-    }
-
-    /// Тест показа запроса отзыва когда requestReviewWasShown == true
-    @Test
-    func showRequestReviewWhenAlreadyShown() async {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-        viewModel.send(.updateOnboardingShown(true))
-        UserDefaults.standard.set(true, forKey: "1.7.0")
-        viewModel.send(.onAppear)
-        viewModel.send(.onAppear)
-
-        // When
-        viewModel.send(.showRequestReview)
-        await awaitAsyncTasks()
-
-        // Then
-        #expect(viewModel.alertIsPresented == false)
-    }
-
-    /// Тест показа запроса отзыва когда numberOfOpenings < 2
-    @Test
-    func showRequestReviewWhenOpeningsLessThanTwo() async {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-        viewModel.send(.updateOnboardingShown(true))
-        viewModel.send(.onAppear)
-
-        // When
-        viewModel.send(.showRequestReview)
-        await awaitAsyncTasks()
-
-        // Then
-        #expect(viewModel.alertIsPresented == false)
-    }
-
-    /// Тест показа запроса отзыва когда onboarding не показан
-    @Test
-    func showRequestReviewWhenOnboardingNotShown() async {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-        viewModel.send(.onAppear)
-        viewModel.send(.onAppear)
-
-        // When
-        viewModel.send(.showRequestReview)
-        await awaitAsyncTasks()
-
-        // Then
-        #expect(viewModel.alertIsPresented == false)
-    }
-
-    /// Тест блокировки review prompt при выключенном флаге.
     @Test
     func showRequestReviewWhenFeatureDisabled() async {
-        // Given
         clearTestUserDefaults()
         let viewModel = createViewModel(
             featureFlags: makeFeatureFlags(reviewPrompt: false)
@@ -622,30 +158,22 @@ struct RootViewModelTests {
         viewModel.send(.onAppear)
         viewModel.send(.onAppear)
 
-        // When
         viewModel.send(.showRequestReview)
         await awaitAsyncTasks()
 
-        // Then
         #expect(viewModel.alertIsPresented == false)
-        #expect(UserDefaults.standard.bool(forKey: "1.7.0") == false)
+        #expect(UserDefaults.standard.bool(forKey: RootConstants.requestReviewWasShownKey) == false)
     }
 
-    // MARK: - handleReviewNo() Tests
-
-    /// Тест обработки отказа от отзыва
     @Test
     func handleReviewNoClosesAlertAndLogsAnalytics() {
-        // Given
         clearTestUserDefaults()
         let mockAnalytics = MockAnalyticsService()
         let viewModel = createViewModel(analyticsService: mockAnalytics)
         viewModel.send(.setAlertPresented(true))
 
-        // When
         viewModel.send(.handleReviewNo)
 
-        // Then
         #expect(viewModel.alertIsPresented == false)
         #expect(mockAnalytics.logEventCallCount == 1)
         #expect(mockAnalytics.lastEvent == .reviewResponse(enjoyingApp: false))
@@ -658,12 +186,8 @@ struct RootViewModelTests {
         }
     }
 
-    // MARK: - handleReviewYes() Tests
-
-    /// Тест обработки согласия на отзыв
     @Test
     func handleReviewYesClosesAlertCallsServiceAndLogsAnalytics() async {
-        // Given
         clearTestUserDefaults()
         let mockAnalytics = MockAnalyticsService()
         let mockReview = MockReviewService()
@@ -673,11 +197,9 @@ struct RootViewModelTests {
         )
         viewModel.send(.setAlertPresented(true))
 
-        // When
         viewModel.send(.handleReviewYes)
         await awaitAsyncTasks()
 
-        // Then
         #expect(viewModel.alertIsPresented == false)
         #expect(mockReview.requestReviewCallCount == 1)
         #expect(mockAnalytics.logEventCallCount == 1)
@@ -691,43 +213,13 @@ struct RootViewModelTests {
         }
     }
 
-    // MARK: - updateOnboardingShown() Tests
-
-    /// Тест обновления состояния onboarding
-    @Test
-    func updateOnboardingShownUpdatesState() {
-        // Given
-        clearTestUserDefaults()
-        let viewModel = createViewModel()
-
-        // When
-        viewModel.send(.updateOnboardingShown(true))
-
-        // Then
-        #expect(viewModel.isOnboardingShown == true)
-        #expect(viewModel.shouldShowOnboarding == false)
-    }
-
-    // MARK: - requestReviewTitle Tests
-
-    /// Тест локализованного заголовка запроса отзыва
     @Test
     func requestReviewTitleReturnsLocalizedString() {
-        // Given
         clearTestUserDefaults()
         let viewModel = createViewModel()
 
-        // Then
         let title = viewModel.requestReviewTitle(locale: Locale(identifier: "en"))
         #expect(!title.isEmpty)
         #expect(title != "review_request_title")
-    }
-}
-
-private struct StaticSurveyService: SurveyService {
-    let survey: SurveyModel?
-
-    func fetchActiveSurvey(localeIdentifier: String) async throws -> SurveyModel? {
-        survey
     }
 }

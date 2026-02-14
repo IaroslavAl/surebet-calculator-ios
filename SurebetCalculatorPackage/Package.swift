@@ -22,10 +22,6 @@ let package = Package(
             url: "https://github.com/realm/SwiftLint.git",
             .upToNextMinor(from: "0.59.1")
         ),
-        .package(
-            url: "https://github.com/SDWebImage/SDWebImageSwiftUI.git",
-            .upToNextMinor(from: "3.1.3")
-        ),
     ],
     targets: [
         .target(
@@ -46,24 +42,6 @@ let package = Package(
                     package: "appmetrica-sdk-ios"
                 )
             ],
-            plugins: [
-                .plugin(
-                    name: "SwiftLintBuildToolPlugin",
-                    package: "SwiftLint"
-                )
-            ]
-        ),
-        .target(
-            name: "Banner",
-            dependencies: [
-                "AnalyticsManager",
-                "DesignSystem",
-                .product(
-                    name: "SDWebImageSwiftUI",
-                    package: "SDWebImageSwiftUI"
-                ),
-            ],
-            resources: [.process("Resources/Assets.xcassets")],
             plugins: [
                 .plugin(
                     name: "SwiftLintBuildToolPlugin",
@@ -132,13 +110,11 @@ let package = Package(
             name: "Root",
             dependencies: [
                 "AnalyticsManager",
-                "Banner",
                 "DesignSystem",
                 "MainMenu",
                 "Onboarding",
                 "Settings",
                 "ReviewHandler",
-                "Survey",
                 "FeatureToggles",
                 "SurebetCalculator",
                 .product(
@@ -155,22 +131,8 @@ let package = Package(
             ]
         ),
         .target(
-            name: "Survey",
-            dependencies: [
-                "DesignSystem",
-            ],
-            resources: [.process("Resources")],
-            plugins: [
-                .plugin(
-                    name: "SwiftLintBuildToolPlugin",
-                    package: "SwiftLint"
-                )
-            ]
-        ),
-        .target(
             name: "SurebetCalculator",
             dependencies: [
-                "Banner",
                 "DesignSystem",
             ],
             resources: [.process("Resources")],
@@ -228,30 +190,8 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "BannerTests",
-            dependencies: ["Banner"],
-            plugins: [
-                .plugin(
-                    name: "SwiftLintBuildToolPlugin",
-                    package: "SwiftLint"
-                )
-            ]
-        ),
-        .testTarget(
             name: "ReviewHandlerTests",
             dependencies: ["ReviewHandler"],
-            plugins: [
-                .plugin(
-                    name: "SwiftLintBuildToolPlugin",
-                    package: "SwiftLint"
-                )
-            ]
-        ),
-        .testTarget(
-            name: "SurveyTests",
-            dependencies: [
-                "Survey",
-            ],
             plugins: [
                 .plugin(
                     name: "SwiftLintBuildToolPlugin",
@@ -276,10 +216,8 @@ let package = Package(
             dependencies: [
                 "Root",
                 "AnalyticsManager",
-                "Banner",
                 "FeatureToggles",
                 "ReviewHandler",
-                "Survey",
                 "SurebetCalculator"
             ],
             plugins: [
