@@ -15,9 +15,9 @@ struct IntegrationTests {
     /// Очищает UserDefaults для тестовых ключей
     func clearTestUserDefaults() {
         let defaults = UserDefaults.standard
-        defaults.removeObject(forKey: "onboardingIsShown")
-        defaults.removeObject(forKey: "1.7.0")
-        defaults.removeObject(forKey: "numberOfOpenings")
+        defaults.removeObject(forKey: RootConstants.onboardingIsShownKey)
+        defaults.removeObject(forKey: RootConstants.requestReviewWasShownKey)
+        defaults.removeObject(forKey: RootConstants.numberOfOpeningsKey)
     }
 
     func createRootViewModel(

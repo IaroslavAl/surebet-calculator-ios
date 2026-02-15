@@ -61,6 +61,7 @@
 ## 9. CI
 - MUST: использовать только GitHub-hosted runners.
 - MUST: поддерживать обязательные проверки в CI:
+  - `Secrets Scan`,
   - `SwiftLint`,
   - `Build`,
   - `Unit Tests`,
@@ -68,4 +69,4 @@
 - MUST: при изменении CI-контракта обновлять `docs/reference/CI_RULES.md`.
 - SHOULD: переиспользуемую CI-логику выносить в `scripts/ci/*`.
 
-Последнее обновление: 2026-02-10
+Последнее обновление: 2026-02-14

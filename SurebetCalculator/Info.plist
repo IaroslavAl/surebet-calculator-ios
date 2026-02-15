@@ -18,6 +18,10 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>AppMetricaApiKey</key>
+	<string>$(APPMETRICA_API_KEY)</string>
+	<key>FeedbackEmailAddress</key>
+	<string>beldin.y.a@yandex.ru</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -69,7 +73,7 @@
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
-		<true/>
+		<false/>
 	</dict>
 </dict>
 </plist>

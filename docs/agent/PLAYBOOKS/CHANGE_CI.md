@@ -21,10 +21,13 @@
 
 ## 3. Проверка
 1. Локально запусти:
+   - `./scripts/ci/secret_scan.sh`
    - `./scripts/ci/swiftlint_ci.sh`
    - `./scripts/ci/xcode_ci.sh build`
    - `./scripts/ci/xcode_ci.sh test`
+   - `./scripts/ci/xcode_ci.sh test-ui` (если менялся UI и UI-тесты)
    - `./scripts/validate-docs.sh`
+2. Если есть runtime-конфиги через build settings (например `APPMETRICA_API_KEY`), проверь что они приходят из CI secrets, а не из scheme env.
 2. Убедись, что workflow-файлы валидны и не содержат дублирующих job.
 
 ## 4. Документация
@@ -39,4 +42,4 @@
 - Нет self-hosted runner-зависимостей.
 - Документация синхронизирована.
 
-Последнее обновление: 2026-02-07
+Последнее обновление: 2026-02-15

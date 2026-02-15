@@ -9,12 +9,6 @@
     }
   ],
   "defaultOptions" : {
-    "environmentVariableEntries" : [
-      {
-        "key" : "AppMetrica_Key",
-        "value" : "f7e1f335-475a-4b6c-ba4a-77988745bc7a"
-      }
-    ],
     "targetForVariableExpansion" : {
       "containerPath" : "container:surebet-calculator.xcodeproj",
       "identifier" : "C462066B297BFAC900E70051",

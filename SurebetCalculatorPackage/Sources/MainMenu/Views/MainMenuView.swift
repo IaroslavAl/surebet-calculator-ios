@@ -31,7 +31,8 @@ struct MainMenuView: View {
 }
 
 private enum FeedbackMailConstants {
-    static let emailAddress = "beldin.y.a@yandex.ru"
+    static let emailAddressKey = "FeedbackEmailAddress"
+    static let fallbackEmailAddress = "beldin.y.a@yandex.ru"
     static let mailtoScheme = "mailto"
     static let subjectQueryName = "subject"
     static let bundleDisplayNameKey = "CFBundleDisplayName"
@@ -177,10 +178,18 @@ private extension MainMenuView {
             ?? Bundle.main.object(forInfoDictionaryKey: FeedbackMailConstants.bundleNameKey) as? String
     }
 
+    var feedbackRecipientAddress: String {
+        let configuredAddress = Bundle.main.object(
+            forInfoDictionaryKey: FeedbackMailConstants.emailAddressKey
+        ) as? String
+        let trimmed = configuredAddress?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? FeedbackMailConstants.fallbackEmailAddress : trimmed
+    }
+
     func feedbackMailURL() -> URL? {
         var components = URLComponents()
         components.scheme = FeedbackMailConstants.mailtoScheme
-        components.path = FeedbackMailConstants.emailAddress
+        components.path = feedbackRecipientAddress
         if let subject = feedbackMailSubject {
             components.queryItems = [
                 URLQueryItem(

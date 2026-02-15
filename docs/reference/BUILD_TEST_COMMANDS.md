@@ -18,14 +18,38 @@ xcodebuild -project surebet-calculator.xcodeproj -scheme surebet-calculator \
 xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator \
   -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
 ```
-В test plan входят package-тесты, включая `FeatureTogglesTests`.
+По умолчанию запускается package test plan (`SurebetCalculatorPackage/Tests/surebet-calculator.xctestplan`), включая `FeatureTogglesTests`.
+
+## UI Tests
+```bash
+xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator \
+  -testPlan surebet-calculator-ui-tests \
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
+```
+
+Через скрипт:
+```bash
+./scripts/ci/xcode_ci.sh test-ui
+```
 
 ## CI parity commands (recommended before PR)
 ```bash
 ./scripts/ci/swiftlint_ci.sh
+./scripts/ci/secret_scan.sh
 ./scripts/ci/xcode_ci.sh build
 ./scripts/ci/xcode_ci.sh test
+./scripts/ci/xcode_ci.sh test-ui
 ./scripts/validate-docs.sh
+```
+
+`scripts/ci/xcode_ci.sh` автоматически использует `APPMETRICA_API_KEY`, если переменная окружения задана.
+
+## Release archive (CI-friendly)
+```bash
+xcodebuild -project surebet-calculator.xcodeproj -scheme surebet-calculator \
+  -configuration Release -destination 'generic/platform=iOS' \
+  APPMETRICA_API_KEY="$APPMETRICA_API_KEY" \
+  archive -archivePath build/surebet-calculator.xcarchive
 ```
 
 ## Когда запускать что
@@ -37,6 +61,7 @@ xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator
   - код в потоках/конкурентности,
   - контракт публичного API модулей.
 - Перед PR рекомендуется запускать CI parity commands.
+- `test-ui` запускать при изменениях в UI, accessibility identifiers и сценариях онбординга/навигации.
 
 ## Ограничения
 - Не использовать `swift build` (из-за `SwiftLintBuildToolPlugin`).
@@ -44,4 +69,4 @@ xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator
 ## Связанные документы
 - `docs/reference/CI_RULES.md`
 
-Последнее обновление: 2026-02-11
+Последнее обновление: 2026-02-15

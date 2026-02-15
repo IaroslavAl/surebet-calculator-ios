@@ -16,11 +16,11 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/appmetrica/appmetrica-sdk-ios.git",
-            .upToNextMinor(from: "5.11.0")
+            .upToNextMinor(from: "6.0.0")
         ),
         .package(
             url: "https://github.com/realm/SwiftLint.git",
-            .upToNextMinor(from: "0.59.1")
+            .upToNextMinor(from: "0.63.2")
         ),
     ],
     targets: [

@@ -1,7 +1,7 @@
 import XCTest
 
 /// UI тесты для калькулятора сурбетов.
-/// Тестирует основные пользовательские сценарии.
+/// Тестируют ключевые пользовательские сценарии без привязки к локализованным строкам.
 final class SurebetCalculatorUITests: XCTestCase {
     // MARK: - Properties
 
@@ -20,103 +20,85 @@ final class SurebetCalculatorUITests: XCTestCase {
 
     // MARK: - Happy Path Tests
 
-    /// Тест: Запуск приложения и показ онбординга для нового пользователя
+    /// Тест: Запуск приложения и показ онбординга для нового пользователя.
     @MainActor
     func testAppLaunchShowsOnboardingForNewUser() throws {
         app.launchArguments = ["-resetUserDefaults", "-enableOnboarding"]
         app.launch()
 
-        let onboardingView = app.otherElements[Identifiers.Onboarding.view]
-        XCTAssertTrue(
-            onboardingView.waitForExistence(timeout: 5),
-            "Онбординг должен отображаться для нового пользователя"
-        )
+        XCTAssertTrue(waitForOnboardingToAppear(timeout: 5), "Онбординг должен отображаться")
 
-        // Ищем кнопку по тексту "More details" (первая страница онбординга)
-        let moreDetailsButton = app.buttons["More details"]
-        XCTAssertTrue(
-            moreDetailsButton.waitForExistence(timeout: 2),
-            "Кнопка 'More details' должна отображаться"
-        )
+        let nextButton = onboardingNextButtonElement()
+        XCTAssertTrue(nextButton.waitForExistence(timeout: 2), "Кнопка продолжения онбординга должна отображаться")
     }
 
-    /// Тест: Прохождение онбординга полностью (3 страницы)
+    /// Тест: Прохождение онбординга полностью.
     @MainActor
     func testOnboardingCompleteFlow() throws {
         app.launchArguments = ["-resetUserDefaults", "-enableOnboarding"]
         app.launch()
 
-        let onboardingView = app.otherElements[Identifiers.Onboarding.view]
-        guard onboardingView.waitForExistence(timeout: 5) else {
-            XCTFail("Онбординг не отображается")
-            return
-        }
+        XCTAssertTrue(waitForOnboardingToAppear(timeout: 5), "Онбординг должен отображаться")
 
-        // Страница 0: "More details"
-        let nextButton = app.buttons["More details"]
-        XCTAssertTrue(nextButton.waitForExistence(timeout: 2), "Кнопка онбординга должна отображаться")
-        nextButton.tap()
-        Thread.sleep(forTimeInterval: 0.3)
-
-        // Страница 1: "Next"
-        let continueButton = app.buttons["Next"]
-        XCTAssertTrue(continueButton.waitForExistence(timeout: 2), "Кнопка 'Next' должна отображаться")
-        continueButton.tap()
-        Thread.sleep(forTimeInterval: 0.3)
-
-        // Страница 2: "Close"
-        let closeButtons = app.buttons.matching(NSPredicate(format: "label == 'Close'"))
-        XCTAssertTrue(closeButtons.count > 0, "Кнопка 'Close' должна отображаться")
-        closeButtons.firstMatch.tap()
+        tapOnboardingNextButton(times: 3)
 
         let calculatorAction = app.buttons[Identifiers.MainMenu.calculatorAction]
         XCTAssertTrue(
             calculatorAction.waitForExistence(timeout: 5),
-            "Главное меню должно отображаться после онбординга"
+            "Главное меню должно отображаться после завершения онбординга"
         )
     }
 
-    /// Тест: Закрытие онбординга кнопкой X
+    /// Тест: Закрытие онбординга кнопкой закрытия.
     @MainActor
     func testOnboardingCloseButton() throws {
         app.launchArguments = ["-resetUserDefaults", "-enableOnboarding"]
         app.launch()
 
-        let onboardingView = app.otherElements[Identifiers.Onboarding.view]
-        guard onboardingView.waitForExistence(timeout: 5) else {
-            XCTFail("Онбординг не отображается")
-            return
-        }
+        XCTAssertTrue(waitForOnboardingToAppear(timeout: 5), "Онбординг должен отображаться")
 
-        // Кнопка X имеет accessibilityLabel "Close onboarding"
-        let closeButton = app.buttons["Close onboarding"]
-        XCTAssertTrue(
-            closeButton.waitForExistence(timeout: 2),
-            "Кнопка закрытия онбординга должна отображаться"
-        )
+        let closeButton = onboardingCloseButtonElement()
+        XCTAssertTrue(closeButton.waitForExistence(timeout: 2), "Кнопка закрытия должна отображаться")
         closeButton.tap()
 
-        let calculatorAction = app.buttons[Identifiers.MainMenu.calculatorAction]
         XCTAssertTrue(
-            calculatorAction.waitForExistence(timeout: 5),
+            app.buttons[Identifiers.MainMenu.calculatorAction].waitForExistence(timeout: 5),
             "Главное меню должно отображаться после закрытия онбординга"
         )
     }
 
-    /// Тест: Ввод данных в калькулятор (через коэффициенты и общую сумму)
-    /// По умолчанию selectedRow = .total, поэтому rowBetSize поля заблокированы.
-    /// Работаем через totalBetSize и coefficient поля (они всегда enabled).
+    /// Тест: Открытие экрана настроек.
+    @MainActor
+    func testOpenSettingsFromMainMenu() throws {
+        launchAppToMainMenuWithoutOnboarding()
+
+        tapMainMenuAction(Identifiers.MainMenu.settingsAction)
+
+        let settingsHeader = app.staticTexts[Identifiers.Settings.headerTitle]
+        XCTAssertTrue(settingsHeader.waitForExistence(timeout: 5), "Экран настроек должен отображаться")
+    }
+
+    /// Тест: Открытие экрана инструкции.
+    @MainActor
+    func testOpenInstructionsFromMainMenu() throws {
+        launchAppToMainMenuWithoutOnboarding()
+
+        tapMainMenuAction(Identifiers.MainMenu.instructionsAction)
+
+        let instructionsHeader = app.staticTexts[Identifiers.Instructions.headerTitle]
+        XCTAssertTrue(instructionsHeader.waitForExistence(timeout: 5), "Экран инструкции должен отображаться")
+    }
+
+    /// Тест: Ввод данных в калькулятор (через коэффициенты и общую сумму).
     @MainActor
     func testCalculatorInputAndCalculation() throws {
         launchAppWithoutOnboarding()
 
-        // Вводим общую сумму ставки
         let totalBetSize = app.textFields[Identifiers.TotalRow.betSizeTextField]
         XCTAssertTrue(totalBetSize.waitForExistence(timeout: 5))
         totalBetSize.tap()
         totalBetSize.typeText("1000")
 
-        // Вводим коэффициенты (они всегда доступны)
         let row0Coefficient = app.textFields[Identifiers.Row.coefficientTextField(0)]
         row0Coefficient.tap()
         row0Coefficient.typeText("2")
@@ -127,20 +109,18 @@ final class SurebetCalculatorUITests: XCTestCase {
 
         tapDoneButton()
 
-        // Проверяем, что income отображается
         let incomeText = app.staticTexts[Identifiers.Row.incomeText(0)]
         XCTAssertTrue(
             incomeText.waitForExistence(timeout: 2),
-            "Income должен отображаться после расчёта"
+            "Доход должен отображаться после расчета"
         )
     }
 
-    /// Тест: Показ результата (profit percentage)
+    /// Тест: Показ результата (profit percentage).
     @MainActor
     func testProfitPercentageDisplay() throws {
         launchAppWithoutOnboarding()
 
-        // Вводим коэффициенты для получения profit > 0
         let row0Coefficient = app.textFields[Identifiers.Row.coefficientTextField(0)]
         XCTAssertTrue(row0Coefficient.waitForExistence(timeout: 5))
 
@@ -151,7 +131,6 @@ final class SurebetCalculatorUITests: XCTestCase {
         row1Coefficient.tap()
         row1Coefficient.typeText(formatNumberForInput(2.1))
 
-        // Вводим общую ставку
         let totalBetSize = app.textFields[Identifiers.TotalRow.betSizeTextField]
         totalBetSize.tap()
         totalBetSize.typeText("200")
@@ -167,12 +146,11 @@ final class SurebetCalculatorUITests: XCTestCase {
 
     // MARK: - Edge Cases Tests
 
-    /// Тест: Очистка всех полей
+    /// Тест: Очистка всех полей.
     @MainActor
     func testClearAllFields() throws {
         launchAppWithoutOnboarding()
 
-        // Вводим данные через coefficient (всегда enabled)
         let row0Coefficient = app.textFields[Identifiers.Row.coefficientTextField(0)]
         XCTAssertTrue(row0Coefficient.waitForExistence(timeout: 5))
 
@@ -182,26 +160,23 @@ final class SurebetCalculatorUITests: XCTestCase {
         let totalBetSize = app.textFields[Identifiers.TotalRow.betSizeTextField]
         totalBetSize.tap()
         totalBetSize.typeText("100")
-
         tapDoneButton()
 
-        // Нажимаем кнопку очистки (trash icon в navigation bar)
+        let previousValue = stringValue(of: totalBetSize)
         let clearButton = app.buttons[Identifiers.Calculator.clearButton]
-        XCTAssertTrue(
-            clearButton.waitForExistence(timeout: 2),
-            "Кнопка очистки должна существовать"
-        )
+        XCTAssertTrue(clearButton.waitForExistence(timeout: 2), "Кнопка очистки должна существовать")
         clearButton.tap()
 
-        Thread.sleep(forTimeInterval: 0.5)
-        let betSizeValue = totalBetSize.value as? String ?? ""
         XCTAssertTrue(
-            betSizeValue.isEmpty || betSizeValue == "Total stake",
-            "Поле должно быть очищено, получено: '\(betSizeValue)'"
+            waitForTextFieldValueChange(totalBetSize, from: previousValue, timeout: 2),
+            "Значение total bet size должно измениться после очистки"
         )
+
+        let currentValue = stringValue(of: totalBetSize)
+        XCTAssertFalse(currentValue.contains("100"), "Поле total bet size должно быть очищено")
     }
 
-    /// Тест: Изменение количества строк через пикер
+    /// Тест: Изменение количества строк через контрол количества исходов.
     @MainActor
     func testChangeRowCount() throws {
         launchAppWithoutOnboarding()
@@ -217,50 +192,38 @@ final class SurebetCalculatorUITests: XCTestCase {
         selectRowCount(3)
 
         row2BetSize = app.textFields[Identifiers.Row.betSizeTextField(2)]
-        XCTAssertTrue(
-            row2BetSize.waitForExistence(timeout: 2),
-            "Третья строка должна появиться после выбора количества исходов"
-        )
+        XCTAssertTrue(row2BetSize.waitForExistence(timeout: 2), "Третья строка должна появиться")
     }
 
-    /// Тест: Уменьшение количества строк через пикер
+    /// Тест: Уменьшение количества строк через контрол количества исходов.
     @MainActor
     func testReduceRowCount() throws {
         launchAppWithoutOnboarding()
 
-        // Сначала увеличиваем количество строк
         selectRowCount(3)
 
         var row2BetSize = app.textFields[Identifiers.Row.betSizeTextField(2)]
         XCTAssertTrue(row2BetSize.waitForExistence(timeout: 2), "Третья строка должна появиться")
 
-        // Уменьшаем количество строк
         selectRowCount(2)
 
         row2BetSize = app.textFields[Identifiers.Row.betSizeTextField(2)]
-        XCTAssertFalse(
-            row2BetSize.waitForExistence(timeout: 1),
-            "Третья строка должна быть удалена"
-        )
+        XCTAssertFalse(row2BetSize.waitForExistence(timeout: 1), "Третья строка должна быть удалена")
     }
 
-    /// Тест: Минимальное количество строк (2)
+    /// Тест: Минимальное количество строк (2).
     @MainActor
     func testMinimumRowCount() throws {
         launchAppWithoutOnboarding()
 
         selectRowCount(2)
 
-        let row0BetSize = app.textFields[Identifiers.Row.betSizeTextField(0)]
-        let row1BetSize = app.textFields[Identifiers.Row.betSizeTextField(1)]
-        let row2BetSize = app.textFields[Identifiers.Row.betSizeTextField(2)]
-
-        XCTAssertTrue(row0BetSize.exists, "Первая строка должна существовать")
-        XCTAssertTrue(row1BetSize.exists, "Вторая строка должна существовать")
-        XCTAssertFalse(row2BetSize.exists, "Третья строка не должна существовать")
+        XCTAssertTrue(app.textFields[Identifiers.Row.betSizeTextField(0)].exists)
+        XCTAssertTrue(app.textFields[Identifiers.Row.betSizeTextField(1)].exists)
+        XCTAssertFalse(app.textFields[Identifiers.Row.betSizeTextField(2)].exists)
     }
 
-    /// Тест: Максимальное количество строк (20)
+    /// Тест: Максимальное количество строк (20).
     @MainActor
     func testMaximumRowCount() throws {
         launchAppWithoutOnboarding()
@@ -268,23 +231,17 @@ final class SurebetCalculatorUITests: XCTestCase {
         selectRowCount(20)
 
         let row19BetSize = app.textFields[Identifiers.Row.betSizeTextField(19)]
-        XCTAssertTrue(
-            row19BetSize.waitForExistence(timeout: 2),
-            "20-я строка должна существовать"
-        )
+        XCTAssertTrue(row19BetSize.waitForExistence(timeout: 2), "20-я строка должна существовать")
+
         let row20BetSize = app.textFields[Identifiers.Row.betSizeTextField(20)]
-        XCTAssertFalse(
-            row20BetSize.waitForExistence(timeout: 1),
-            "21-я строка не должна существовать"
-        )
+        XCTAssertFalse(row20BetSize.waitForExistence(timeout: 1), "21-я строка не должна существовать")
     }
 
-    /// Тест: Очистка текущего поля с клавиатуры
+    /// Тест: Очистка текущего поля с клавиатуры.
     @MainActor
     func testKeyboardClearButton() throws {
         launchAppWithoutOnboarding()
 
-        // Используем totalBetSize, который enabled по умолчанию
         let totalBetSize = app.textFields[Identifiers.TotalRow.betSizeTextField]
         XCTAssertTrue(totalBetSize.waitForExistence(timeout: 5))
 
@@ -292,44 +249,39 @@ final class SurebetCalculatorUITests: XCTestCase {
         totalBetSize.typeText("12345")
 
         let clearButton = app.buttons[Identifiers.Keyboard.clearButton]
-        if clearButton.waitForExistence(timeout: 2) {
-            clearButton.tap()
-
-            Thread.sleep(forTimeInterval: 0.3)
-            let betSizeValue = totalBetSize.value as? String ?? ""
-            XCTAssertTrue(
-                betSizeValue.isEmpty || betSizeValue == "Total stake",
-                "Поле должно быть очищено"
-            )
+        guard clearButton.waitForExistence(timeout: 2) else {
+            XCTFail("Кнопка очистки клавиатуры должна существовать")
+            return
         }
+
+        let previousValue = stringValue(of: totalBetSize)
+        clearButton.tap()
+
+        XCTAssertTrue(
+            waitForTextFieldValueChange(totalBetSize, from: previousValue, timeout: 2),
+            "Значение поля должно измениться после нажатия clear"
+        )
+
+        let currentValue = stringValue(of: totalBetSize)
+        XCTAssertFalse(currentValue.contains("12345"), "Поле должно быть очищено")
     }
 
-    /// Тест: Переключение между режимами расчёта (total/row)
+    /// Тест: Переключение между режимами расчета (total/row).
     @MainActor
     func testToggleCalculationMode() throws {
         launchAppWithoutOnboarding()
 
-        // По умолчанию выбран total, проверяем что rowBetSize disabled
         let row0BetSize = app.textFields[Identifiers.Row.betSizeTextField(0)]
         XCTAssertTrue(row0BetSize.waitForExistence(timeout: 5))
+        XCTAssertFalse(row0BetSize.isEnabled, "rowBetSize должен быть disabled при selected total")
 
-        // Проверяем что поле заблокировано (isEnabled = false)
-        XCTAssertFalse(
-            row0BetSize.isEnabled,
-            "rowBetSize должен быть disabled когда выбран total"
-        )
-
-        // Нажимаем на toggle button строки 0 чтобы выбрать её
         let row0Toggle = app.buttons[Identifiers.Row.toggleButton(0)]
-        XCTAssertTrue(row0Toggle.waitForExistence(timeout: 2))
+        XCTAssertTrue(row0Toggle.waitForExistence(timeout: 2), "Тоггл строки должен существовать")
         row0Toggle.tap()
 
-        Thread.sleep(forTimeInterval: 0.3)
-
-        // Теперь rowBetSize должен быть enabled
         XCTAssertTrue(
-            row0BetSize.isEnabled,
-            "rowBetSize должен быть enabled когда выбрана эта строка"
+            waitForElementToBecomeEnabled(row0BetSize, timeout: 2),
+            "rowBetSize должен стать enabled после выбора строки"
         )
     }
 
@@ -337,21 +289,40 @@ final class SurebetCalculatorUITests: XCTestCase {
 
     @MainActor
     private func launchAppWithoutOnboarding() {
-        app.launchArguments = ["-disableOnboarding", "-onboardingIsShown"]
-        app.launch()
+        launchAppToMainMenuWithoutOnboarding()
         openCalculatorFromMainMenu()
     }
 
     @MainActor
-    private func openCalculatorFromMainMenu() {
+    private func launchAppToMainMenuWithoutOnboarding() {
+        app.launchArguments = ["-disableOnboarding", "-onboardingIsShown"]
+        app.launch()
         waitForOnboardingToDisappearIfNeeded()
+        assertMainMenuIsVisible()
+    }
 
-        let calculatorActions = app.buttons.matching(identifier: Identifiers.MainMenu.calculatorAction)
-        let calculatorAction = calculatorActions.firstMatch
+    @MainActor
+    private func tapOnboardingNextButton(times: Int) {
+        for _ in 0..<times {
+            let nextButton = onboardingNextButtonElement()
+            XCTAssertTrue(nextButton.waitForExistence(timeout: 2), "Кнопка онбординга должна существовать")
+            nextButton.tap()
+        }
+    }
+
+    @MainActor
+    private func assertMainMenuIsVisible() {
         XCTAssertTrue(
-            calculatorAction.waitForExistence(timeout: 5),
+            app.buttons[Identifiers.MainMenu.calculatorAction].waitForExistence(timeout: 5),
             "Главное меню должно отображаться"
         )
+    }
+
+    @MainActor
+    private func openCalculatorFromMainMenu() {
+        let calculatorActions = app.buttons.matching(identifier: Identifiers.MainMenu.calculatorAction)
+        let calculatorAction = calculatorActions.firstMatch
+        XCTAssertTrue(calculatorAction.waitForExistence(timeout: 5), "Переход в калькулятор должен быть доступен")
 
         var didTap = false
         let candidateCount = min(calculatorActions.count, 3)
@@ -371,11 +342,30 @@ final class SurebetCalculatorUITests: XCTestCase {
         }
 
         if !isCalculatorVisible(timeout: 2) {
-            // Fallback для случая, когда XCUITest выбирает неактивный дубликат
+            // Fallback для случая, когда XCUITest выбрал неактивный дубликат.
             app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)).tap()
         }
 
         assertCalculatorIsVisible()
+    }
+
+    @MainActor
+    private func tapMainMenuAction(_ identifier: String) {
+        let actions = app.buttons.matching(identifier: identifier)
+        let primary = actions.firstMatch
+        XCTAssertTrue(primary.waitForExistence(timeout: 5), "Кнопка главного меню должна существовать")
+
+        let candidateCount = min(actions.count, 3)
+        if candidateCount > 1 {
+            for index in 0..<candidateCount {
+                let candidate = actions.element(boundBy: index)
+                if candidate.exists, candidate.isHittable {
+                    candidate.tap()
+                    return
+                }
+            }
+        }
+        primary.tap()
     }
 
     @MainActor
@@ -391,12 +381,38 @@ final class SurebetCalculatorUITests: XCTestCase {
 
     @MainActor
     private func waitForOnboardingToDisappearIfNeeded() {
-        let onboardingView = app.otherElements[Identifiers.Onboarding.view]
-        guard onboardingView.exists else { return }
+        let closeButton = onboardingCloseButtonElement()
+        let nextButton = onboardingNextButtonElement()
 
-        let predicate = NSPredicate(format: "exists == false")
-        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: onboardingView)
-        _ = XCTWaiter().wait(for: [expectation], timeout: 5)
+        guard closeButton.exists || nextButton.exists else { return }
+
+        let closeExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"),
+            object: closeButton
+        )
+        let nextExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"),
+            object: nextButton
+        )
+        _ = XCTWaiter().wait(for: [closeExpectation, nextExpectation], timeout: 5)
+    }
+
+    @MainActor
+    private func waitForOnboardingToAppear(timeout: TimeInterval) -> Bool {
+        let closeButton = onboardingCloseButtonElement()
+        let nextButton = onboardingNextButtonElement()
+        return closeButton.waitForExistence(timeout: timeout)
+            && nextButton.waitForExistence(timeout: timeout)
+    }
+
+    @MainActor
+    private func onboardingCloseButtonElement() -> XCUIElement {
+        app.descendants(matching: .any)[Identifiers.Onboarding.closeButton]
+    }
+
+    @MainActor
+    private func onboardingNextButtonElement() -> XCUIElement {
+        app.descendants(matching: .any)[Identifiers.Onboarding.nextButton]
     }
 
     @MainActor
@@ -412,6 +428,7 @@ final class SurebetCalculatorUITests: XCTestCase {
         let decreaseControl = app.descendants(matching: .any)[Identifiers.Calculator.rowCountDecreaseButton]
         let increaseControl = app.descendants(matching: .any)[Identifiers.Calculator.rowCountIncreaseButton]
         let valueLabel = app.descendants(matching: .any)[Identifiers.Calculator.rowCountValue]
+
         XCTAssertTrue(decreaseControl.waitForExistence(timeout: 2), "Кнопка уменьшения должна существовать")
         XCTAssertTrue(increaseControl.waitForExistence(timeout: 2), "Кнопка увеличения должна существовать")
         XCTAssertTrue(valueLabel.waitForExistence(timeout: 2), "Текущее значение должно существовать")
@@ -432,7 +449,30 @@ final class SurebetCalculatorUITests: XCTestCase {
         XCTAssertEqual(current, value, "Количество исходов должно быть \(value)")
     }
 
-    /// Форматирует число в строку для ввода в текстовое поле с учётом текущей локали.
+    @MainActor
+    private func waitForTextFieldValueChange(
+        _ textField: XCUIElement,
+        from oldValue: String,
+        timeout: TimeInterval
+    ) -> Bool {
+        let predicate = NSPredicate(format: "value != %@", oldValue)
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: textField)
+        return XCTWaiter().wait(for: [expectation], timeout: timeout) == .completed
+    }
+
+    @MainActor
+    private func waitForElementToBecomeEnabled(_ element: XCUIElement, timeout: TimeInterval) -> Bool {
+        let predicate = NSPredicate(format: "isEnabled == true")
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        return XCTWaiter().wait(for: [expectation], timeout: timeout) == .completed
+    }
+
+    @MainActor
+    private func stringValue(of textField: XCUIElement) -> String {
+        textField.value as? String ?? ""
+    }
+
+    /// Форматирует число в строку для ввода в текстовое поле с учетом текущей локали.
     private func formatNumberForInput(_ value: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -444,30 +484,34 @@ final class SurebetCalculatorUITests: XCTestCase {
 
 // MARK: - Accessibility Identifiers
 
-/// Идентификаторы доступности для UI тестов.
-/// Должны соответствовать идентификаторам в коде приложения.
 private enum Identifiers {
     enum MainMenu {
         static let calculatorAction = "main_menu_calculator_action"
+        static let settingsAction = "main_menu_settings_action"
+        static let instructionsAction = "main_menu_instructions_action"
     }
 
     enum Onboarding {
-        static let view = "onboarding_view"
         static let closeButton = "onboarding_close_button"
         static let nextButton = "onboarding_next_button"
     }
 
+    enum Settings {
+        static let headerTitle = "settings_header_title"
+    }
+
+    enum Instructions {
+        static let headerTitle = "menu_instructions_header_title"
+    }
+
     enum Calculator {
-        static let view = "calculator_view"
         static let clearButton = "calculator_clear_button"
-        static let rowCountPicker = "calculator_row_count_picker"
         static let rowCountDecreaseButton = "calculator_row_count_decrease_button"
         static let rowCountIncreaseButton = "calculator_row_count_increase_button"
         static let rowCountValue = "calculator_row_count_value"
     }
 
     enum TotalRow {
-        static let toggleButton = "total_row_toggle_button"
         static let betSizeTextField = "total_row_bet_size_text_field"
         static let profitPercentageText = "total_row_profit_percentage_text"
     }

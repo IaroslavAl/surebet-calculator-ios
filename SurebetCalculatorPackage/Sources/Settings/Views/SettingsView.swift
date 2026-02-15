@@ -1,6 +1,13 @@
 import SwiftUI
 import DesignSystem
 
+private enum SettingsAccessibilityIdentifiers {
+    static let view = "settings_view"
+    static let headerTitle = "settings_header_title"
+    static let themeSection = "settings_theme_section"
+    static let languageSection = "settings_language_section"
+}
+
 @MainActor
 struct SettingsView: View {
     // MARK: - Properties
@@ -32,6 +39,7 @@ struct SettingsView: View {
         }
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .accessibilityIdentifier(SettingsAccessibilityIdentifiers.view)
     }
 }
 
@@ -58,6 +66,7 @@ private extension SettingsView {
             Text(headerTitle)
                 .font(DesignSystem.Typography.title)
                 .foregroundColor(DesignSystem.Color.textPrimary)
+                .accessibilityIdentifier(SettingsAccessibilityIdentifiers.headerTitle)
             Text(headerSubtitle)
                 .font(DesignSystem.Typography.description)
                 .foregroundColor(DesignSystem.Color.textSecondary)
@@ -93,6 +102,7 @@ private extension SettingsView {
                 }
             }
         }
+        .accessibilityIdentifier(SettingsAccessibilityIdentifiers.themeSection)
     }
 
     var languageSection: some View {
@@ -136,6 +146,7 @@ private extension SettingsView {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+        .accessibilityIdentifier(SettingsAccessibilityIdentifiers.languageSection)
     }
 }
 

@@ -44,7 +44,6 @@ struct OnboardingView: View {
             onboardingIsShown = $0
         }
         .environmentObject(viewModel)
-        .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.view)
     }
 }
 

@@ -16,6 +16,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  secrets-scan:
+    name: Secrets Scan
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Scan repository for hardcoded secrets
+        run: ./scripts/ci/secret_scan.sh
+
   swiftlint:
     name: SwiftLint
     runs-on: macos-latest
@@ -30,6 +41,8 @@ jobs:
   build:
     name: Build
     runs-on: macos-latest
+    env:
+      APPMETRICA_API_KEY: ${{ secrets.APPMETRICA_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -41,6 +54,8 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: macos-latest
+    env:
+      APPMETRICA_API_KEY: ${{ secrets.APPMETRICA_API_KEY }}
 
     steps:
       - name: Checkout repository

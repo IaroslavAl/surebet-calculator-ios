@@ -16,7 +16,11 @@ enum SurebetCalculatorLocalizationKey: String {
 
     /// Локализованная строка для ключа.
     func localized(_ locale: Locale) -> String {
-        let bundle = LocalizationBundleResolver.localizedBundle(for: locale, in: .module)
-        return bundle.localizedString(forKey: rawValue, value: nil, table: "Localizable")
+        let localizedBundle = LocalizationBundleResolver.localizedBundle(for: locale, in: .module)
+        return String(
+            localized: String.LocalizationValue(rawValue),
+            table: "Localizable",
+            bundle: localizedBundle
+        )
     }
 }
