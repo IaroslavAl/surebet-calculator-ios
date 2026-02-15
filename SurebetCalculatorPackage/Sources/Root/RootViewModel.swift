@@ -11,7 +11,7 @@ final class RootViewModel: ObservableObject {
     // MARK: - Properties
 
     @Published private(set) var alertIsPresented = false
-    @Published private(set) var isAnimation = false
+    @Published private(set) var onboardingAnimationIsEnabled = false
     @Published private(set) var navigationPath: [AppRoute] = []
 
     private var onboardingIsShown: Bool
@@ -73,7 +73,7 @@ final class RootViewModel: ObservableObject {
 
     /// Проверяет, нужно ли показать onboarding с анимацией
     var shouldShowOnboardingWithAnimation: Bool {
-        shouldShowOnboarding && isAnimation
+        shouldShowOnboarding && onboardingAnimationIsEnabled
     }
 
     /// Возвращает текущее состояние onboarding
@@ -161,7 +161,7 @@ private extension RootViewModel {
     }
 
     func enableOnboardingAnimation() {
-        isAnimation = true
+        onboardingAnimationIsEnabled = true
     }
 
     func requestReviewIfNeeded() {

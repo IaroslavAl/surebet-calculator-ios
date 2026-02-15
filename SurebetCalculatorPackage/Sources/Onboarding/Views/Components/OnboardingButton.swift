@@ -14,11 +14,11 @@ struct OnboardingButton: View {
             text,
             variant: .onboarding,
             size: .large,
+            accessibilityIdentifier: OnboardingAccessibilityIdentifiers.nextButton,
             action: action
         )
         .animation(DesignSystem.Animation.quickInteraction, value: viewModel.currentPage)
         .accessibilityLabel(text)
-        .accessibilityIdentifier(OnboardingAccessibilityIdentifiers.nextButton)
     }
 }
 

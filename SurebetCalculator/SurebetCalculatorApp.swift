@@ -17,6 +17,12 @@ struct SurebetCalculatorApp: App {
 }
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
+    private enum ConfigurationKeys {
+        static let appMetricaAPIKey = "AppMetricaApiKey"
+        static let appMetricaAPIKeyEnvironment = "APPMETRICA_API_KEY"
+        static let appMetricaLegacyEnvironment = "AppMetrica_Key"
+    }
+
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
@@ -25,8 +31,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         processUITestArguments()
 
         #if !DEBUG
-        let apiKey = "f7e1f335-475a-4b6c-ba4a-77988745bc7a"
-        if let configuration = makeAppMetricaConfiguration(apiKey: apiKey) {
+        if let apiKey = appMetricaAPIKey(),
+           let configuration = makeAppMetricaConfiguration(apiKey: apiKey) {
             AppMetrica.activate(with: configuration)
         }
         #endif
@@ -55,5 +61,29 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     /// Совместимо с SDK, где initializer может быть failable/non-failable.
     private func makeAppMetricaConfiguration(apiKey: String) -> AppMetricaConfiguration? {
         AppMetricaConfiguration(apiKey: apiKey)
+    }
+
+    /// Ключ читается из env/Info.plist и не хранится в репозитории.
+    private func appMetricaAPIKey() -> String? {
+        let environment = ProcessInfo.processInfo.environment
+        let candidates: [String?] = [
+            environment[ConfigurationKeys.appMetricaAPIKeyEnvironment],
+            environment[ConfigurationKeys.appMetricaLegacyEnvironment],
+            Bundle.main.object(forInfoDictionaryKey: ConfigurationKeys.appMetricaAPIKey) as? String
+        ]
+
+        for candidate in candidates {
+            guard let value = normalizedAPIKey(candidate) else { continue }
+            return value
+        }
+        return nil
+    }
+
+    private func normalizedAPIKey(_ rawValue: String?) -> String? {
+        guard let rawValue else { return nil }
+        let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        guard !trimmed.hasPrefix("$(") else { return nil }
+        return trimmed
     }
 }

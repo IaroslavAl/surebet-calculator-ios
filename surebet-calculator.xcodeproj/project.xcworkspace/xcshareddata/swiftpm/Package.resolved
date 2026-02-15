@@ -1,104 +1,114 @@
 {
-  "pins": [
+  "originHash" : "00a00002ac598a56fb76a769c0c9dc4c91f32125036c6bfed4c4d6d5e730d6f7",
+  "pins" : [
     {
-      "identity": "appmetrica-sdk-ios",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/appmetrica/appmetrica-sdk-ios",
-      "state": {
-        "revision": "2e46941dbea29d3ccf80c05f9c76e6ed45bc5353",
-        "version": "5.11.2"
+      "identity" : "appmetrica-sdk-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/appmetrica/appmetrica-sdk-ios",
+      "state" : {
+        "revision" : "28e94b1f812db4304dc34d8fb4844016d7d25303",
+        "version" : "6.0.0"
       }
     },
     {
-      "identity": "collectionconcurrencykit",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/JohnSundell/CollectionConcurrencyKit.git",
-      "state": {
-        "revision": "b4f23e24b5a1bff301efc5e70871083ca029ff95",
-        "version": "0.2.0"
+      "identity" : "collectionconcurrencykit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/JohnSundell/CollectionConcurrencyKit.git",
+      "state" : {
+        "revision" : "b4f23e24b5a1bff301efc5e70871083ca029ff95",
+        "version" : "0.2.0"
       }
     },
     {
-      "identity": "cryptoswift",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/krzyzanowskim/CryptoSwift.git",
-      "state": {
-        "revision": "729e01bc9b9dab466ac85f21fb9ee2bc1c61b258",
-        "version": "1.8.4"
+      "identity" : "cryptoswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/krzyzanowskim/CryptoSwift.git",
+      "state" : {
+        "revision" : "e45a26384239e028ec87fbcc788f513b67e10d8f",
+        "version" : "1.9.0"
       }
     },
     {
-      "identity": "kscrash",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/kstenerud/KSCrash",
-      "state": {
-        "revision": "b87a3ef5b0b84e2a34a546b9836813756cd362a9",
-        "version": "2.0.0"
+      "identity" : "kscrash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kstenerud/KSCrash",
+      "state" : {
+        "revision" : "c0177658fc771ae833b6d3b8f5f3f5a14d59ec03",
+        "version" : "2.1.2"
       }
     },
     {
-      "identity": "sourcekitten",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/jpsim/SourceKitten.git",
-      "state": {
-        "revision": "eb6656ed26bdef967ad8d07c27e2eab34dc582f2",
-        "version": "0.37.0"
+      "identity" : "sourcekitten",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpsim/SourceKitten.git",
+      "state" : {
+        "revision" : "731ffe6a35344a19bab00cdca1c952d5b4fee4d8",
+        "version" : "0.37.2"
       }
     },
     {
-      "identity": "swift-argument-parser",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/apple/swift-argument-parser.git",
-      "state": {
-        "revision": "0fbc8848e389af3bb55c182bc19ca9d5dc2f255b",
-        "version": "1.4.0"
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "state" : {
+        "revision" : "c5d11a805e765f52ba34ec7284bd4fcd6ba68615",
+        "version" : "1.7.0"
       }
     },
     {
-      "identity": "swift-syntax",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/swiftlang/swift-syntax.git",
-      "state": {
-        "revision": "1103c45ece4f7fe160b8f75b4ea1ee2e5fac1841",
-        "version": "601.0.0"
+      "identity" : "swift-filename-matcher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ileitch/swift-filename-matcher",
+      "state" : {
+        "revision" : "eef5ac0b6b3cdc64b3039b037bed2def8a1edaeb",
+        "version" : "2.0.1"
       }
     },
     {
-      "identity": "swiftlint",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/realm/SwiftLint.git",
-      "state": {
-        "revision": "625792423014cc49b0a1e5a1a5c0d6b8b3de10f9",
-        "version": "0.59.1"
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax.git",
+      "state" : {
+        "revision" : "65b02a90ad2cc213e09309faeb7f6909e0a8577a",
+        "version" : "604.0.0-prerelease-2026-01-20"
       }
     },
     {
-      "identity": "swiftytexttable",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/scottrhoyt/SwiftyTextTable.git",
-      "state": {
-        "revision": "c6df6cf533d120716bff38f8ff9885e1ce2a4ac3",
-        "version": "0.9.0"
+      "identity" : "swiftlint",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/realm/SwiftLint.git",
+      "state" : {
+        "revision" : "88952528a590ed366c6f76f6bfb980b5ebdcefc1",
+        "version" : "0.63.2"
       }
     },
     {
-      "identity": "swxmlhash",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/drmohundro/SWXMLHash.git",
-      "state": {
-        "revision": "a853604c9e9a83ad9954c7e3d2a565273982471f",
-        "version": "7.0.2"
+      "identity" : "swiftytexttable",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/scottrhoyt/SwiftyTextTable.git",
+      "state" : {
+        "revision" : "c6df6cf533d120716bff38f8ff9885e1ce2a4ac3",
+        "version" : "0.9.0"
       }
     },
     {
-      "identity": "yams",
-      "kind": "remoteSourceControl",
-      "location": "https://github.com/jpsim/Yams.git",
-      "state": {
-        "revision": "b4b8042411dc7bbb696300a34a4bf3ba1b7ad19b",
-        "version": "5.3.1"
+      "identity" : "swxmlhash",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/drmohundro/SWXMLHash.git",
+      "state" : {
+        "revision" : "a853604c9e9a83ad9954c7e3d2a565273982471f",
+        "version" : "7.0.2"
+      }
+    },
+    {
+      "identity" : "yams",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpsim/Yams.git",
+      "state" : {
+        "revision" : "deaf82e867fa2cbd3cd865978b079bfcf384ac28",
+        "version" : "6.2.1"
       }
     }
   ],
-  "version": 2
+  "version" : 3
 }

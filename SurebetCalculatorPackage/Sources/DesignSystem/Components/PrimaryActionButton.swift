@@ -16,6 +16,7 @@ public struct PrimaryActionButton: View {
     private let variant: Variant
     private let size: Size
     private let isEnabled: Bool
+    private let accessibilityIdentifier: String?
     private let action: () -> Void
 
     public init(
@@ -23,17 +24,20 @@ public struct PrimaryActionButton: View {
         variant: Variant = .accent,
         size: Size = .regular,
         isEnabled: Bool = true,
+        accessibilityIdentifier: String? = nil,
         action: @escaping () -> Void
     ) {
         self.title = title
         self.variant = variant
         self.size = size
         self.isEnabled = isEnabled
+        self.accessibilityIdentifier = accessibilityIdentifier
         self.action = action
     }
 
+    @ViewBuilder
     public var body: some View {
-        Button(action: action) {
+        let button = Button(action: action) {
             Text(title)
                 .font(font)
                 .fontWeight(.bold)
@@ -51,6 +55,12 @@ public struct PrimaryActionButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
+
+        if let accessibilityIdentifier {
+            button.accessibilityIdentifier(accessibilityIdentifier)
+        } else {
+            button
+        }
     }
 }
 

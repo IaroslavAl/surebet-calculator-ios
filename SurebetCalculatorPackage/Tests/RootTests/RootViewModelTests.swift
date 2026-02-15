@@ -128,6 +128,35 @@ struct RootViewModelTests {
         #expect(viewModel.navigationPath == [.mainMenu(.section(.calculator))])
     }
 
+    @Test
+    func setNavigationPathWhenSameValueDoesNotMutateState() {
+        clearTestUserDefaults()
+        let viewModel = createViewModel()
+        let path: [AppRoute] = [.mainMenu(.section(.calculator))]
+
+        viewModel.send(.setNavigationPath(path))
+        viewModel.send(.setNavigationPath(path))
+
+        #expect(viewModel.navigationPath == path)
+    }
+
+    // MARK: - Presentation
+
+    @Test
+    func setAlertPresentedWhenSameValueDoesNotMutateState() {
+        clearTestUserDefaults()
+        let viewModel = createViewModel()
+
+        viewModel.send(.setAlertPresented(false))
+        #expect(viewModel.alertIsPresented == false)
+
+        viewModel.send(.setAlertPresented(true))
+        #expect(viewModel.alertIsPresented == true)
+
+        viewModel.send(.setAlertPresented(true))
+        #expect(viewModel.alertIsPresented == true)
+    }
+
     // MARK: - Lifecycle
 
     @Test

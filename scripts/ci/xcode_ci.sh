@@ -3,8 +3,8 @@ set -euo pipefail
 
 ACTION="${1:-}"
 
-if [[ "$ACTION" != "build" && "$ACTION" != "test" ]]; then
-  echo "Usage: $0 <build|test>"
+if [[ "$ACTION" != "build" && "$ACTION" != "test" && "$ACTION" != "test-ui" ]]; then
+  echo "Usage: $0 <build|test|test-ui>"
   exit 1
 fi
 
@@ -15,11 +15,25 @@ COMMON_FLAGS=(
   -skipPackagePluginValidation
   -skipMacroValidation
 )
+XCODE_BUILD_SETTINGS=()
 
-xcodebuild \
-  -resolvePackageDependencies \
-  -project "$PROJECT" \
+if [[ -n "${APPMETRICA_API_KEY:-}" ]]; then
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    echo "::add-mask::${APPMETRICA_API_KEY}"
+  fi
+  XCODE_BUILD_SETTINGS+=("APPMETRICA_API_KEY=${APPMETRICA_API_KEY}")
+  echo "APPMETRICA_API_KEY is provided and will be passed to xcodebuild."
+else
+  echo "APPMETRICA_API_KEY is not set. Build will use default project value."
+fi
+
+RESOLVE_CMD=(
+  xcodebuild
+  -resolvePackageDependencies
+  -project "$PROJECT"
   "${COMMON_FLAGS[@]}"
+)
+"${RESOLVE_CMD[@]}"
 
 SIMULATOR_DESTINATION="${SIMULATOR_DESTINATION:-}"
 if [[ -z "$SIMULATOR_DESTINATION" ]]; then
@@ -57,10 +71,37 @@ fi
 
 echo "Using destination: $SIMULATOR_DESTINATION"
 
-xcodebuild \
-  -project "$PROJECT" \
-  -scheme "$SCHEME" \
-  "${COMMON_FLAGS[@]}" \
-  -destination "$SIMULATOR_DESTINATION" \
-  -derivedDataPath "$DERIVED_DATA_PATH" \
-  "$ACTION"
+XCODE_ACTION="$ACTION"
+TEST_PLAN_NAME=""
+if [[ "$ACTION" == "test-ui" ]]; then
+  XCODE_ACTION="test"
+  TEST_PLAN_NAME="surebet-calculator-ui-tests"
+fi
+
+if [[ -n "$TEST_PLAN_NAME" ]]; then
+  BUILD_CMD=(
+    xcodebuild
+    -project "$PROJECT"
+    -scheme "$SCHEME"
+    "${COMMON_FLAGS[@]}"
+    -testPlan "$TEST_PLAN_NAME"
+    -destination "$SIMULATOR_DESTINATION"
+    -derivedDataPath "$DERIVED_DATA_PATH"
+  )
+else
+  BUILD_CMD=(
+    xcodebuild
+    -project "$PROJECT"
+    -scheme "$SCHEME"
+    "${COMMON_FLAGS[@]}"
+    -destination "$SIMULATOR_DESTINATION"
+    -derivedDataPath "$DERIVED_DATA_PATH"
+  )
+fi
+
+if [[ ${#XCODE_BUILD_SETTINGS[@]} -gt 0 ]]; then
+  BUILD_CMD+=("${XCODE_BUILD_SETTINGS[@]}")
+fi
+BUILD_CMD+=("$XCODE_ACTION")
+
+"${BUILD_CMD[@]}"

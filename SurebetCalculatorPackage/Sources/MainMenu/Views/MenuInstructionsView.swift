@@ -1,6 +1,11 @@
 import SwiftUI
 import DesignSystem
 
+private enum MenuInstructionsAccessibilityIdentifiers {
+    static let view = "menu_instructions_view"
+    static let headerTitle = "menu_instructions_header_title"
+}
+
 struct MenuInstructionsView: View {
     // MARK: - Properties
 
@@ -24,6 +29,7 @@ struct MenuInstructionsView: View {
         }
         .navigationTitle(instructionsTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .accessibilityIdentifier(MenuInstructionsAccessibilityIdentifiers.view)
     }
 }
 
@@ -41,6 +47,7 @@ private extension MenuInstructionsView {
             Text(instructionsTitle)
                 .font(DesignSystem.Typography.title)
                 .foregroundColor(DesignSystem.Color.textPrimary)
+                .accessibilityIdentifier(MenuInstructionsAccessibilityIdentifiers.headerTitle)
             Text(instructionsSubtitle)
                 .font(DesignSystem.Typography.description)
                 .foregroundColor(DesignSystem.Color.textSecondary)
