@@ -23,6 +23,7 @@
   - Job `Validate Docs Structure`
 - `.github/workflows/release-app-store.yml`
   - Manual trigger only (`workflow_dispatch`).
+  - Optional Job `Release Preflight Tests` runs unit tests by manual input (`run_preflight_tests=true`).
   - Job `Release App Store Build` prepares signed Release archive, exports IPA and uploads build to App Store Connect.
   - Versions are updated automatically before archive:
     - `CURRENT_PROJECT_VERSION` is always auto-incremented (or taken from manual input override),

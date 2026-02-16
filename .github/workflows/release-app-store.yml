@@ -16,6 +16,11 @@ on:
         description: "Optional build number override (digits only)."
         required: false
         type: string
+      run_preflight_tests:
+        description: "Run preflight unit tests before release build."
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -25,8 +30,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  release-preflight-tests:
+    name: Release Preflight Tests
+    if: ${{ inputs.run_preflight_tests == true }}
+    runs-on: macos-latest
+    env:
+      APPMETRICA_API_KEY: ${{ secrets.APPMETRICA_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run unit tests
+        run: ./scripts/ci/xcode_ci.sh test
+
   release-app-store:
     name: Release App Store Build
+    needs:
+      - release-preflight-tests
+    if: ${{ always() && (needs.release-preflight-tests.result == 'success' || needs.release-preflight-tests.result == 'skipped') }}
     runs-on: macos-latest
     env:
       APPMETRICA_API_KEY: ${{ secrets.APPMETRICA_API_KEY }}
