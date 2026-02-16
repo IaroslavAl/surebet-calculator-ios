@@ -27,15 +27,15 @@
 - Public API:
   - `MainMenuSection`
   - `MainMenuRoute`
-  - `MainMenu.view(onRouteRequested:)`
+  - `MainMenu.view(onRouteRequested:onFeedbackRequested:)`
   - `MainMenu.instructionsView()`
-- Роль: первый экран-меню с route events; push-destination orchestration выполняется в `Root`.
+- Роль: первый экран-меню с route events и feedback intent; push-destination orchestration и analytics выполняются в `Root`.
 
 ## SurebetCalculator
 - Public API:
   - `SurebetCalculator.Dependencies`
   - `SurebetCalculator.view(dependencies:)`
-- Роль: состояние калькулятора, выбор режима расчета, бизнес-логика.
+- Роль: состояние калькулятора, выбор режима расчета, бизнес-логика и action-level analytics (`CalculatorAnalytics`).
 
 ## Onboarding
 - Public API: `Onboarding.view(onboardingIsShown:analytics:)`.
@@ -46,8 +46,9 @@
   - `Settings.Dependencies`
   - `Settings.view(dependencies:)`
   - `ThemeStore`, `UserDefaultsThemeStore`
+  - `SettingsAnalytics`, `NoopSettingsAnalytics`
   - `LanguageStoreAdapter`
-- Роль: тема/язык и соответствующее хранение состояния.
+- Роль: тема/язык, хранение состояния и аналитика изменений настроек.
 
 ## ReviewHandler
 - Public API: `ReviewHandler.requestReview()`.
@@ -56,6 +57,7 @@
 ## AnalyticsManager
 - Public API: `AnalyticsService`, `AnalyticsManager`, `AnalyticsEvent`.
 - Роль: типобезопасные события и адаптер к AppMetrica.
+- Source of truth для схемы событий: `docs/reference/ANALYTICS_EVENTS.md`.
 
 ## DesignSystem
 - Public API: `DesignSystem` + токены/базовые компоненты.
@@ -67,4 +69,4 @@
 2. Обновить релевантный playbook.
 3. Добавить ADR при изменении архитектурного решения.
 
-Последнее обновление: 2026-02-14
+Последнее обновление: 2026-02-15

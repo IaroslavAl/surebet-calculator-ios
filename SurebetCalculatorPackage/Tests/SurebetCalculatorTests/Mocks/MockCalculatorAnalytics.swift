@@ -4,10 +4,18 @@
 /// Хранит историю вызовов для проверки в тестах
 final class MockCalculatorAnalytics: CalculatorAnalytics, @unchecked Sendable {
     enum Event: Equatable {
-        case calculatorRowAdded(rowCount: Int)
-        case calculatorRowRemoved(rowCount: Int)
+        case calculatorRowsCountChanged(
+            rowCount: Int,
+            changeDirection: CalculatorRowsCountChangeDirection
+        )
+        case calculatorModeSelected(mode: CalculatorMode)
         case calculatorCleared
-        case calculationPerformed(rowCount: Int, profitPercentage: Double)
+        case calculatorCalculationPerformed(
+            rowCount: Int,
+            mode: CalculatorMode,
+            profitPercentage: Double,
+            isProfitable: Bool
+        )
     }
 
     private(set) var events: [Event] = []
@@ -16,23 +24,38 @@ final class MockCalculatorAnalytics: CalculatorAnalytics, @unchecked Sendable {
         events.count
     }
 
-    func calculatorRowAdded(rowCount: Int) {
-        events.append(.calculatorRowAdded(rowCount: rowCount))
+    func calculatorRowsCountChanged(
+        rowCount: Int,
+        changeDirection: CalculatorRowsCountChangeDirection
+    ) {
+        events.append(
+            .calculatorRowsCountChanged(
+                rowCount: rowCount,
+                changeDirection: changeDirection
+            )
+        )
     }
 
-    func calculatorRowRemoved(rowCount: Int) {
-        events.append(.calculatorRowRemoved(rowCount: rowCount))
+    func calculatorModeSelected(mode: CalculatorMode) {
+        events.append(.calculatorModeSelected(mode: mode))
     }
 
     func calculatorCleared() {
         events.append(.calculatorCleared)
     }
 
-    func calculationPerformed(rowCount: Int, profitPercentage: Double) {
+    func calculatorCalculationPerformed(
+        rowCount: Int,
+        mode: CalculatorMode,
+        profitPercentage: Double,
+        isProfitable: Bool
+    ) {
         events.append(
-            .calculationPerformed(
+            .calculatorCalculationPerformed(
                 rowCount: rowCount,
-                profitPercentage: profitPercentage
+                mode: mode,
+                profitPercentage: profitPercentage,
+                isProfitable: isProfitable
             )
         )
     }

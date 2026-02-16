@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import SwiftUI
 @testable import Root
 @testable import AnalyticsManager
 @testable import ReviewHandler
@@ -40,7 +41,9 @@ struct RootViewModelTests {
         let defaults = UserDefaults.standard
         defaults.removeObject(forKey: RootConstants.onboardingIsShownKey)
         defaults.removeObject(forKey: RootConstants.requestReviewWasShownKey)
-        defaults.removeObject(forKey: RootConstants.numberOfOpeningsKey)
+        defaults.removeObject(forKey: RootConstants.sessionNumberKey)
+        defaults.removeObject(forKey: RootConstants.installIDKey)
+        defaults.removeObject(forKey: RootConstants.sessionIDKey)
     }
 
     func awaitAsyncTasks() async {
@@ -84,11 +87,11 @@ struct RootViewModelTests {
     }
 
     @Test
-    func showOnboardingViewSetsAnimation() {
+    func rootLifecycleStartedEnablesOnboardingAnimation() {
         clearTestUserDefaults()
         let viewModel = createViewModel()
 
-        viewModel.send(.showOnboardingView)
+        viewModel.send(.rootLifecycleStarted)
 
         #expect(viewModel.shouldShowOnboardingWithAnimation == true)
     }
@@ -98,11 +101,13 @@ struct RootViewModelTests {
     @Test
     func mainMenuRouteRequestedAppendsNavigationPath() {
         clearTestUserDefaults()
-        let viewModel = createViewModel()
+        let analytics = MockAnalyticsService()
+        let viewModel = createViewModel(analyticsService: analytics)
 
         viewModel.send(.mainMenuRouteRequested(.section(.calculator)))
 
         #expect(viewModel.navigationPath == [.mainMenu(.section(.calculator))])
+        #expect(analytics.lastEvent == .navigationSectionOpened(section: "calculator"))
     }
 
     @Test
@@ -171,23 +176,81 @@ struct RootViewModelTests {
         viewModel.send(.rootLifecycleStarted)
 
         #expect(viewModel.shouldShowOnboardingWithAnimation == true)
+        #expect(analytics.logEventCallCount == 0)
+    }
+
+    @Test
+    func scenePhaseChangedToActiveStartsSessionAndLogsAnalytics() {
+        clearTestUserDefaults()
+        let analytics = MockAnalyticsService()
+        let viewModel = createViewModel(
+            analyticsService: analytics,
+            featureFlags: makeFeatureFlags(reviewPrompt: false)
+        )
+
+        viewModel.send(.scenePhaseChanged(.active))
+
         #expect(analytics.logEventCallCount == 1)
-        #expect(analytics.lastEvent == .appOpened(sessionNumber: 1))
+        #expect(
+            analytics.lastEvent == .appSessionStarted(
+                startReason: "initial_launch",
+                isFirstSession: true,
+                featureOnboardingEnabled: true,
+                featureReviewPromptEnabled: false
+            )
+        )
+    }
+
+    @Test
+    func scenePhaseChangedFromActiveEndsSessionAndLogsDuration() {
+        clearTestUserDefaults()
+        let analytics = MockAnalyticsService()
+        let viewModel = createViewModel(
+            analyticsService: analytics,
+            featureFlags: makeFeatureFlags(reviewPrompt: false)
+        )
+
+        viewModel.send(.scenePhaseChanged(.active))
+        viewModel.send(.scenePhaseChanged(.background))
+
+        #expect(analytics.logEventCallCount == 2)
+        #expect(analytics.logEventCalls[0].name == "app_session_started")
+        #expect(analytics.logEventCalls[1].name == "app_session_ended")
+        if case let .appSessionEnded(durationSeconds, endReason) = analytics.logEventCalls[1] {
+            #expect(durationSeconds >= 0)
+            #expect(endReason == "entered_background")
+        } else {
+            Issue.record("Expected app_session_ended as second event")
+        }
+    }
+
+    @Test
+    func mainMenuFeedbackRequestedLogsAnalytics() {
+        clearTestUserDefaults()
+        let analytics = MockAnalyticsService()
+        let viewModel = createViewModel(analyticsService: analytics)
+
+        viewModel.send(.mainMenuFeedbackRequested)
+
+        #expect(
+            analytics.lastEvent == .feedbackEmailOpened(
+                sourceScreen: "main_menu"
+            )
+        )
     }
 
     // MARK: - Review
 
     @Test
-    func showRequestReviewWhenFeatureDisabled() async {
+    func scenePhaseChangedWhenReviewFeatureDisabledDoesNotShowAlert() async {
         clearTestUserDefaults()
         let viewModel = createViewModel(
             featureFlags: makeFeatureFlags(reviewPrompt: false)
         )
         viewModel.send(.updateOnboardingShown(true))
-        viewModel.send(.onAppear)
-        viewModel.send(.onAppear)
-
-        viewModel.send(.showRequestReview)
+        viewModel.send(.scenePhaseChanged(.active))
+        viewModel.send(.scenePhaseChanged(.inactive))
+        viewModel.send(.scenePhaseChanged(.active))
         await awaitAsyncTasks()
 
         #expect(viewModel.alertIsPresented == false)
@@ -205,13 +268,13 @@ struct RootViewModelTests {
 
         #expect(viewModel.alertIsPresented == false)
         #expect(mockAnalytics.logEventCallCount == 1)
-        #expect(mockAnalytics.lastEvent == .reviewResponse(enjoyingApp: false))
-        #expect(mockAnalytics.lastEventName == "review_response")
+        #expect(mockAnalytics.lastEvent == .reviewPromptAnswered(answer: "no"))
+        #expect(mockAnalytics.lastEventName == "review_prompt_answered")
         if let params = mockAnalytics.lastParameters,
-           case .bool(let value) = params["enjoying_app"] {
-            #expect(value == false)
+           case .string(let value) = params["answer"] {
+            #expect(value == "no")
         } else {
-            Issue.record("enjoying_app should be bool(false)")
+            Issue.record("answer should be string(no)")
         }
     }
 
@@ -232,13 +295,13 @@ struct RootViewModelTests {
         #expect(viewModel.alertIsPresented == false)
         #expect(mockReview.requestReviewCallCount == 1)
         #expect(mockAnalytics.logEventCallCount == 1)
-        #expect(mockAnalytics.lastEvent == .reviewResponse(enjoyingApp: true))
-        #expect(mockAnalytics.lastEventName == "review_response")
+        #expect(mockAnalytics.lastEvent == .reviewPromptAnswered(answer: "yes"))
+        #expect(mockAnalytics.lastEventName == "review_prompt_answered")
         if let params = mockAnalytics.lastParameters,
-           case .bool(let value) = params["enjoying_app"] {
-            #expect(value == true)
+           case .string(let value) = params["answer"] {
+            #expect(value == "yes")
         } else {
-            Issue.record("enjoying_app should be bool(true)")
+            Issue.record("answer should be string(yes)")
         }
     }
 

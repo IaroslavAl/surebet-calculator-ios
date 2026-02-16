@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import SwiftUI
 @testable import Root
 
 @MainActor
@@ -18,7 +19,7 @@ struct AppContainerTests {
         let container = AppContainer.live(userDefaults: defaults)
         let viewModel = container.makeRootViewModel()
 
-        viewModel.send(.onAppear)
+        viewModel.send(.scenePhaseChanged(.active))
 
         #expect(viewModel.navigationPath.isEmpty)
         #expect(viewModel.alertIsPresented == false)

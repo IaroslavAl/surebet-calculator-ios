@@ -4,9 +4,14 @@ import SwiftUI
 public enum Settings {
     public struct Dependencies: Sendable {
         public let themeStore: any ThemeStore
+        public let analytics: any SettingsAnalytics
 
-        public init(themeStore: any ThemeStore) {
+        public init(
+            themeStore: any ThemeStore,
+            analytics: any SettingsAnalytics = NoopSettingsAnalytics()
+        ) {
             self.themeStore = themeStore
+            self.analytics = analytics
         }
     }
 
@@ -24,7 +29,8 @@ private struct SettingsContainerView: View {
     init(dependencies: Settings.Dependencies) {
         _viewModel = StateObject(
             wrappedValue: SettingsViewModel(
-                themeStore: dependencies.themeStore
+                themeStore: dependencies.themeStore,
+                analytics: dependencies.analytics
             )
         )
     }

@@ -16,6 +16,7 @@
 - Root VM: `SurebetCalculatorPackage/Sources/Root/RootViewModel.swift`
 - Root routes: `SurebetCalculatorPackage/Sources/Root/AppRoute.swift`
 - Calculator VM: `SurebetCalculatorPackage/Sources/SurebetCalculator/ViewModels/SurebetCalculatorViewModel.swift`
+- Analytics catalog: `docs/reference/ANALYTICS_EVENTS.md`
 
 ## Где что менять
 - Навигация/оркестрация экранов: `Sources/Root/*`.
@@ -26,6 +27,7 @@
 - Фича-флаги и overrides: `Sources/FeatureToggles/*`.
 - Review flow: `Sources/ReviewHandler/*`.
 - Аналитика: `Sources/AnalyticsManager/*`.
+- Контекст аналитики (install/session/theme/language): `Sources/Root/ContextualAnalyticsService.swift`.
 - Дизайн-токены/базовые компоненты: `Sources/DesignSystem/*`.
 
 ## Тестовые директории
@@ -37,4 +39,4 @@
 - `SurebetCalculatorPackage/Tests/SettingsTests/*`
 - `SurebetCalculatorPackage/Tests/FeatureTogglesTests/*`
 
-Последнее обновление: 2026-02-14
+Последнее обновление: 2026-02-15

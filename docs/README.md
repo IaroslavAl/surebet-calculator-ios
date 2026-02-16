@@ -9,6 +9,7 @@
 - `docs/reference/PROJECT_MAP.md`
 - `docs/reference/MODULE_INDEX.md`
 - `docs/reference/DEPENDENCY_GRAPH.md`
+- `docs/reference/ANALYTICS_EVENTS.md`
 - `docs/reference/BUILD_TEST_COMMANDS.md`
 - `docs/reference/CI_RULES.md`
 

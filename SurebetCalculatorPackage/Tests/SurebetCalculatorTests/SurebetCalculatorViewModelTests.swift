@@ -1286,9 +1286,9 @@ struct SurebetCalculatorViewModelTests {
 
     // MARK: - Analytics Tests
 
-    /// Тест события calculator_row_added при добавлении строки
+    /// Тест события calculator_rows_count_changed при добавлении строки
     @Test
-    func analyticsWhenCalculatorRowAdded() {
+    func analyticsWhenCalculatorRowsCountChangedIncreased() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
         let viewModel = makeViewModel(
@@ -1302,16 +1302,16 @@ struct SurebetCalculatorViewModelTests {
         // Then
         #expect(mockAnalytics.eventCallCount >= 1)
         #expect(mockAnalytics.events.contains { event in
-            if case .calculatorRowAdded(let rowCount) = event {
-                return rowCount == 3
+            if case let .calculatorRowsCountChanged(rowCount, direction) = event {
+                return rowCount == 3 && direction == .increased
             }
             return false
         })
     }
 
-    /// Тест параметров события calculator_row_added
+    /// Тест параметров события calculator_rows_count_changed при увеличении
     @Test
-    func analyticsWhenCalculatorRowAddedParameters() {
+    func analyticsWhenCalculatorRowsCountChangedIncreasedParameters() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
         let viewModel = makeViewModel(
@@ -1323,18 +1323,18 @@ struct SurebetCalculatorViewModelTests {
         viewModel.send(.addRow)
 
         // Then
-        let addedEvents = mockAnalytics.events.compactMap { event -> Int? in
-            if case .calculatorRowAdded(let rowCount) = event {
-                return rowCount
+        let addedEvents = mockAnalytics.events.compactMap { event -> (Int, CalculatorRowsCountChangeDirection)? in
+            if case let .calculatorRowsCountChanged(rowCount, direction) = event {
+                return (rowCount, direction)
             }
             return nil
         }
-        #expect(addedEvents.contains(3))
+        #expect(addedEvents.contains { $0.0 == 3 && $0.1 == .increased })
     }
 
-    /// Тест события calculator_row_added не вызывается при максимальном количестве строк
+    /// Тест события calculator_rows_count_changed не вызывается при максимальном количестве строк
     @Test
-    func analyticsWhenCalculatorRowAddedNotCalledAtMax() {
+    func analyticsWhenCalculatorRowsCountChangedNotCalledAtMax() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
         let viewModel = makeViewModel(
@@ -1351,9 +1351,9 @@ struct SurebetCalculatorViewModelTests {
         #expect(mockAnalytics.eventCallCount == initialCallCount)
     }
 
-    /// Тест события calculator_row_removed при удалении строки
+    /// Тест события calculator_rows_count_changed при удалении строки
     @Test
-    func analyticsWhenCalculatorRowRemoved() {
+    func analyticsWhenCalculatorRowsCountChangedDecreased() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
         let viewModel = makeViewModel(
@@ -1367,16 +1367,16 @@ struct SurebetCalculatorViewModelTests {
         // Then
         #expect(mockAnalytics.eventCallCount >= 1)
         #expect(mockAnalytics.events.contains { event in
-            if case .calculatorRowRemoved(let rowCount) = event {
-                return rowCount == 2
+            if case let .calculatorRowsCountChanged(rowCount, direction) = event {
+                return rowCount == 2 && direction == .decreased
             }
             return false
         })
     }
 
-    /// Тест параметров события calculator_row_removed
+    /// Тест параметров события calculator_rows_count_changed при уменьшении
     @Test
-    func analyticsWhenCalculatorRowRemovedParameters() {
+    func analyticsWhenCalculatorRowsCountChangedDecreasedParameters() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
         let viewModel = makeViewModel(
@@ -1388,18 +1388,18 @@ struct SurebetCalculatorViewModelTests {
         viewModel.send(.removeRow)
 
         // Then
-        let removedEvents = mockAnalytics.events.compactMap { event -> Int? in
-            if case .calculatorRowRemoved(let rowCount) = event {
-                return rowCount
+        let removedEvents = mockAnalytics.events.compactMap { event -> (Int, CalculatorRowsCountChangeDirection)? in
+            if case let .calculatorRowsCountChanged(rowCount, direction) = event {
+                return (rowCount, direction)
             }
             return nil
         }
-        #expect(removedEvents.contains(2))
+        #expect(removedEvents.contains { $0.0 == 2 && $0.1 == .decreased })
     }
 
-    /// Тест события calculator_row_removed не вызывается при минимальном количестве строк
+    /// Тест события calculator_rows_count_changed не вызывается при минимальном количестве строк
     @Test
-    func analyticsWhenCalculatorRowRemovedNotCalledAtMin() {
+    func analyticsWhenCalculatorRowsCountChangedNotCalledAtMin() {
         // Given
         let mockAnalytics = MockCalculatorAnalytics()
         let viewModel = makeViewModel(
@@ -1414,6 +1414,29 @@ struct SurebetCalculatorViewModelTests {
         // Then
         // Не должно быть новых вызовов, так как уже минимальное количество строк
         #expect(mockAnalytics.eventCallCount == initialCallCount)
+    }
+
+    @Test
+    func analyticsWhenCalculatorModeSelected() {
+        // Given
+        let mockAnalytics = MockCalculatorAnalytics()
+        let viewModel = makeViewModel(
+            selection: .total,
+            analytics: mockAnalytics
+        )
+
+        // When
+        viewModel.send(.selectRow(.total))
+
+        // Then
+        #expect(
+            mockAnalytics.events.contains {
+                if case .calculatorModeSelected(mode: .rows) = $0 {
+                    return true
+                }
+                return false
+            }
+        )
     }
 
     /// Тест события calculator_cleared при очистке
@@ -1441,7 +1464,7 @@ struct SurebetCalculatorViewModelTests {
         #expect(mockAnalytics.events.contains(.calculatorCleared))
     }
 
-    /// Тест события calculation_performed с debounce
+    /// Тест события calculator_calculation_performed с debounce
     @Test
     func analyticsWhenCalculationPerformed() async {
         // Given
@@ -1466,14 +1489,14 @@ struct SurebetCalculatorViewModelTests {
         // Then
         #expect(mockAnalytics.eventCallCount >= 1)
         #expect(mockAnalytics.events.contains { event in
-            if case .calculationPerformed(let rowCount, _) = event {
+            if case .calculatorCalculationPerformed(let rowCount, _, _, _) = event {
                 return rowCount == 2
             }
             return false
         })
     }
 
-    /// Тест параметров события calculation_performed
+    /// Тест параметров события calculator_calculation_performed
     @Test
     func analyticsWhenCalculationPerformedParameters() async {
         // Given
@@ -1496,20 +1519,30 @@ struct SurebetCalculatorViewModelTests {
         await delay.advance()
 
         // Then
-        let calculationEvents = mockAnalytics.events.compactMap { event -> (Int, Double)? in
-            if case .calculationPerformed(let rowCount, let profitPercentage) = event {
-                return (rowCount, profitPercentage)
+        let calculationEvent = mockAnalytics.events.first {
+            if case .calculatorCalculationPerformed = $0 {
+                return true
             }
-            return nil
+            return false
         }
-        #expect(!calculationEvents.isEmpty)
-        if let event = calculationEvents.first {
-            #expect(event.0 == 2) // rowCount
-            #expect(event.1 >= 0) // profitPercentage должен быть неотрицательным для валидных коэффициентов
+
+        guard case let .calculatorCalculationPerformed(
+            rowCount,
+            mode,
+            profitPercentage,
+            isProfitable
+        )? = calculationEvent else {
+            Issue.record("Ожидалось событие calculator_calculation_performed")
+            return
         }
+
+        #expect(rowCount == 2)
+        #expect(mode == .total)
+        #expect(profitPercentage >= 0)
+        #expect(isProfitable == true)
     }
 
-    /// Тест debounce для calculation_performed - должно быть только одно событие при быстрых изменениях
+    /// Тест debounce для calculator_calculation_performed - одно событие при быстрых изменениях
     @Test
     func analyticsWhenCalculationPerformedDebounce() async {
         // Given
@@ -1535,9 +1568,9 @@ struct SurebetCalculatorViewModelTests {
         await delay.advance()
 
         // Then
-        // Должно быть только одно событие calculation_performed из-за debounce
+        // Должно быть только одно событие calculator_calculation_performed из-за debounce
         let calculationEvents = mockAnalytics.events.filter { event in
-            if case .calculationPerformed = event {
+            if case .calculatorCalculationPerformed = event {
                 return true
             }
             return false

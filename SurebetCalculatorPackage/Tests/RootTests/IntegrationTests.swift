@@ -1,6 +1,7 @@
 import Foundation
 import FeatureToggles
 import Testing
+import SwiftUI
 @testable import Root
 @testable import SurebetCalculator
 @testable import AnalyticsManager
@@ -17,7 +18,9 @@ struct IntegrationTests {
         let defaults = UserDefaults.standard
         defaults.removeObject(forKey: RootConstants.onboardingIsShownKey)
         defaults.removeObject(forKey: RootConstants.requestReviewWasShownKey)
-        defaults.removeObject(forKey: RootConstants.numberOfOpeningsKey)
+        defaults.removeObject(forKey: RootConstants.sessionNumberKey)
+        defaults.removeObject(forKey: RootConstants.installIDKey)
+        defaults.removeObject(forKey: RootConstants.sessionIDKey)
     }
 
     func createRootViewModel(
@@ -118,7 +121,7 @@ struct IntegrationTests {
         #expect(calculatorViewModel.selectedNumberOfRows == .two)
 
         await MainActor.run {
-            rootViewModel.send(.onAppear)
+            rootViewModel.send(.scenePhaseChanged(.active))
             calculatorViewModel.send(.addRow)
         }
 
@@ -163,13 +166,13 @@ struct IntegrationTests {
 
         // Then
         #expect(mockAnalytics.logEventCallCount == 1)
-        #expect(mockAnalytics.lastEvent == .reviewResponse(enjoyingApp: false))
-        #expect(mockAnalytics.lastEventName == "review_response")
+        #expect(mockAnalytics.lastEvent == .reviewPromptAnswered(answer: "no"))
+        #expect(mockAnalytics.lastEventName == "review_prompt_answered")
         if let params = mockAnalytics.lastParameters,
-           case .bool(let value) = params["enjoying_app"] {
-            #expect(value == false)
+           case .string(let value) = params["answer"] {
+            #expect(value == "no")
         } else {
-            Issue.record("enjoying_app should be bool(false)")
+            Issue.record("answer should be string(no)")
         }
     }
 
@@ -186,13 +189,13 @@ struct IntegrationTests {
 
         // Then
         #expect(mockAnalytics.logEventCallCount == 1)
-        #expect(mockAnalytics.lastEvent == .reviewResponse(enjoyingApp: true))
-        #expect(mockAnalytics.lastEventName == "review_response")
+        #expect(mockAnalytics.lastEvent == .reviewPromptAnswered(answer: "yes"))
+        #expect(mockAnalytics.lastEventName == "review_prompt_answered")
         if let params = mockAnalytics.lastParameters,
-           case .bool(let value) = params["enjoying_app"] {
-            #expect(value == true)
+           case .string(let value) = params["answer"] {
+            #expect(value == "yes")
         } else {
-            Issue.record("enjoying_app should be bool(true)")
+            Issue.record("answer should be string(yes)")
         }
     }
 

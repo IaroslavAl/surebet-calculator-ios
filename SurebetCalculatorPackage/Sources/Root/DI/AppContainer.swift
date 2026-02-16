@@ -54,7 +54,7 @@ public final class AppContainer {
         launchArgumentsProvider: LaunchArgumentsProvider = ProcessInfoLaunchArgumentsProvider(),
         userDefaults: UserDefaults
     ) -> AppContainer {
-        let analyticsService = AnalyticsManager()
+        let baseAnalyticsService = AnalyticsManager()
         let reviewService = ReviewHandler()
         let delay = SystemDelay()
         let featureFlagsProvider = DefaultFeatureFlagsProvider(
@@ -63,6 +63,11 @@ public final class AppContainer {
         )
         let featureFlags = featureFlagsProvider.snapshot()
         let rootStateStore = UserDefaultsRootStateStore(userDefaults: userDefaults)
+        let analyticsService = ContextualAnalyticsService(
+            baseService: baseAnalyticsService,
+            rootStateStore: rootStateStore,
+            userDefaults: userDefaults
+        )
 
         let onboardingAnalytics = OnboardingAnalyticsAdapter(
             analyticsService: analyticsService
@@ -70,11 +75,15 @@ public final class AppContainer {
         let calculatorAnalytics = CalculatorAnalyticsAdapter(
             analyticsService: analyticsService
         )
+        let settingsAnalytics = SettingsAnalyticsAdapter(
+            analyticsService: analyticsService
+        )
         let calculatorDependencies = SurebetCalculator.Dependencies(
             analytics: calculatorAnalytics
         )
         let settingsDependencies = Settings.Dependencies(
-            themeStore: UserDefaultsThemeStore(userDefaults: userDefaults)
+            themeStore: UserDefaultsThemeStore(userDefaults: userDefaults),
+            analytics: settingsAnalytics
         )
 
         return AppContainer(

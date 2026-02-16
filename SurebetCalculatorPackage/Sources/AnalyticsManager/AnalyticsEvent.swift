@@ -5,6 +5,27 @@ import Foundation
 /// Типобезопасный каталог событий аналитики.
 /// Все события приложения определены как case этого enum с соответствующими параметрами.
 public enum AnalyticsEvent: Sendable, Equatable {
+    // MARK: - App Session
+
+    /// Начало пользовательской сессии.
+    /// - Parameters:
+    ///   - startReason: Причина старта сессии.
+    ///   - isFirstSession: Первая ли это сессия установки.
+    ///   - featureOnboardingEnabled: Включен ли флаг onboarding.
+    ///   - featureReviewPromptEnabled: Включен ли флаг review prompt.
+    case appSessionStarted(
+        startReason: String,
+        isFirstSession: Bool,
+        featureOnboardingEnabled: Bool,
+        featureReviewPromptEnabled: Bool
+    )
+
+    /// Завершение пользовательской сессии.
+    /// - Parameters:
+    ///   - durationSeconds: Длительность сессии в секундах.
+    ///   - endReason: Причина завершения сессии.
+    case appSessionEnded(durationSeconds: Int, endReason: String)
+
     // MARK: - Onboarding
 
     /// Пользователь начал онбординг
@@ -13,8 +34,8 @@ public enum AnalyticsEvent: Sendable, Equatable {
     /// Пользователь просмотрел страницу онбординга
     /// - Parameters:
     ///   - pageIndex: Индекс страницы (0-based)
-    ///   - pageTitle: Название страницы
-    case onboardingPageViewed(pageIndex: Int, pageTitle: String)
+    ///   - pageID: Идентификатор страницы
+    case onboardingPageViewed(pageIndex: Int, pageID: String)
 
     /// Пользователь завершил онбординг
     /// - Parameter pagesViewed: Количество просмотренных страниц
@@ -24,15 +45,27 @@ public enum AnalyticsEvent: Sendable, Equatable {
     /// - Parameter lastPageIndex: Индекс последней просмотренной страницы
     case onboardingSkipped(lastPageIndex: Int)
 
+    // MARK: - Navigation
+
+    /// Открыт раздел приложения.
+    /// - Parameter section: Идентификатор раздела.
+    case navigationSectionOpened(section: String)
+
+    /// Открыта форма обратной связи по email.
+    /// - Parameter sourceScreen: Экран-источник действия.
+    case feedbackEmailOpened(sourceScreen: String)
+
     // MARK: - Calculator
 
-    /// Добавлена строка калькулятора
-    /// - Parameter rowCount: Текущее количество строк
-    case calculatorRowAdded(rowCount: Int)
+    /// Изменено количество исходов в калькуляторе.
+    /// - Parameters:
+    ///   - rowCount: Текущее количество исходов.
+    ///   - changeDirection: Направление изменения (`increased`/`decreased`).
+    case calculatorRowsCountChanged(rowCount: Int, changeDirection: String)
 
-    /// Удалена строка калькулятора
-    /// - Parameter rowCount: Текущее количество строк
-    case calculatorRowRemoved(rowCount: Int)
+    /// Выбран режим расчета.
+    /// - Parameter mode: Режим расчета (`total`/`rows`/`row`).
+    case calculatorModeSelected(mode: String)
 
     /// Калькулятор очищен
     case calculatorCleared
@@ -40,23 +73,36 @@ public enum AnalyticsEvent: Sendable, Equatable {
     /// Выполнен расчёт
     /// - Parameters:
     ///   - rowCount: Количество строк
+    ///   - mode: Режим расчета
     ///   - profitPercentage: Процент прибыли
-    case calculationPerformed(rowCount: Int, profitPercentage: Double)
+    ///   - isProfitable: Признак положительной прибыли
+    case calculatorCalculationPerformed(
+        rowCount: Int,
+        mode: String,
+        profitPercentage: Double,
+        isProfitable: Bool
+    )
+
+    // MARK: - Settings
+
+    /// Пользователь изменил тему приложения.
+    /// - Parameter theme: Значение темы.
+    case settingsThemeChanged(theme: String)
+
+    /// Пользователь изменил язык приложения.
+    /// - Parameters:
+    ///   - fromLanguage: Предыдущий язык.
+    ///   - toLanguage: Новый язык.
+    case settingsLanguageChanged(fromLanguage: String, toLanguage: String)
 
     // MARK: - Review
 
-    /// Показан запрос на оценку приложения
-    case reviewPromptShown
+    /// Показан запрос на оценку приложения.
+    case reviewPromptDisplayed
 
-    /// Ответ пользователя на запрос оценки
-    /// - Parameter enjoyingApp: Нравится ли пользователю приложение
-    case reviewResponse(enjoyingApp: Bool)
-
-    // MARK: - App
-
-    /// Приложение открыто
-    /// - Parameter sessionNumber: Номер сессии
-    case appOpened(sessionNumber: Int)
+    /// Ответ пользователя на запрос оценки.
+    /// - Parameter answer: Ответ пользователя (`yes`/`no`).
+    case reviewPromptAnswered(answer: String)
 }
 
 // MARK: - Event Properties
@@ -65,6 +111,10 @@ extension AnalyticsEvent {
     /// Название события в snake_case для AppMetrica
     public var name: String {
         switch self {
+        case .appSessionStarted:
+            return "app_session_started"
+        case .appSessionEnded:
+            return "app_session_ended"
         case .onboardingStarted:
             return "onboarding_started"
         case .onboardingPageViewed:
@@ -73,35 +123,60 @@ extension AnalyticsEvent {
             return "onboarding_completed"
         case .onboardingSkipped:
             return "onboarding_skipped"
-        case .calculatorRowAdded:
-            return "calculator_row_added"
-        case .calculatorRowRemoved:
-            return "calculator_row_removed"
+        case .navigationSectionOpened:
+            return "navigation_section_opened"
+        case .feedbackEmailOpened:
+            return "feedback_email_opened"
+        case .calculatorRowsCountChanged:
+            return "calculator_rows_count_changed"
+        case .calculatorModeSelected:
+            return "calculator_mode_selected"
         case .calculatorCleared:
             return "calculator_cleared"
-        case .calculationPerformed:
-            return "calculation_performed"
-        case .reviewPromptShown:
-            return "review_prompt_shown"
-        case .reviewResponse:
-            return "review_response"
-        case .appOpened:
-            return "app_opened"
+        case .calculatorCalculationPerformed:
+            return "calculator_calculation_performed"
+        case .settingsThemeChanged:
+            return "settings_theme_changed"
+        case .settingsLanguageChanged:
+            return "settings_language_changed"
+        case .reviewPromptDisplayed:
+            return "review_prompt_displayed"
+        case .reviewPromptAnswered:
+            return "review_prompt_answered"
         }
     }
 
     /// Параметры события для AppMetrica
     public var parameters: [String: AnalyticsParameterValue]? {
         switch self {
+        case let .appSessionStarted(
+            startReason,
+            isFirstSession,
+            featureOnboardingEnabled,
+            featureReviewPromptEnabled
+        ):
+            return [
+                "start_reason": .string(startReason),
+                "is_first_session": .bool(isFirstSession),
+                "feature_onboarding_enabled": .bool(featureOnboardingEnabled),
+                "feature_review_prompt_enabled": .bool(featureReviewPromptEnabled)
+            ]
+
+        case let .appSessionEnded(durationSeconds, endReason):
+            return [
+                "duration_seconds": .int(durationSeconds),
+                "end_reason": .string(endReason)
+            ]
+
         case .onboardingStarted,
              .calculatorCleared,
-             .reviewPromptShown:
+             .reviewPromptDisplayed:
             return nil
 
-        case .onboardingPageViewed(let pageIndex, let pageTitle):
+        case let .onboardingPageViewed(pageIndex, pageID):
             return [
                 "page_index": .int(pageIndex),
-                "page_title": .string(pageTitle)
+                "page_id": .string(pageID)
             ]
 
         case .onboardingCompleted(let pagesViewed):
@@ -110,21 +185,40 @@ extension AnalyticsEvent {
         case .onboardingSkipped(let lastPageIndex):
             return ["last_page_index": .int(lastPageIndex)]
 
-        case .calculatorRowAdded(let rowCount),
-             .calculatorRowRemoved(let rowCount):
-            return ["row_count": .int(rowCount)]
+        case let .navigationSectionOpened(section):
+            return ["section": .string(section)]
 
-        case .calculationPerformed(let rowCount, let profitPercentage):
+        case let .feedbackEmailOpened(sourceScreen):
+            return ["source_screen": .string(sourceScreen)]
+
+        case let .calculatorRowsCountChanged(rowCount, changeDirection):
             return [
                 "row_count": .int(rowCount),
-                "profit_percentage": .double(profitPercentage)
+                "change_direction": .string(changeDirection)
             ]
 
-        case .reviewResponse(let enjoyingApp):
-            return ["enjoying_app": .bool(enjoyingApp)]
+        case let .calculatorModeSelected(mode):
+            return ["mode": .string(mode)]
 
-        case .appOpened(let sessionNumber):
-            return ["session_number": .int(sessionNumber)]
+        case let .calculatorCalculationPerformed(rowCount, mode, profitPercentage, isProfitable):
+            return [
+                "row_count": .int(rowCount),
+                "mode": .string(mode),
+                "profit_percentage": .double(profitPercentage),
+                "is_profitable": .bool(isProfitable)
+            ]
+
+        case let .settingsThemeChanged(theme):
+            return ["theme": .string(theme)]
+
+        case let .settingsLanguageChanged(fromLanguage, toLanguage):
+            return [
+                "from_language": .string(fromLanguage),
+                "to_language": .string(toLanguage)
+            ]
+
+        case let .reviewPromptAnswered(answer):
+            return ["answer": .string(answer)]
         }
     }
 }

@@ -9,7 +9,7 @@ struct OnboardingPage: Identifiable, Sendable {
 
     let id: Int
     let illustration: Illustration
-    let analyticsTitle: String
+    let pageID: String
     let description: String
 
     static func createPages(locale: Locale) -> [OnboardingPage] {
@@ -17,19 +17,19 @@ struct OnboardingPage: Identifiable, Sendable {
             .init(
                 id: 0,
                 illustration: .stakeDistribution,
-                analyticsTitle: "onboarding_page_1",
+                pageID: "onboarding_page_1",
                 description: description1(locale)
             ),
             .init(
                 id: 1,
                 illustration: .calculatorTips,
-                analyticsTitle: "onboarding_page_2",
+                pageID: "onboarding_page_2",
                 description: description2(locale)
             ),
             .init(
                 id: 2,
                 illustration: .guaranteedResult,
-                analyticsTitle: "onboarding_page_3",
+                pageID: "onboarding_page_3",
                 description: description3(locale)
             )
         ]

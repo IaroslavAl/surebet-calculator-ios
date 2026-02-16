@@ -68,6 +68,9 @@ private extension RootView {
             MainMenu.view(
                 onRouteRequested: { route in
                     viewModel.send(.mainMenuRouteRequested(route))
+                },
+                onFeedbackRequested: {
+                    viewModel.send(.mainMenuFeedbackRequested)
                 }
             )
             .navigationDestination(for: AppRoute.self) { route in
@@ -138,11 +141,16 @@ private extension RootView {
 
 private struct LifecycleModifier: ViewModifier {
     let viewModel: RootViewModel
+    @Environment(\.scenePhase) private var scenePhase
 
     func body(content: Content) -> some View {
         content
             .onAppear {
+                viewModel.send(.scenePhaseChanged(scenePhase))
                 viewModel.send(.rootLifecycleStarted)
+            }
+            .onChange(of: scenePhase) { newValue in
+                viewModel.send(.scenePhaseChanged(newValue))
             }
     }
 }
@@ -183,6 +191,9 @@ private struct ReviewAlertModifier: ViewModifier {
         ),
         onboardingAnalytics: NoopOnboardingAnalytics(),
         calculatorDependencies: SurebetCalculator.Dependencies(analytics: NoopCalculatorAnalytics()),
-        settingsDependencies: Settings.Dependencies(themeStore: UserDefaultsThemeStore())
+        settingsDependencies: Settings.Dependencies(
+            themeStore: UserDefaultsThemeStore(),
+            analytics: NoopSettingsAnalytics()
+        )
     )
 }
