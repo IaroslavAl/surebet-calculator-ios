@@ -135,7 +135,14 @@ private extension SettingsView {
                                 .clipShape(Circle())
                             },
                             action: {
+                                let previousLanguage = languageStore.selectedLanguage
                                 languageStore.setLanguage(language)
+                                viewModel.send(
+                                    .languageChanged(
+                                        from: previousLanguage,
+                                        toLanguage: languageStore.selectedLanguage
+                                    )
+                                )
                             }
                         )
                     }

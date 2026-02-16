@@ -3,7 +3,6 @@ import Foundation
 @MainActor
 final class SurebetCalculatorViewModel: ObservableObject {
     // MARK: - Properties
-
     private(set) var total: TotalRow
     private(set) var rowsById: [RowID: Row]
     private(set) var orderedRowIds: [RowID]
@@ -18,9 +17,7 @@ final class SurebetCalculatorViewModel: ObservableObject {
     private let analytics: CalculatorAnalytics
     private let delay: CalculationAnalyticsDelay
     private var calculationAnalyticsTask: Task<Void, Never>?
-
     // MARK: - Initialization
-
     init(
         total: TotalRow = TotalRow(),
         rowsById: [RowID: Row]? = nil,
@@ -71,9 +68,7 @@ final class SurebetCalculatorViewModel: ObservableObject {
         )
         synchronizePresentation(from: nil)
     }
-
     // MARK: - Public Methods
-
     enum ViewAction {
         case selectRow(Selection)
         case addRow
@@ -86,7 +81,6 @@ final class SurebetCalculatorViewModel: ObservableObject {
         case clearAll
         case hideKeyboard
     }
-
     func send(_ action: ViewAction) {
         let previousSnapshot = makeSnapshot()
         switch action {
@@ -111,25 +105,25 @@ final class SurebetCalculatorViewModel: ObservableObject {
         case .hideKeyboard:
             hideKeyboard()
         }
+        if previousSnapshot.selection != selection {
+            analytics.calculatorModeSelected(mode: analyticsMode(for: selection))
+        }
         synchronizePresentation(from: previousSnapshot)
     }
 }
 
 // MARK: - Presentation Sync
-
 private extension SurebetCalculatorViewModel {
     func synchronizePresentation(from previousSnapshot: Snapshot?) {
         synchronizeActiveRowViewModels()
         outcomeCountViewModel.apply(makeOutcomeCountState())
         totalRowViewModel.apply(makeTotalRowItemState())
-
         let rowIDsToRefresh = changedRowIDs(previousSnapshot: previousSnapshot)
         for id in rowIDsToRefresh {
             guard let rowViewModel = rowViewModelsById[id] else { continue }
             rowViewModel.apply(makeRowItemState(for: id))
         }
     }
-
     func synchronizeActiveRowViewModels() {
         let desired = activeRowIds.compactMap { rowViewModelsById[$0] }
         guard desired.map(\.id) != activeRowViewModels.map(\.id) else { return }
@@ -138,7 +132,6 @@ private extension SurebetCalculatorViewModel {
 }
 
 // MARK: - Private Methods
-
 private extension SurebetCalculatorViewModel {
     func select(_ row: Selection) {
         if selection == row {
@@ -162,29 +155,24 @@ private extension SurebetCalculatorViewModel {
         normalizeFocusForCurrentStateIfNeeded()
         calculate()
     }
-
     func addRow() {
         guard selectedNumberOfRows.rawValue < maxRowCount else { return }
         let updated = NumberOfRows(rawValue: selectedNumberOfRows.rawValue + 1) ?? selectedNumberOfRows
         setNumberOfRows(updated)
     }
-
     func removeRow() {
         guard selectedNumberOfRows.rawValue > CalculatorConstants.minRowCount else { return }
         let updated = NumberOfRows(rawValue: selectedNumberOfRows.rawValue - 1) ?? selectedNumberOfRows
         setNumberOfRows(updated)
     }
-
     func setNumberOfRows(_ numberOfRows: NumberOfRows) {
         let clampedRaw = min(numberOfRows.rawValue, maxRowCount)
         let clamped = NumberOfRows(
             rawValue: max(clampedRaw, CalculatorConstants.minRowCount)
         ) ?? selectedNumberOfRows
         guard clamped != selectedNumberOfRows else { return }
-
         let previous = selectedNumberOfRows
         selectedNumberOfRows = clamped
-
         if clamped.rawValue < previous.rawValue {
             let inactiveRowIDs = orderedRowIds.dropFirst(clamped.rawValue)
             if case let .row(id) = selection, inactiveRowIDs.contains(id) {
@@ -194,24 +182,22 @@ private extension SurebetCalculatorViewModel {
             }
             clear(Array(inactiveRowIDs))
         }
-
         normalizeFocusForCurrentStateIfNeeded()
         calculate()
-
-        if clamped.rawValue > previous.rawValue {
-            analytics.calculatorRowAdded(rowCount: clamped.rawValue)
-        } else {
-            analytics.calculatorRowRemoved(rowCount: clamped.rawValue)
-        }
+        let changeDirection: CalculatorRowsCountChangeDirection = clamped.rawValue > previous.rawValue
+            ? .increased
+            : .decreased
+        analytics.calculatorRowsCountChanged(
+            rowCount: clamped.rawValue,
+            changeDirection: changeDirection
+        )
     }
-
     func reorderRows(fromOffsets: IndexSet, toOffset: Int) {
         var updated = orderedRowIds
         moveRowIds(in: &updated, fromOffsets: fromOffsets, toOffset: toOffset)
         orderedRowIds = updated
         calculate()
     }
-
     func set(_ textField: FocusableField, text: String) {
         let didMutate: Bool
         switch textField {
@@ -225,12 +211,10 @@ private extension SurebetCalculatorViewModel {
         guard didMutate else { return }
         calculate()
     }
-
     func set(_ focus: FocusableField?) {
         guard self.focus != focus else { return }
         self.focus = focus
     }
-
     func clearFocusableField() {
         switch focus {
         case .totalBetSize:
@@ -243,18 +227,15 @@ private extension SurebetCalculatorViewModel {
             break
         }
     }
-
     func clearAll() {
         clearTotal()
         clear(orderedRowIds)
         analytics.calculatorCleared()
     }
-
     func hideKeyboard() {
         focus = .none
     }
 }
-
 private extension SurebetCalculatorViewModel {
     @discardableResult
     func setTotalBetSize(text: String) -> Bool {
@@ -278,7 +259,6 @@ private extension SurebetCalculatorViewModel {
         }
         return didMutate
     }
-
     @discardableResult
     func setRowBetSize(id: RowID, text: String) -> Bool {
         var didMutate = false
@@ -304,7 +284,6 @@ private extension SurebetCalculatorViewModel {
         }
         return didMutate
     }
-
     @discardableResult
     func setTotalFromBetSizes() -> Bool {
         let sumOfBetSizes = activeRowIds
@@ -315,7 +294,6 @@ private extension SurebetCalculatorViewModel {
         total.betSize = updatedValue
         return true
     }
-
     @discardableResult
     func setRowCoefficient(id: RowID, text: String) -> Bool {
         guard var row = rowsById[id], row.coefficient != text else { return false }
@@ -323,7 +301,6 @@ private extension SurebetCalculatorViewModel {
         rowsById[id] = row
         return true
     }
-
     func deselectCurrentRow() {
         switch selection {
         case .total:
@@ -337,12 +314,10 @@ private extension SurebetCalculatorViewModel {
             break
         }
     }
-
     func clearTotal() {
         total.betSize.removeAll()
         total.profitPercentage = "0%"
     }
-
     func clear(_ rowIDs: [RowID]) {
         for id in rowIDs {
             if var row = rowsById[id] {
@@ -353,7 +328,6 @@ private extension SurebetCalculatorViewModel {
             }
         }
     }
-
     func normalizeFocusForCurrentStateIfNeeded() {
         guard let currentFocus = focus else { return }
         guard isFocusableFieldAvailable(currentFocus), !isFieldDisabled(currentFocus) else {
@@ -361,7 +335,6 @@ private extension SurebetCalculatorViewModel {
             return
         }
     }
-
     func calculate() {
         let result = calculationService.calculate(
             input: CalculationInput(
@@ -381,19 +354,31 @@ private extension SurebetCalculatorViewModel {
         }
         logCalculationPerformedDebounced()
     }
-
     func logCalculationPerformedDebounced() {
         calculationAnalyticsTask?.cancel()
         calculationAnalyticsTask = Task {
             await delay.sleep(nanoseconds: CalculatorConstants.calculationAnalyticsDelay)
             guard !Task.isCancelled else { return }
+            let mode = analyticsMode(for: selection)
             let profitPercentage = total.profitPercentage
                 .replacingOccurrences(of: "%", with: "")
                 .formatToDouble() ?? 0
-            analytics.calculationPerformed(
+            analytics.calculatorCalculationPerformed(
                 rowCount: selectedNumberOfRows.rawValue,
-                profitPercentage: profitPercentage
+                mode: mode,
+                profitPercentage: profitPercentage,
+                isProfitable: profitPercentage > 0
             )
+        }
+    }
+    func analyticsMode(for selection: Selection) -> CalculatorMode {
+        switch selection {
+        case .total:
+            return .total
+        case .none:
+            return .rows
+        case .row:
+            return .row
         }
     }
 }

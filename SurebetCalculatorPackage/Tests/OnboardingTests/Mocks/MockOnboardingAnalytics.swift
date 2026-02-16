@@ -5,7 +5,7 @@
 final class MockOnboardingAnalytics: OnboardingAnalytics, @unchecked Sendable {
     enum Event: Equatable {
         case onboardingStarted
-        case onboardingPageViewed(pageIndex: Int, pageTitle: String)
+        case onboardingPageViewed(pageIndex: Int, pageID: String)
         case onboardingCompleted(pagesViewed: Int)
         case onboardingSkipped(lastPageIndex: Int)
     }
@@ -20,8 +20,8 @@ final class MockOnboardingAnalytics: OnboardingAnalytics, @unchecked Sendable {
         events.append(.onboardingStarted)
     }
 
-    func onboardingPageViewed(pageIndex: Int, pageTitle: String) {
-        events.append(.onboardingPageViewed(pageIndex: pageIndex, pageTitle: pageTitle))
+    func onboardingPageViewed(pageIndex: Int, pageID: String) {
+        events.append(.onboardingPageViewed(pageIndex: pageIndex, pageID: pageID))
     }
 
     func onboardingCompleted(pagesViewed: Int) {

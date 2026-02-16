@@ -8,6 +8,27 @@ import SwiftUI
 /// ViewModel для управления состоянием и бизнес-логикой RootView
 @MainActor
 final class RootViewModel: ObservableObject {
+    private enum SessionStartReason: String {
+        case initialLaunch = "initial_launch"
+        case foregroundFromBackground = "foreground_from_background"
+        case foregroundFromInactive = "foreground_from_inactive"
+        case foregroundFromUnknown = "foreground_from_unknown"
+    }
+
+    private enum SessionEndReason: String {
+        case enteredBackground = "entered_background"
+        case enteredInactive = "entered_inactive"
+    }
+
+    private enum ReviewAnswer: String {
+        case yes = "yes"
+        case noAnswer = "no"
+    }
+
+    private enum AnalyticsValues {
+        static let feedbackSourceMainMenu = "main_menu"
+    }
+
     // MARK: - Properties
 
     @Published private(set) var alertIsPresented = false
@@ -15,7 +36,11 @@ final class RootViewModel: ObservableObject {
     @Published private(set) var navigationPath: [AppRoute] = []
 
     private var onboardingIsShown: Bool
-    private var numberOfOpenings: Int
+    private var sessionNumber: Int
+    private var currentScenePhase: ScenePhase?
+    private var activeSessionID: String?
+    private var activeSessionStartedAt: Date?
+    private var reviewPromptTask: Task<Void, Never>?
 
     private let analyticsService: AnalyticsService
     private let reviewService: ReviewService
@@ -38,17 +63,16 @@ final class RootViewModel: ObservableObject {
         self.featureFlags = featureFlags
         self.rootStateStore = rootStateStore
         onboardingIsShown = rootStateStore.onboardingIsShown()
-        numberOfOpenings = rootStateStore.numberOfOpenings()
+        sessionNumber = rootStateStore.sessionNumber()
     }
 
     // MARK: - Public Methods
 
     enum Action {
         case rootLifecycleStarted
-        case onAppear
-        case showOnboardingView
-        case showRequestReview
+        case scenePhaseChanged(ScenePhase)
         case mainMenuRouteRequested(MainMenuRoute)
+        case mainMenuFeedbackRequested
         case handleReviewNo
         case handleReviewYes
         case updateOnboardingShown(Bool)
@@ -101,17 +125,14 @@ private extension RootViewModel {
         case .rootLifecycleStarted:
             handleRootLifecycleStarted()
             return true
-        case .onAppear:
-            handleOnAppear()
-            return true
-        case .showOnboardingView:
-            enableOnboardingAnimation()
-            return true
-        case .showRequestReview:
-            requestReviewIfNeeded()
+        case let .scenePhaseChanged(phase):
+            handleScenePhaseChanged(phase)
             return true
         case let .mainMenuRouteRequested(route):
             handleMainMenuRouteRequested(route)
+            return true
+        case .mainMenuFeedbackRequested:
+            handleMainMenuFeedbackRequested()
             return true
         default:
             return false
@@ -148,31 +169,87 @@ private extension RootViewModel {
         }
     }
 
-    func handleOnAppear() {
-        numberOfOpenings += 1
-        rootStateStore.setNumberOfOpenings(numberOfOpenings)
-        analyticsService.log(event: .appOpened(sessionNumber: numberOfOpenings))
-    }
-
     func handleRootLifecycleStarted() {
-        handleOnAppear()
         enableOnboardingAnimation()
-        requestReviewIfNeeded()
     }
 
     func enableOnboardingAnimation() {
         onboardingAnimationIsEnabled = true
     }
 
-    func requestReviewIfNeeded() {
+    func handleScenePhaseChanged(_ phase: ScenePhase) {
+        guard currentScenePhase != phase else { return }
+
+        let previousPhase = currentScenePhase
+        currentScenePhase = phase
+
+        switch phase {
+        case .active:
+            startSessionIfNeeded(startReason: sessionStartReason(previousPhase: previousPhase).rawValue)
+        case .background, .inactive:
+            if previousPhase == .active {
+                endSessionIfNeeded(endReason: sessionEndReason(nextPhase: phase).rawValue)
+            }
+        @unknown default:
+            break
+        }
+    }
+
+    func startSessionIfNeeded(startReason: String) {
+        guard activeSessionStartedAt == nil else { return }
+
+        sessionNumber += 1
+        rootStateStore.setSessionNumber(sessionNumber)
+        let sessionID = UUID().uuidString
+        rootStateStore.setSessionID(sessionID)
+        activeSessionID = sessionID
+        activeSessionStartedAt = Date()
+
+        analyticsService.log(
+            event: .appSessionStarted(
+                startReason: startReason,
+                isFirstSession: sessionNumber == 1,
+                featureOnboardingEnabled: featureFlags.onboarding,
+                featureReviewPromptEnabled: featureFlags.reviewPrompt
+            )
+        )
+
+        requestReviewIfNeeded(sessionID: sessionID)
+    }
+
+    func endSessionIfNeeded(endReason: String) {
+        guard let startedAt = activeSessionStartedAt else { return }
+        reviewPromptTask?.cancel()
+        reviewPromptTask = nil
+        activeSessionStartedAt = nil
+        activeSessionID = nil
+
+        let durationSeconds = max(0, Int(Date().timeIntervalSince(startedAt)))
+        analyticsService.log(
+            event: .appSessionEnded(
+                durationSeconds: durationSeconds,
+                endReason: endReason
+            )
+        )
+        rootStateStore.setSessionID(nil)
+    }
+
+    func requestReviewIfNeeded(sessionID: String) {
         guard featureFlags.reviewPrompt else { return }
 #if !DEBUG
-        Task {
+        reviewPromptTask?.cancel()
+        let scheduledSessionNumber = sessionNumber
+        reviewPromptTask = Task {
             await delay.sleep(nanoseconds: RootConstants.reviewRequestDelay)
-            if !requestReviewWasShown, numberOfOpenings >= 2, isOnboardingShown {
+            guard !Task.isCancelled else { return }
+            guard activeSessionID == sessionID else { return }
+            if !requestReviewWasShown,
+               scheduledSessionNumber >= 2,
+               isOnboardingShown,
+               activeSessionStartedAt != nil {
                 alertIsPresented = true
                 requestReviewWasShown = true
-                analyticsService.log(event: .reviewPromptShown)
+                analyticsService.log(event: .reviewPromptDisplayed)
             }
         }
 #endif
@@ -180,13 +257,13 @@ private extension RootViewModel {
 
     func handleReviewNoInternal() {
         alertIsPresented = false
-        analyticsService.log(event: .reviewResponse(enjoyingApp: false))
+        analyticsService.log(event: .reviewPromptAnswered(answer: ReviewAnswer.noAnswer.rawValue))
     }
 
     func handleReviewYesInternal() async {
         alertIsPresented = false
         await reviewService.requestReview()
-        analyticsService.log(event: .reviewResponse(enjoyingApp: true))
+        analyticsService.log(event: .reviewPromptAnswered(answer: ReviewAnswer.yes.rawValue))
     }
 
     func updateOnboardingShownInternal(_ value: Bool) {
@@ -198,9 +275,48 @@ private extension RootViewModel {
     }
 
     func handleMainMenuRouteRequested(_ route: MainMenuRoute) {
+        if case let .section(section) = route {
+            analyticsService.log(event: .navigationSectionOpened(section: section.rawValue))
+        }
         let appRoute = AppRoute.mainMenu(route)
         if navigationPath.last != appRoute {
             navigationPath.append(appRoute)
+        }
+    }
+
+    func handleMainMenuFeedbackRequested() {
+        analyticsService.log(
+            event: .feedbackEmailOpened(
+                sourceScreen: AnalyticsValues.feedbackSourceMainMenu
+            )
+        )
+    }
+
+    private func sessionStartReason(previousPhase: ScenePhase?) -> SessionStartReason {
+        switch previousPhase {
+        case .none:
+            return .initialLaunch
+        case .background:
+            return .foregroundFromBackground
+        case .inactive:
+            return .foregroundFromInactive
+        case .active:
+            return .foregroundFromUnknown
+        @unknown default:
+            return .foregroundFromUnknown
+        }
+    }
+
+    private func sessionEndReason(nextPhase: ScenePhase) -> SessionEndReason {
+        switch nextPhase {
+        case .background:
+            return .enteredBackground
+        case .inactive:
+            return .enteredInactive
+        case .active:
+            return .enteredInactive
+        @unknown default:
+            return .enteredInactive
         }
     }
 }

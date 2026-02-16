@@ -1,5 +1,6 @@
 import AnalyticsManager
 import Onboarding
+import Settings
 import SurebetCalculator
 
 struct OnboardingAnalyticsAdapter: OnboardingAnalytics {
@@ -13,9 +14,9 @@ struct OnboardingAnalyticsAdapter: OnboardingAnalytics {
         analyticsService.log(event: .onboardingStarted)
     }
 
-    func onboardingPageViewed(pageIndex: Int, pageTitle: String) {
+    func onboardingPageViewed(pageIndex: Int, pageID: String) {
         analyticsService.log(
-            event: .onboardingPageViewed(pageIndex: pageIndex, pageTitle: pageTitle)
+            event: .onboardingPageViewed(pageIndex: pageIndex, pageID: pageID)
         )
     }
 
@@ -35,23 +36,59 @@ struct CalculatorAnalyticsAdapter: CalculatorAnalytics {
         self.analyticsService = analyticsService
     }
 
-    func calculatorRowAdded(rowCount: Int) {
-        analyticsService.log(event: .calculatorRowAdded(rowCount: rowCount))
+    func calculatorRowsCountChanged(
+        rowCount: Int,
+        changeDirection: CalculatorRowsCountChangeDirection
+    ) {
+        analyticsService.log(
+            event: .calculatorRowsCountChanged(
+                rowCount: rowCount,
+                changeDirection: changeDirection.rawValue
+            )
+        )
     }
 
-    func calculatorRowRemoved(rowCount: Int) {
-        analyticsService.log(event: .calculatorRowRemoved(rowCount: rowCount))
+    func calculatorModeSelected(mode: CalculatorMode) {
+        analyticsService.log(event: .calculatorModeSelected(mode: mode.rawValue))
     }
 
     func calculatorCleared() {
         analyticsService.log(event: .calculatorCleared)
     }
 
-    func calculationPerformed(rowCount: Int, profitPercentage: Double) {
+    func calculatorCalculationPerformed(
+        rowCount: Int,
+        mode: CalculatorMode,
+        profitPercentage: Double,
+        isProfitable: Bool
+    ) {
         analyticsService.log(
-            event: .calculationPerformed(
+            event: .calculatorCalculationPerformed(
                 rowCount: rowCount,
-                profitPercentage: profitPercentage
+                mode: mode.rawValue,
+                profitPercentage: profitPercentage,
+                isProfitable: isProfitable
+            )
+        )
+    }
+}
+
+struct SettingsAnalyticsAdapter: SettingsAnalytics {
+    private let analyticsService: AnalyticsService
+
+    init(analyticsService: AnalyticsService) {
+        self.analyticsService = analyticsService
+    }
+
+    func settingsThemeChanged(theme: SettingsTheme) {
+        analyticsService.log(event: .settingsThemeChanged(theme: theme.rawValue))
+    }
+
+    func settingsLanguageChanged(from: SettingsLanguage, toLanguage: SettingsLanguage) {
+        analyticsService.log(
+            event: .settingsLanguageChanged(
+                fromLanguage: from.rawValue,
+                toLanguage: toLanguage.rawValue
             )
         )
     }

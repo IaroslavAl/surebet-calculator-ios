@@ -5,8 +5,12 @@ protocol RootStateStore: Sendable {
     func setOnboardingIsShown(_ value: Bool)
     func requestReviewWasShown() -> Bool
     func setRequestReviewWasShown(_ value: Bool)
-    func numberOfOpenings() -> Int
-    func setNumberOfOpenings(_ value: Int)
+    func sessionNumber() -> Int
+    func setSessionNumber(_ value: Int)
+    func installID() -> String?
+    func setInstallID(_ value: String)
+    func sessionID() -> String?
+    func setSessionID(_ value: String?)
 }
 
 struct UserDefaultsRootStateStore: RootStateStore, @unchecked Sendable {
@@ -32,11 +36,31 @@ struct UserDefaultsRootStateStore: RootStateStore, @unchecked Sendable {
         userDefaults.set(value, forKey: RootConstants.requestReviewWasShownKey)
     }
 
-    func numberOfOpenings() -> Int {
-        userDefaults.integer(forKey: RootConstants.numberOfOpeningsKey)
+    func sessionNumber() -> Int {
+        userDefaults.integer(forKey: RootConstants.sessionNumberKey)
     }
 
-    func setNumberOfOpenings(_ value: Int) {
-        userDefaults.set(value, forKey: RootConstants.numberOfOpeningsKey)
+    func setSessionNumber(_ value: Int) {
+        userDefaults.set(value, forKey: RootConstants.sessionNumberKey)
+    }
+
+    func installID() -> String? {
+        userDefaults.string(forKey: RootConstants.installIDKey)
+    }
+
+    func setInstallID(_ value: String) {
+        userDefaults.set(value, forKey: RootConstants.installIDKey)
+    }
+
+    func sessionID() -> String? {
+        userDefaults.string(forKey: RootConstants.sessionIDKey)
+    }
+
+    func setSessionID(_ value: String?) {
+        if let value {
+            userDefaults.set(value, forKey: RootConstants.sessionIDKey)
+        } else {
+            userDefaults.removeObject(forKey: RootConstants.sessionIDKey)
+        }
     }
 }

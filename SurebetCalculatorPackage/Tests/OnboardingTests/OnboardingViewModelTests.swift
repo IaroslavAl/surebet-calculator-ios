@@ -185,8 +185,8 @@ struct OnboardingViewModelTests {
 
         // Then
         let pageViewedEvents = mockAnalytics.events.compactMap { event -> (Int, String)? in
-            if case .onboardingPageViewed(let pageIndex, let pageTitle) = event {
-                return (pageIndex, pageTitle)
+            if case .onboardingPageViewed(let pageIndex, let pageID) = event {
+                return (pageIndex, pageID)
             }
             return nil
         }

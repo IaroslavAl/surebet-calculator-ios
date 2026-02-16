@@ -61,7 +61,7 @@ struct OnboardingPageView: View {
         page: OnboardingPage.createPages(locale: Locale.current).first ?? .init(
             id: 0,
             illustration: .stakeDistribution,
-            analyticsTitle: "onboarding_page_1",
+            pageID: "onboarding_page_1",
             description: OnboardingLocalizationKey.page1Description.localized(Locale.current)
         )
     )

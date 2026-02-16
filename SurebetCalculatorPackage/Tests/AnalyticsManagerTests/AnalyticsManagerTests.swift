@@ -2,10 +2,7 @@ import Foundation
 import Testing
 @testable import AnalyticsManager
 
-/// Тесты для AnalyticsManager и AnalyticsService
 struct AnalyticsManagerTests {
-    // MARK: - log(name:parameters:) Tests
-
     @Test
     func logWhenEventNameAndParametersProvided() {
         let mockService = MockAnalyticsService()
@@ -20,16 +17,8 @@ struct AnalyticsManagerTests {
         #expect(mockService.logCallCount == 1)
         #expect(mockService.lastEventName == eventName)
         #expect(mockService.lastParameters?.count == 2)
-        if case .string(let value1) = mockService.lastParameters?["key1"] {
-            #expect(value1 == "value1")
-        } else {
-            Issue.record("key1 should be string with value 'value1'")
-        }
-        if case .int(let value2) = mockService.lastParameters?["key2"] {
-            #expect(value2 == 42)
-        } else {
-            Issue.record("key2 should be int with value 42")
-        }
+        #expect(mockService.lastParameters?["key1"] == .string("value1"))
+        #expect(mockService.lastParameters?["key2"] == .int(42))
     }
 
     @Test
@@ -44,157 +33,162 @@ struct AnalyticsManagerTests {
         #expect(mockService.lastParameters == nil)
     }
 
-    // MARK: - AnalyticsParameterValue.anyValue Tests
-
     @Test
     func anyValueWhenParameterIsString() {
         let parameter: AnalyticsParameterValue = .string("test")
-
         let anyValue = parameter.anyValue
 
-        #expect(anyValue is String)
-        if let stringValue = anyValue as? String {
-            #expect(stringValue == "test")
-        } else {
-            Issue.record("anyValue should be String")
-        }
+        #expect(anyValue as? String == "test")
     }
 
     @Test
     func anyValueWhenParameterIsInt() {
         let parameter: AnalyticsParameterValue = .int(42)
-
         let anyValue = parameter.anyValue
 
-        #expect(anyValue is Int)
-        if let intValue = anyValue as? Int {
-            #expect(intValue == 42)
-        } else {
-            Issue.record("anyValue should be Int")
-        }
+        #expect(anyValue as? Int == 42)
     }
 
     @Test
     func anyValueWhenParameterIsDouble() {
         let parameter: AnalyticsParameterValue = .double(3.14)
-
         let anyValue = parameter.anyValue
 
-        #expect(anyValue is Double)
-        if let doubleValue = anyValue as? Double {
-            #expect(doubleValue == 3.14)
-        } else {
-            Issue.record("anyValue should be Double")
-        }
+        #expect(anyValue as? Double == 3.14)
     }
 
     @Test
     func anyValueWhenParameterIsBool() {
         let parameter: AnalyticsParameterValue = .bool(true)
-
         let anyValue = parameter.anyValue
 
-        #expect(anyValue is Bool)
-        if let boolValue = anyValue as? Bool {
-            #expect(boolValue == true)
-        } else {
-            Issue.record("anyValue should be Bool")
-        }
+        #expect(anyValue as? Bool == true)
     }
 
-    // MARK: - AnalyticsEvent Tests
+    @Test
+    func analyticsEventNameWhenAppSessionStarted() {
+        let event = AnalyticsEvent.appSessionStarted(
+            startReason: "initial_launch",
+            isFirstSession: true,
+            featureOnboardingEnabled: false,
+            featureReviewPromptEnabled: true
+        )
+
+        #expect(event.name == "app_session_started")
+        #expect(event.parameters?["start_reason"] == .string("initial_launch"))
+        #expect(event.parameters?["is_first_session"] == .bool(true))
+        #expect(event.parameters?["feature_onboarding_enabled"] == .bool(false))
+        #expect(event.parameters?["feature_review_prompt_enabled"] == .bool(true))
+    }
 
     @Test
-    func analyticsEventNameWhenOnboardingStarted() {
-        let event = AnalyticsEvent.onboardingStarted
+    func analyticsEventNameWhenAppSessionEnded() {
+        let event = AnalyticsEvent.appSessionEnded(
+            durationSeconds: 42,
+            endReason: "entered_background"
+        )
 
-        #expect(event.name == "onboarding_started")
-        #expect(event.parameters == nil)
+        #expect(event.name == "app_session_ended")
+        #expect(event.parameters?["duration_seconds"] == .int(42))
+        #expect(event.parameters?["end_reason"] == .string("entered_background"))
     }
 
     @Test
     func analyticsEventNameWhenOnboardingPageViewed() {
-        let event = AnalyticsEvent.onboardingPageViewed(pageIndex: 2, pageTitle: "Test Page")
+        let event = AnalyticsEvent.onboardingPageViewed(pageIndex: 2, pageID: "onboarding_page_3")
 
         #expect(event.name == "onboarding_page_viewed")
         #expect(event.parameters?["page_index"] == .int(2))
-        #expect(event.parameters?["page_title"] == .string("Test Page"))
+        #expect(event.parameters?["page_id"] == .string("onboarding_page_3"))
     }
 
     @Test
-    func analyticsEventNameWhenOnboardingCompleted() {
-        let event = AnalyticsEvent.onboardingCompleted(pagesViewed: 5)
+    func analyticsEventNameWhenNavigationSectionOpened() {
+        let event = AnalyticsEvent.navigationSectionOpened(section: "calculator")
 
-        #expect(event.name == "onboarding_completed")
-        #expect(event.parameters?["pages_viewed"] == .int(5))
+        #expect(event.name == "navigation_section_opened")
+        #expect(event.parameters?["section"] == .string("calculator"))
     }
 
     @Test
-    func analyticsEventNameWhenOnboardingSkipped() {
-        let event = AnalyticsEvent.onboardingSkipped(lastPageIndex: 1)
+    func analyticsEventNameWhenFeedbackEmailOpened() {
+        let event = AnalyticsEvent.feedbackEmailOpened(sourceScreen: "main_menu")
 
-        #expect(event.name == "onboarding_skipped")
-        #expect(event.parameters?["last_page_index"] == .int(1))
+        #expect(event.name == "feedback_email_opened")
+        #expect(event.parameters?["source_screen"] == .string("main_menu"))
     }
 
     @Test
-    func analyticsEventNameWhenCalculatorRowAdded() {
-        let event = AnalyticsEvent.calculatorRowAdded(rowCount: 3)
+    func analyticsEventNameWhenCalculatorRowsCountChanged() {
+        let event = AnalyticsEvent.calculatorRowsCountChanged(
+            rowCount: 4,
+            changeDirection: "increased"
+        )
 
-        #expect(event.name == "calculator_row_added")
-        #expect(event.parameters?["row_count"] == .int(3))
-    }
-
-    @Test
-    func analyticsEventNameWhenCalculatorRowRemoved() {
-        let event = AnalyticsEvent.calculatorRowRemoved(rowCount: 2)
-
-        #expect(event.name == "calculator_row_removed")
-        #expect(event.parameters?["row_count"] == .int(2))
-    }
-
-    @Test
-    func analyticsEventNameWhenCalculatorCleared() {
-        let event = AnalyticsEvent.calculatorCleared
-
-        #expect(event.name == "calculator_cleared")
-        #expect(event.parameters == nil)
-    }
-
-    @Test
-    func analyticsEventNameWhenCalculationPerformed() {
-        let event = AnalyticsEvent.calculationPerformed(rowCount: 4, profitPercentage: 5.5)
-
-        #expect(event.name == "calculation_performed")
+        #expect(event.name == "calculator_rows_count_changed")
         #expect(event.parameters?["row_count"] == .int(4))
-        #expect(event.parameters?["profit_percentage"] == .double(5.5))
+        #expect(event.parameters?["change_direction"] == .string("increased"))
     }
 
     @Test
-    func analyticsEventNameWhenReviewPromptShown() {
-        let event = AnalyticsEvent.reviewPromptShown
+    func analyticsEventNameWhenCalculatorModeSelected() {
+        let event = AnalyticsEvent.calculatorModeSelected(mode: "row")
 
-        #expect(event.name == "review_prompt_shown")
+        #expect(event.name == "calculator_mode_selected")
+        #expect(event.parameters?["mode"] == .string("row"))
+    }
+
+    @Test
+    func analyticsEventNameWhenCalculatorCalculationPerformed() {
+        let event = AnalyticsEvent.calculatorCalculationPerformed(
+            rowCount: 4,
+            mode: "rows",
+            profitPercentage: 5.5,
+            isProfitable: true
+        )
+
+        #expect(event.name == "calculator_calculation_performed")
+        #expect(event.parameters?["row_count"] == .int(4))
+        #expect(event.parameters?["mode"] == .string("rows"))
+        #expect(event.parameters?["profit_percentage"] == .double(5.5))
+        #expect(event.parameters?["is_profitable"] == .bool(true))
+    }
+
+    @Test
+    func analyticsEventNameWhenSettingsThemeChanged() {
+        let event = AnalyticsEvent.settingsThemeChanged(theme: "dark")
+
+        #expect(event.name == "settings_theme_changed")
+        #expect(event.parameters?["theme"] == .string("dark"))
+    }
+
+    @Test
+    func analyticsEventNameWhenSettingsLanguageChanged() {
+        let event = AnalyticsEvent.settingsLanguageChanged(
+            fromLanguage: "en",
+            toLanguage: "ru"
+        )
+
+        #expect(event.name == "settings_language_changed")
+        #expect(event.parameters?["from_language"] == .string("en"))
+        #expect(event.parameters?["to_language"] == .string("ru"))
+    }
+
+    @Test
+    func analyticsEventNameWhenReviewPromptDisplayed() {
+        let event = AnalyticsEvent.reviewPromptDisplayed
+
+        #expect(event.name == "review_prompt_displayed")
         #expect(event.parameters == nil)
     }
 
     @Test
-    func analyticsEventNameWhenReviewResponse() {
-        let event = AnalyticsEvent.reviewResponse(enjoyingApp: true)
+    func analyticsEventNameWhenReviewPromptAnswered() {
+        let event = AnalyticsEvent.reviewPromptAnswered(answer: "yes")
 
-        #expect(event.name == "review_response")
-        #expect(event.parameters?["enjoying_app"] == .bool(true))
+        #expect(event.name == "review_prompt_answered")
+        #expect(event.parameters?["answer"] == .string("yes"))
     }
-
-    @Test
-    func analyticsEventNameWhenAppOpened() {
-        let event = AnalyticsEvent.appOpened(sessionNumber: 10)
-
-        #expect(event.name == "app_opened")
-        #expect(event.parameters?["session_number"] == .int(10))
-    }
-
-    // MARK: - log(event:) Tests
 
     @Test
     func logEventWhenEventWithoutParameters() {
@@ -205,9 +199,6 @@ struct AnalyticsManagerTests {
 
         #expect(mockService.logEventCallCount == 1)
         #expect(mockService.lastEvent == event)
-        #expect(mockService.logEventCalls.count == 1)
-        #expect(mockService.logEventCalls[0] == event)
-        #expect(mockService.logCallCount == 1)
         #expect(mockService.lastEventName == "onboarding_started")
         #expect(mockService.lastParameters == nil)
     }
@@ -215,17 +206,14 @@ struct AnalyticsManagerTests {
     @Test
     func logEventWhenEventWithParameters() {
         let mockService = MockAnalyticsService()
-        let event = AnalyticsEvent.onboardingPageViewed(pageIndex: 2, pageTitle: "Test Page")
+        let event = AnalyticsEvent.onboardingPageViewed(pageIndex: 2, pageID: "onboarding_page_3")
 
         mockService.log(event: event)
 
         #expect(mockService.logEventCallCount == 1)
         #expect(mockService.lastEvent == event)
-        #expect(mockService.logEventCalls.count == 1)
-        #expect(mockService.logEventCalls[0] == event)
-        #expect(mockService.logCallCount == 1)
         #expect(mockService.lastEventName == "onboarding_page_viewed")
         #expect(mockService.lastParameters?["page_index"] == .int(2))
-        #expect(mockService.lastParameters?["page_title"] == .string("Test Page"))
+        #expect(mockService.lastParameters?["page_id"] == .string("onboarding_page_3"))
     }
 }

@@ -13,10 +13,12 @@ public enum MainMenuRoute: Hashable, Sendable {
 public enum MainMenu {
     @MainActor
     public static func view(
-        onRouteRequested: @escaping (MainMenuRoute) -> Void
+        onRouteRequested: @escaping (MainMenuRoute) -> Void,
+        onFeedbackRequested: @escaping () -> Void = {}
     ) -> some View {
         MainMenuView(
-            onRouteRequested: onRouteRequested
+            onRouteRequested: onRouteRequested,
+            onFeedbackRequested: onFeedbackRequested
         )
     }
 

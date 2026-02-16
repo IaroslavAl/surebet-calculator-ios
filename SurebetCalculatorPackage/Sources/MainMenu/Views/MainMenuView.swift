@@ -6,6 +6,7 @@ struct MainMenuView: View {
     // MARK: - Properties
 
     let onRouteRequested: (MainMenuRoute) -> Void
+    let onFeedbackRequested: () -> Void
     @Environment(\.locale) private var locale
     @Environment(\.openURL) private var openURL
 
@@ -129,6 +130,7 @@ private extension MainMenuView {
             showsSubtitle: layout.showsSecondarySubtitle,
             accessibilityIdentifier: MainMenuAccessibilityIdentifiers.feedbackAction
         ) {
+            onFeedbackRequested()
             openFeedbackMail()
         }
     }
@@ -210,7 +212,8 @@ private extension MainMenuView {
 #Preview {
     NavigationStack {
         MainMenuView(
-            onRouteRequested: { _ in }
+            onRouteRequested: { _ in },
+            onFeedbackRequested: {}
         )
     }
 }
