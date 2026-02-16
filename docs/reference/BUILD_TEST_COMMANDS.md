@@ -52,6 +52,32 @@ xcodebuild -project surebet-calculator.xcodeproj -scheme surebet-calculator \
   archive -archivePath build/surebet-calculator.xcarchive
 ```
 
+## App Store Connect release (manual GitHub workflow)
+- Workflow: `.github/workflows/release-app-store.yml`
+- Trigger: only `workflow_dispatch` (manual run in GitHub Actions UI).
+- Job: `Release App Store Build`.
+- Script: `./scripts/ci/release_app_store.sh`.
+
+Workflow inputs:
+- `marketing_version` (optional string, for example `1.8.0`)
+- `auto_bump_patch` (`true/false`, default `false`)
+- `build_number` (optional digits-only override)
+
+Required secrets:
+- `APP_STORE_CONNECT_KEY_ID`
+- `APP_STORE_CONNECT_ISSUER_ID`
+- `APP_STORE_CONNECT_API_KEY`
+- `IOS_DISTRIBUTION_CERT_BASE64`
+- `IOS_DISTRIBUTION_CERT_PASSWORD`
+- `IOS_PROVISIONING_PROFILE_BASE64`
+- `KEYCHAIN_PASSWORD`
+- `APPMETRICA_API_KEY` (optional)
+
+Local script syntax (for debugging only, requires the same env vars as workflow):
+```bash
+./scripts/ci/release_app_store.sh
+```
+
 ## Когда запускать что
 - Всегда: `build`.
 - Обязательно `test`, если изменялись:
@@ -65,8 +91,9 @@ xcodebuild -project surebet-calculator.xcodeproj -scheme surebet-calculator \
 
 ## Ограничения
 - Не использовать `swift build` (из-за `SwiftLintBuildToolPlugin`).
+- Релизная загрузка в App Store Connect поддерживается только через manual workflow и заранее настроенные secrets/signing assets.
 
 ## Связанные документы
 - `docs/reference/CI_RULES.md`
 
-Последнее обновление: 2026-02-15
+Последнее обновление: 2026-02-16

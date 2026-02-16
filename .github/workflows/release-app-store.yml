@@ -1,0 +1,59 @@
+name: Release App Store Connect
+
+on:
+  workflow_dispatch:
+    inputs:
+      marketing_version:
+        description: "Optional marketing version (example: 1.8.0). If empty, keep current version."
+        required: false
+        type: string
+      auto_bump_patch:
+        description: "Auto bump patch marketing version (X.Y.Z -> X.Y.Z+1) when marketing_version is empty."
+        required: false
+        default: false
+        type: boolean
+      build_number:
+        description: "Optional build number override (digits only)."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-app-store-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-app-store:
+    name: Release App Store Build
+    runs-on: macos-latest
+    env:
+      APPMETRICA_API_KEY: ${{ secrets.APPMETRICA_API_KEY }}
+      APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+      IOS_DISTRIBUTION_CERT_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERT_BASE64 }}
+      IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
+      IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      MARKETING_VERSION_INPUT: ${{ inputs.marketing_version }}
+      AUTO_BUMP_PATCH: ${{ inputs.auto_bump_patch }}
+      BUILD_NUMBER_OVERRIDE: ${{ inputs.build_number }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Archive and upload build to App Store Connect
+        run: ./scripts/ci/release_app_store.sh
+
+      - name: Upload release artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-store-release-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/surebet-calculator.xcarchive
+            ${{ runner.temp }}/export/*.ipa
+          if-no-files-found: warn
