@@ -314,4 +314,53 @@ struct RootViewModelTests {
         #expect(!title.isEmpty)
         #expect(title != "review_request_title")
     }
+
+    @Test
+    func reviewPromptDelayIsBoundToCurrentSession() async {
+#if !DEBUG
+        clearTestUserDefaults()
+        let analytics = MockAnalyticsService()
+        let delay = ControlledDelay()
+        let viewModel = createViewModel(
+            analyticsService: analytics,
+            delay: delay
+        )
+        viewModel.send(.updateOnboardingShown(true))
+
+        viewModel.send(.scenePhaseChanged(.active))
+        await delay.waitForSleepCall()
+        viewModel.send(.scenePhaseChanged(.inactive))
+
+        viewModel.send(.scenePhaseChanged(.active))
+        await delay.waitForSleepCall()
+
+        await delay.advanceNext()
+        await awaitAsyncTasks()
+
+        #expect(viewModel.alertIsPresented == false)
+        #expect(
+            analytics.logEventCalls.filter { event in
+                if case .reviewPromptDisplayed = event {
+                    return true
+                }
+                return false
+            }.isEmpty
+        )
+
+        await delay.advanceNext()
+        await awaitAsyncTasks()
+
+        #expect(viewModel.alertIsPresented == true)
+        #expect(
+            analytics.logEventCalls.contains { event in
+                if case .reviewPromptDisplayed = event {
+                    return true
+                }
+                return false
+            }
+        )
+#else
+        #expect(Bool(true))
+#endif
+    }
 }

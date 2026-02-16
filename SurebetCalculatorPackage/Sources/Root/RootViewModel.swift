@@ -38,7 +38,9 @@ final class RootViewModel: ObservableObject {
     private var onboardingIsShown: Bool
     private var sessionNumber: Int
     private var currentScenePhase: ScenePhase?
+    private var activeSessionID: String?
     private var activeSessionStartedAt: Date?
+    private var reviewPromptTask: Task<Void, Never>?
 
     private let analyticsService: AnalyticsService
     private let reviewService: ReviewService
@@ -198,7 +200,9 @@ private extension RootViewModel {
 
         sessionNumber += 1
         rootStateStore.setSessionNumber(sessionNumber)
-        rootStateStore.setSessionID(UUID().uuidString)
+        let sessionID = UUID().uuidString
+        rootStateStore.setSessionID(sessionID)
+        activeSessionID = sessionID
         activeSessionStartedAt = Date()
 
         analyticsService.log(
@@ -210,12 +214,15 @@ private extension RootViewModel {
             )
         )
 
-        requestReviewIfNeeded()
+        requestReviewIfNeeded(sessionID: sessionID)
     }
 
     func endSessionIfNeeded(endReason: String) {
         guard let startedAt = activeSessionStartedAt else { return }
+        reviewPromptTask?.cancel()
+        reviewPromptTask = nil
         activeSessionStartedAt = nil
+        activeSessionID = nil
 
         let durationSeconds = max(0, Int(Date().timeIntervalSince(startedAt)))
         analyticsService.log(
@@ -227,12 +234,19 @@ private extension RootViewModel {
         rootStateStore.setSessionID(nil)
     }
 
-    func requestReviewIfNeeded() {
+    func requestReviewIfNeeded(sessionID: String) {
         guard featureFlags.reviewPrompt else { return }
 #if !DEBUG
-        Task {
+        reviewPromptTask?.cancel()
+        let scheduledSessionNumber = sessionNumber
+        reviewPromptTask = Task {
             await delay.sleep(nanoseconds: RootConstants.reviewRequestDelay)
-            if !requestReviewWasShown, sessionNumber >= 2, isOnboardingShown, activeSessionStartedAt != nil {
+            guard !Task.isCancelled else { return }
+            guard activeSessionID == sessionID else { return }
+            if !requestReviewWasShown,
+               scheduledSessionNumber >= 2,
+               isOnboardingShown,
+               activeSessionStartedAt != nil {
                 alertIsPresented = true
                 requestReviewWasShown = true
                 analyticsService.log(event: .reviewPromptDisplayed)
