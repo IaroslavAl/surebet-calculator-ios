@@ -149,16 +149,21 @@ fi
 
 if [[ -n "${BUILD_NUMBER_OVERRIDE:-}" ]]; then
   TARGET_BUILD_NUMBER="${BUILD_NUMBER_OVERRIDE}"
+  if ! [[ "$TARGET_BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
+    echo "Build number override must contain only digits: $TARGET_BUILD_NUMBER"
+    exit 1
+  fi
 else
   if [[ -n "${GITHUB_RUN_NUMBER:-}" ]]; then
-    TARGET_BUILD_NUMBER="${GITHUB_RUN_NUMBER}${GITHUB_RUN_ATTEMPT:-1}"
+    # Keep default build numbers strictly increasing for App Store Connect.
+    TARGET_BUILD_NUMBER="${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT:-1}"
   else
     TARGET_BUILD_NUMBER="$(date +%s)"
   fi
 fi
 
-if ! [[ "$TARGET_BUILD_NUMBER" =~ ^[0-9]+$ ]]; then
-  echo "Build number must contain only digits: $TARGET_BUILD_NUMBER"
+if ! [[ "$TARGET_BUILD_NUMBER" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+  echo "Build number must be numeric (for example: 1234 or 1234.1): $TARGET_BUILD_NUMBER"
   exit 1
 fi
 
