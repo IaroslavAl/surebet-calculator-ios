@@ -24,7 +24,8 @@
   - Job `Validate Docs Structure`
 - `.github/workflows/release-app-store.yml`
   - Manual trigger only (`workflow_dispatch`).
-  - Optional Job `Release Preflight Tests` runs unit tests by manual input (`run_preflight_tests=true`).
+  - Job `Release Unit Tests` runs always before release archive/upload.
+  - Optional Job `Release UI Tests` runs by manual input (`run_ui_tests=true`).
   - Job `Release App Store Build` prepares signed Release archive, exports IPA and uploads build to App Store Connect.
   - Xcode in release jobs is selected explicitly via `maxim-lobanov/setup-xcode@v1` (`XCODE_VERSION=latest`).
   - Versions are updated automatically before archive:

@@ -63,7 +63,12 @@ Workflow inputs:
 - `marketing_version` (optional string, for example `1.8.0`)
 - `auto_bump_patch` (`true/false`, default `false`)
 - `build_number` (optional digits-only override)
-- `run_preflight_tests` (`true/false`, default `false`; runs optional `Release Preflight Tests` job)
+- `run_ui_tests` (`true/false`, default `false`; runs optional `Release UI Tests` job)
+
+Release workflow execution order:
+- `Release Unit Tests` runs always.
+- `Release UI Tests` runs only when `run_ui_tests=true`.
+- `Release App Store Build` runs after successful unit tests and, if enabled, successful UI tests.
 
 Required secrets:
 - `APP_STORE_CONNECT_KEY_ID`
