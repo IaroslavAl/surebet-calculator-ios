@@ -251,12 +251,14 @@ if [[ -z "$IPA_PATH" ]]; then
 fi
 
 echo "Uploading IPA to App Store Connect"
+export API_PRIVATE_KEYS_DIR
+API_PRIVATE_KEYS_DIR="$(dirname "$ASC_KEY_PATH")"
 xcrun altool \
   --upload-app \
   -f "$IPA_PATH" \
-  --api-key "$APP_STORE_CONNECT_KEY_ID" \
-  --api-issuer "$APP_STORE_CONNECT_ISSUER_ID" \
-  --p8-file-path "$ASC_KEY_PATH" \
+  -t ios \
+  --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+  --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
   --show-progress
 
 FINAL_BUILD_SETTINGS="$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration "$CONFIGURATION" -showBuildSettings)"
