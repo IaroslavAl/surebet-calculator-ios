@@ -142,8 +142,15 @@ if [[ "$PROFILE_TEAM_IDENTIFIER" != "$DEVELOPMENT_TEAM" ]]; then
   exit 1
 fi
 
-if [[ "$PROFILE_APP_IDENTIFIER" != "${PROFILE_TEAM_IDENTIFIER}.${BUNDLE_IDENTIFIER}" ]]; then
-  echo "Provisioning profile app identifier mismatch. Profile: $PROFILE_APP_IDENTIFIER, expected: ${PROFILE_TEAM_IDENTIFIER}.${BUNDLE_IDENTIFIER}"
+EXPECTED_PROFILE_APP_IDENTIFIER="${PROFILE_TEAM_IDENTIFIER}.${BUNDLE_IDENTIFIER}"
+if [[ "$PROFILE_APP_IDENTIFIER" == *"*" ]]; then
+  PROFILE_APP_IDENTIFIER_PREFIX="${PROFILE_APP_IDENTIFIER%\*}"
+  if [[ "$EXPECTED_PROFILE_APP_IDENTIFIER" != ${PROFILE_APP_IDENTIFIER_PREFIX}* ]]; then
+    echo "Provisioning profile app identifier mismatch. Profile: $PROFILE_APP_IDENTIFIER, expected: $EXPECTED_PROFILE_APP_IDENTIFIER"
+    exit 1
+  fi
+elif [[ "$PROFILE_APP_IDENTIFIER" != "$EXPECTED_PROFILE_APP_IDENTIFIER" ]]; then
+  echo "Provisioning profile app identifier mismatch. Profile: $PROFILE_APP_IDENTIFIER, expected: $EXPECTED_PROFILE_APP_IDENTIFIER"
   exit 1
 fi
 
@@ -196,7 +203,7 @@ cat > "$EXPORT_OPTIONS_PATH" <<EOF
   <key>provisioningProfiles</key>
   <dict>
     <key>${BUNDLE_IDENTIFIER}</key>
-    <string>${PROFILE_UUID}</string>
+    <string>${PROFILE_NAME}</string>
   </dict>
   <key>teamID</key>
   <string>${DEVELOPMENT_TEAM}</string>
@@ -220,10 +227,10 @@ ARCHIVE_CMD=(
   "${COMMON_FLAGS[@]}"
   -destination 'generic/platform=iOS'
   -archivePath "$ARCHIVE_PATH"
-  "CODE_SIGN_STYLE=Manual"
-  "CODE_SIGN_IDENTITY=Apple Distribution"
-  "PROVISIONING_PROFILE_SPECIFIER=${PROFILE_NAME}"
-  "DEVELOPMENT_TEAM=${DEVELOPMENT_TEAM}"
+  -allowProvisioningUpdates
+  -authenticationKeyPath "$ASC_KEY_PATH"
+  -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID"
+  -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
 )
 if [[ -n "${APPMETRICA_API_KEY:-}" ]]; then
   ARCHIVE_CMD+=("APPMETRICA_API_KEY=${APPMETRICA_API_KEY}")
