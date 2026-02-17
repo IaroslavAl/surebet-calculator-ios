@@ -15,6 +15,9 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  XCODE_VERSION: latest
+
 jobs:
   secrets-scan:
     name: Secrets Scan
@@ -48,6 +51,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Print Xcode version
+        run: xcodebuild -version
+
       - name: Build project
         run: ./scripts/ci/xcode_ci.sh build
 
@@ -60,6 +71,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Print Xcode version
+        run: xcodebuild -version
 
       - name: Run unit tests
         run: ./scripts/ci/xcode_ci.sh test

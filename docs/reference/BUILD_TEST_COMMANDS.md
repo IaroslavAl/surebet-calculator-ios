@@ -43,6 +43,7 @@ xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator
 ```
 
 `scripts/ci/xcode_ci.sh` автоматически использует `APPMETRICA_API_KEY`, если переменная окружения задана.
+В GitHub Actions xcode-based jobs сначала выбирают Xcode через `maxim-lobanov/setup-xcode@v1` (`XCODE_VERSION=latest`) и печатают `xcodebuild -version`.
 
 ## Release archive (CI-friendly)
 ```bash
@@ -97,4 +98,4 @@ Local script syntax (for debugging only, requires the same env vars as workflow)
 ## Связанные документы
 - `docs/reference/CI_RULES.md`
 
-Последнее обновление: 2026-02-16
+Последнее обновление: 2026-02-17

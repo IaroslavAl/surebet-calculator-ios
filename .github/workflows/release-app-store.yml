@@ -29,6 +29,9 @@ concurrency:
   group: release-app-store-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  XCODE_VERSION: latest
+
 jobs:
   release-preflight-tests:
     name: Release Preflight Tests
@@ -40,6 +43,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Print Xcode version
+        run: xcodebuild -version
 
       - name: Run unit tests
         run: ./scripts/ci/xcode_ci.sh test
@@ -66,6 +77,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Print Xcode version
+        run: xcodebuild -version
 
       - name: Archive and upload build to App Store Connect
         run: ./scripts/ci/release_app_store.sh
