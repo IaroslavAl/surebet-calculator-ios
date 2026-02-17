@@ -121,15 +121,29 @@ security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN
 mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
 security cms -D -i "$PROFILE_PATH" > "$PROFILE_PLIST_PATH"
 PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print UUID' "$PROFILE_PLIST_PATH")"
+PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print Name' "$PROFILE_PLIST_PATH")"
+PROFILE_TEAM_IDENTIFIER="$(/usr/libexec/PlistBuddy -c 'Print TeamIdentifier:0' "$PROFILE_PLIST_PATH")"
+PROFILE_APP_IDENTIFIER="$(/usr/libexec/PlistBuddy -c 'Print Entitlements:application-identifier' "$PROFILE_PLIST_PATH")"
 cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
 
 echo "Resolving project build settings"
 BUILD_SETTINGS="$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration "$CONFIGURATION" -showBuildSettings)"
 CURRENT_MARKETING_VERSION="$(awk -F ' = ' '/ MARKETING_VERSION = / { print $2; exit }' <<<"$BUILD_SETTINGS" | tr -d '[:space:]')"
 DEVELOPMENT_TEAM="$(awk -F ' = ' '/ DEVELOPMENT_TEAM = / { print $2; exit }' <<<"$BUILD_SETTINGS" | tr -d '[:space:]')"
+BUNDLE_IDENTIFIER="$(awk -F ' = ' '/ PRODUCT_BUNDLE_IDENTIFIER = / { print $2; exit }' <<<"$BUILD_SETTINGS" | tr -d '[:space:]')"
 
-if [[ -z "$CURRENT_MARKETING_VERSION" || -z "$DEVELOPMENT_TEAM" ]]; then
-  echo "Failed to resolve MARKETING_VERSION or DEVELOPMENT_TEAM from build settings"
+if [[ -z "$CURRENT_MARKETING_VERSION" || -z "$DEVELOPMENT_TEAM" || -z "$BUNDLE_IDENTIFIER" ]]; then
+  echo "Failed to resolve MARKETING_VERSION, DEVELOPMENT_TEAM or PRODUCT_BUNDLE_IDENTIFIER from build settings"
+  exit 1
+fi
+
+if [[ "$PROFILE_TEAM_IDENTIFIER" != "$DEVELOPMENT_TEAM" ]]; then
+  echo "Provisioning profile team mismatch. Profile team: $PROFILE_TEAM_IDENTIFIER, project team: $DEVELOPMENT_TEAM"
+  exit 1
+fi
+
+if [[ "$PROFILE_APP_IDENTIFIER" != "${PROFILE_TEAM_IDENTIFIER}.${BUNDLE_IDENTIFIER}" ]]; then
+  echo "Provisioning profile app identifier mismatch. Profile: $PROFILE_APP_IDENTIFIER, expected: ${PROFILE_TEAM_IDENTIFIER}.${BUNDLE_IDENTIFIER}"
   exit 1
 fi
 
@@ -176,9 +190,14 @@ cat > "$EXPORT_OPTIONS_PATH" <<EOF
 <plist version="1.0">
 <dict>
   <key>method</key>
-  <string>app-store</string>
+  <string>app-store-connect</string>
   <key>signingStyle</key>
-  <string>automatic</string>
+  <string>manual</string>
+  <key>provisioningProfiles</key>
+  <dict>
+    <key>${BUNDLE_IDENTIFIER}</key>
+    <string>${PROFILE_UUID}</string>
+  </dict>
   <key>teamID</key>
   <string>${DEVELOPMENT_TEAM}</string>
   <key>uploadSymbols</key>
@@ -201,10 +220,10 @@ ARCHIVE_CMD=(
   "${COMMON_FLAGS[@]}"
   -destination 'generic/platform=iOS'
   -archivePath "$ARCHIVE_PATH"
-  -allowProvisioningUpdates
-  -authenticationKeyPath "$ASC_KEY_PATH"
-  -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID"
-  -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+  "CODE_SIGN_STYLE=Manual"
+  "CODE_SIGN_IDENTITY=Apple Distribution"
+  "PROVISIONING_PROFILE_SPECIFIER=${PROFILE_NAME}"
+  "DEVELOPMENT_TEAM=${DEVELOPMENT_TEAM}"
 )
 if [[ -n "${APPMETRICA_API_KEY:-}" ]]; then
   ARCHIVE_CMD+=("APPMETRICA_API_KEY=${APPMETRICA_API_KEY}")
@@ -216,11 +235,7 @@ echo "Exporting IPA"
 xcodebuild -exportArchive \
   -archivePath "$ARCHIVE_PATH" \
   -exportPath "$EXPORT_PATH" \
-  -exportOptionsPlist "$EXPORT_OPTIONS_PATH" \
-  -allowProvisioningUpdates \
-  -authenticationKeyPath "$ASC_KEY_PATH" \
-  -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
-  -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+  -exportOptionsPlist "$EXPORT_OPTIONS_PATH"
 
 IPA_PATH="$(find "$EXPORT_PATH" -maxdepth 1 -type f -name '*.ipa' -print -quit)"
 if [[ -z "$IPA_PATH" ]]; then
