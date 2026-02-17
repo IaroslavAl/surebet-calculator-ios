@@ -8,7 +8,8 @@
    - изменение существующей job,
    - изменение условий trigger,
    - изменение required checks,
-   - оптимизация времени/стабильности.
+   - оптимизация времени/стабильности,
+   - релизная manual job (archive/upload/signing).
 2. Проверь source of truth:
    - `docs/reference/CI_RULES.md`
    - `docs/reference/BUILD_TEST_COMMANDS.md`
@@ -28,7 +29,9 @@
    - `./scripts/ci/xcode_ci.sh test-ui` (если менялся UI и UI-тесты)
    - `./scripts/validate-docs.sh`
 2. Если есть runtime-конфиги через build settings (например `APPMETRICA_API_KEY`), проверь что они приходят из CI secrets, а не из scheme env.
-2. Убедись, что workflow-файлы валидны и не содержат дублирующих job.
+3. Если менялся релизный workflow/скрипт (`release-app-store.yml`, `release_app_store.sh`), проверь shell-валидность:
+   - `bash -n ./scripts/ci/release_app_store.sh`
+4. Убедись, что workflow-файлы валидны и не содержат дублирующих job.
 
 ## 4. Документация
 При любом изменении CI-контракта обнови:
@@ -42,4 +45,4 @@
 - Нет self-hosted runner-зависимостей.
 - Документация синхронизирована.
 
-Последнее обновление: 2026-02-15
+Последнее обновление: 2026-02-16

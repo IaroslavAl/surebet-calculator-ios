@@ -21,6 +21,14 @@
   - For `Build` and `Unit Tests`, `APPMETRICA_API_KEY` is injected from CI secrets (if configured).
 - `.github/workflows/docs-validation.yml`
   - Job `Validate Docs Structure`
+- `.github/workflows/release-app-store.yml`
+  - Manual trigger only (`workflow_dispatch`).
+  - Optional Job `Release Preflight Tests` runs unit tests by manual input (`run_preflight_tests=true`).
+  - Job `Release App Store Build` prepares signed Release archive, exports IPA and uploads build to App Store Connect.
+  - Versions are updated automatically before archive:
+    - `CURRENT_PROJECT_VERSION` is always auto-incremented (or taken from manual input override),
+    - `MARKETING_VERSION` can be set from manual input or auto-bumped by patch.
+  - Runtime/build settings secrets are injected via GitHub Actions secrets.
 
 ## Runner policy
 - Использовать только GitHub-hosted runners (`macos-latest`).
@@ -35,6 +43,18 @@
 - `Validate Docs Structure`
 
 Merge разрешать только если все required checks успешны.
+Manual release workflow не добавляется в required checks.
+
+## Release secrets (GitHub Actions)
+Для `.github/workflows/release-app-store.yml` должны быть настроены secrets:
+- `APP_STORE_CONNECT_KEY_ID`
+- `APP_STORE_CONNECT_ISSUER_ID`
+- `APP_STORE_CONNECT_API_KEY` (p8 key content)
+- `IOS_DISTRIBUTION_CERT_BASE64` (base64 `.p12`)
+- `IOS_DISTRIBUTION_CERT_PASSWORD`
+- `IOS_PROVISIONING_PROFILE_BASE64` (base64 `.mobileprovision`)
+- `KEYCHAIN_PASSWORD`
+- `APPMETRICA_API_KEY` (optional, но рекомендуется)
 
 ## Масштабирование
 - Добавлять новые проверки отдельными job в `ci.yml`.
@@ -59,4 +79,4 @@ Merge разрешать только если все required checks успеш
   - `docs/reference/BUILD_TEST_COMMANDS.md`
   - релевантного playbook из `docs/agent/PLAYBOOKS/`
 
-Последнее обновление: 2026-02-15
+Последнее обновление: 2026-02-16
