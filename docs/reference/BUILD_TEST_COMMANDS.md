@@ -43,6 +43,7 @@ xcodebuild test -project surebet-calculator.xcodeproj -scheme surebet-calculator
 ```
 
 `scripts/ci/xcode_ci.sh` автоматически использует `APPMETRICA_API_KEY`, если переменная окружения задана.
+В GitHub Actions xcode-based jobs сначала выбирают Xcode через `maxim-lobanov/setup-xcode@v1` (`XCODE_VERSION=latest`) и печатают `xcodebuild -version`.
 
 ## Release archive (CI-friendly)
 ```bash
@@ -62,7 +63,12 @@ Workflow inputs:
 - `marketing_version` (optional string, for example `1.8.0`)
 - `auto_bump_patch` (`true/false`, default `false`)
 - `build_number` (optional digits-only override)
-- `run_preflight_tests` (`true/false`, default `false`; runs optional `Release Preflight Tests` job)
+- `run_ui_tests` (`true/false`, default `false`; runs optional `Release UI Tests` job)
+
+Release workflow execution order:
+- `Release Unit Tests` runs always.
+- `Release UI Tests` runs only when `run_ui_tests=true`.
+- `Release App Store Build` runs after successful unit tests and, if enabled, successful UI tests.
 
 Required secrets:
 - `APP_STORE_CONNECT_KEY_ID`
@@ -97,4 +103,4 @@ Local script syntax (for debugging only, requires the same env vars as workflow)
 ## Связанные документы
 - `docs/reference/CI_RULES.md`
 
-Последнее обновление: 2026-02-16
+Последнее обновление: 2026-02-17

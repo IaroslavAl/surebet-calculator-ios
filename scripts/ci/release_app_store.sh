@@ -121,15 +121,36 @@ security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN
 mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
 security cms -D -i "$PROFILE_PATH" > "$PROFILE_PLIST_PATH"
 PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print UUID' "$PROFILE_PLIST_PATH")"
+PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print Name' "$PROFILE_PLIST_PATH")"
+PROFILE_TEAM_IDENTIFIER="$(/usr/libexec/PlistBuddy -c 'Print TeamIdentifier:0' "$PROFILE_PLIST_PATH")"
+PROFILE_APP_IDENTIFIER="$(/usr/libexec/PlistBuddy -c 'Print Entitlements:application-identifier' "$PROFILE_PLIST_PATH")"
 cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
 
 echo "Resolving project build settings"
 BUILD_SETTINGS="$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration "$CONFIGURATION" -showBuildSettings)"
 CURRENT_MARKETING_VERSION="$(awk -F ' = ' '/ MARKETING_VERSION = / { print $2; exit }' <<<"$BUILD_SETTINGS" | tr -d '[:space:]')"
 DEVELOPMENT_TEAM="$(awk -F ' = ' '/ DEVELOPMENT_TEAM = / { print $2; exit }' <<<"$BUILD_SETTINGS" | tr -d '[:space:]')"
+BUNDLE_IDENTIFIER="$(awk -F ' = ' '/ PRODUCT_BUNDLE_IDENTIFIER = / { print $2; exit }' <<<"$BUILD_SETTINGS" | tr -d '[:space:]')"
 
-if [[ -z "$CURRENT_MARKETING_VERSION" || -z "$DEVELOPMENT_TEAM" ]]; then
-  echo "Failed to resolve MARKETING_VERSION or DEVELOPMENT_TEAM from build settings"
+if [[ -z "$CURRENT_MARKETING_VERSION" || -z "$DEVELOPMENT_TEAM" || -z "$BUNDLE_IDENTIFIER" ]]; then
+  echo "Failed to resolve MARKETING_VERSION, DEVELOPMENT_TEAM or PRODUCT_BUNDLE_IDENTIFIER from build settings"
+  exit 1
+fi
+
+if [[ "$PROFILE_TEAM_IDENTIFIER" != "$DEVELOPMENT_TEAM" ]]; then
+  echo "Provisioning profile team mismatch. Profile team: $PROFILE_TEAM_IDENTIFIER, project team: $DEVELOPMENT_TEAM"
+  exit 1
+fi
+
+EXPECTED_PROFILE_APP_IDENTIFIER="${PROFILE_TEAM_IDENTIFIER}.${BUNDLE_IDENTIFIER}"
+if [[ "$PROFILE_APP_IDENTIFIER" == *"*" ]]; then
+  PROFILE_APP_IDENTIFIER_PREFIX="${PROFILE_APP_IDENTIFIER%\*}"
+  if [[ "$EXPECTED_PROFILE_APP_IDENTIFIER" != ${PROFILE_APP_IDENTIFIER_PREFIX}* ]]; then
+    echo "Provisioning profile app identifier mismatch. Profile: $PROFILE_APP_IDENTIFIER, expected: $EXPECTED_PROFILE_APP_IDENTIFIER"
+    exit 1
+  fi
+elif [[ "$PROFILE_APP_IDENTIFIER" != "$EXPECTED_PROFILE_APP_IDENTIFIER" ]]; then
+  echo "Provisioning profile app identifier mismatch. Profile: $PROFILE_APP_IDENTIFIER, expected: $EXPECTED_PROFILE_APP_IDENTIFIER"
   exit 1
 fi
 
@@ -176,9 +197,14 @@ cat > "$EXPORT_OPTIONS_PATH" <<EOF
 <plist version="1.0">
 <dict>
   <key>method</key>
-  <string>app-store</string>
+  <string>app-store-connect</string>
   <key>signingStyle</key>
-  <string>automatic</string>
+  <string>manual</string>
+  <key>provisioningProfiles</key>
+  <dict>
+    <key>${BUNDLE_IDENTIFIER}</key>
+    <string>${PROFILE_NAME}</string>
+  </dict>
   <key>teamID</key>
   <string>${DEVELOPMENT_TEAM}</string>
   <key>uploadSymbols</key>
@@ -216,11 +242,7 @@ echo "Exporting IPA"
 xcodebuild -exportArchive \
   -archivePath "$ARCHIVE_PATH" \
   -exportPath "$EXPORT_PATH" \
-  -exportOptionsPlist "$EXPORT_OPTIONS_PATH" \
-  -allowProvisioningUpdates \
-  -authenticationKeyPath "$ASC_KEY_PATH" \
-  -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
-  -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+  -exportOptionsPlist "$EXPORT_OPTIONS_PATH"
 
 IPA_PATH="$(find "$EXPORT_PATH" -maxdepth 1 -type f -name '*.ipa' -print -quit)"
 if [[ -z "$IPA_PATH" ]]; then
@@ -229,12 +251,14 @@ if [[ -z "$IPA_PATH" ]]; then
 fi
 
 echo "Uploading IPA to App Store Connect"
+export API_PRIVATE_KEYS_DIR
+API_PRIVATE_KEYS_DIR="$(dirname "$ASC_KEY_PATH")"
 xcrun altool \
   --upload-app \
   -f "$IPA_PATH" \
-  --api-key "$APP_STORE_CONNECT_KEY_ID" \
-  --api-issuer "$APP_STORE_CONNECT_ISSUER_ID" \
-  --p8-file-path "$ASC_KEY_PATH" \
+  -t ios \
+  --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+  --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
   --show-progress
 
 FINAL_BUILD_SETTINGS="$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration "$CONFIGURATION" -showBuildSettings)"

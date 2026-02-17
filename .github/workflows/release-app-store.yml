@@ -16,8 +16,8 @@ on:
         description: "Optional build number override (digits only)."
         required: false
         type: string
-      run_preflight_tests:
-        description: "Run preflight unit tests before release build."
+      run_ui_tests:
+        description: "Run optional UI tests before release build."
         required: false
         default: false
         type: boolean
@@ -29,10 +29,12 @@ concurrency:
   group: release-app-store-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  XCODE_VERSION: latest
+
 jobs:
-  release-preflight-tests:
-    name: Release Preflight Tests
-    if: ${{ inputs.run_preflight_tests == true }}
+  release-unit-tests:
+    name: Release Unit Tests
     runs-on: macos-latest
     env:
       APPMETRICA_API_KEY: ${{ secrets.APPMETRICA_API_KEY }}
@@ -41,14 +43,47 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Print Xcode version
+        run: xcodebuild -version
+
       - name: Run unit tests
         run: ./scripts/ci/xcode_ci.sh test
+
+  release-ui-tests:
+    name: Release UI Tests
+    if: ${{ inputs.run_ui_tests == true }}
+    needs:
+      - release-unit-tests
+    runs-on: macos-latest
+    env:
+      APPMETRICA_API_KEY: ${{ secrets.APPMETRICA_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Print Xcode version
+        run: xcodebuild -version
+
+      - name: Run UI tests
+        run: ./scripts/ci/xcode_ci.sh test-ui
 
   release-app-store:
     name: Release App Store Build
     needs:
-      - release-preflight-tests
-    if: ${{ always() && (needs.release-preflight-tests.result == 'success' || needs.release-preflight-tests.result == 'skipped') }}
+      - release-unit-tests
+      - release-ui-tests
+    if: ${{ always() && needs.release-unit-tests.result == 'success' && (needs.release-ui-tests.result == 'success' || needs.release-ui-tests.result == 'skipped') }}
     runs-on: macos-latest
     env:
       APPMETRICA_API_KEY: ${{ secrets.APPMETRICA_API_KEY }}
@@ -66,6 +101,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Print Xcode version
+        run: xcodebuild -version
 
       - name: Archive and upload build to App Store Connect
         run: ./scripts/ci/release_app_store.sh

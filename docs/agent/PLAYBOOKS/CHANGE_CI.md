@@ -29,7 +29,8 @@
    - `./scripts/ci/xcode_ci.sh test-ui` (если менялся UI и UI-тесты)
    - `./scripts/validate-docs.sh`
 2. Если есть runtime-конфиги через build settings (например `APPMETRICA_API_KEY`), проверь что они приходят из CI secrets, а не из scheme env.
-3. Если менялся релизный workflow/скрипт (`release-app-store.yml`, `release_app_store.sh`), проверь shell-валидность:
+3. Если менялся релизный workflow/скрипт (`release-app-store.yml`, `release_app_store.sh`), проверь:
+   - корректность `workflow_dispatch` inputs и `needs/if`-связей (для optional job),
    - `bash -n ./scripts/ci/release_app_store.sh`
 4. Убедись, что workflow-файлы валидны и не содержат дублирующих job.
 
@@ -45,4 +46,4 @@
 - Нет self-hosted runner-зависимостей.
 - Документация синхронизирована.
 
-Последнее обновление: 2026-02-16
+Последнее обновление: 2026-02-17

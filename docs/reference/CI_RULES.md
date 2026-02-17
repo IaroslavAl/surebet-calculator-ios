@@ -18,13 +18,16 @@
   - Job `SwiftLint`
   - Job `Build`
   - Job `Unit Tests`
+  - Xcode in xcode-based jobs is selected explicitly via `maxim-lobanov/setup-xcode@v1` (`XCODE_VERSION=latest`).
   - For `Build` and `Unit Tests`, `APPMETRICA_API_KEY` is injected from CI secrets (if configured).
 - `.github/workflows/docs-validation.yml`
   - Job `Validate Docs Structure`
 - `.github/workflows/release-app-store.yml`
   - Manual trigger only (`workflow_dispatch`).
-  - Optional Job `Release Preflight Tests` runs unit tests by manual input (`run_preflight_tests=true`).
+  - Job `Release Unit Tests` runs always before release archive/upload.
+  - Optional Job `Release UI Tests` runs by manual input (`run_ui_tests=true`).
   - Job `Release App Store Build` prepares signed Release archive, exports IPA and uploads build to App Store Connect.
+  - Xcode in release jobs is selected explicitly via `maxim-lobanov/setup-xcode@v1` (`XCODE_VERSION=latest`).
   - Versions are updated automatically before archive:
     - `CURRENT_PROJECT_VERSION` is always auto-incremented (or taken from manual input override),
     - `MARKETING_VERSION` can be set from manual input or auto-bumped by patch.
@@ -79,4 +82,4 @@ Manual release workflow не добавляется в required checks.
   - `docs/reference/BUILD_TEST_COMMANDS.md`
   - релевантного playbook из `docs/agent/PLAYBOOKS/`
 
-Последнее обновление: 2026-02-16
+Последнее обновление: 2026-02-17
