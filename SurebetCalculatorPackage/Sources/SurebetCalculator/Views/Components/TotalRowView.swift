@@ -41,13 +41,13 @@ private extension TotalRowView {
     var state: TotalRowItemState { viewModel.state }
     var betSizeLabel: String { SurebetCalculatorLocalizationKey.totalBetSize.localized(locale) }
     var profitPercentageLabel: String { SurebetCalculatorLocalizationKey.profitPercentage.localized(locale) }
-    var labelSpacing: CGFloat { DesignSystem.Spacing.small }
+    var labelSpacing: CGFloat { DesignSystem.Spacing.extraSmall }
     var columnSpacing: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
     var cardPadding: CGFloat { isIPad ? DesignSystem.Spacing.large : DesignSystem.Spacing.small }
     var cardCornerRadius: CGFloat { isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.medium }
     var selectionIndicatorSize: CGFloat { isIPad ? 48 : 44 }
     var isSelected: Bool { state.isSelected }
-    var labelMinHeight: CGFloat { isIPad ? 36 : 32 }
+    var labelMinHeight: CGFloat { isIPad ? 30 : 24 }
 
     var totalBetSizeColumn: some View {
         VStack(spacing: labelSpacing) {
