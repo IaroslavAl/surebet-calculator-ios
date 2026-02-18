@@ -325,49 +325,49 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose one mode: from total stake, from one selected outcome, or manual."
+            "value": "Use one of three modes: from total stake, from selected outcome, or manual without outcome binding."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Выберите один режим: от общей суммы ставок, от выбранного исхода или ручной."
+            "value": "Используйте один из трех режимов: от общей суммы ставки, от выбранного исхода или вручную без привязки к исходу."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wählen Sie einen Modus: nach Gesamteinsatz, nach ausgewähltem Ausgang oder manuell."
+            "value": "Verwende einen von drei Modi: vom Gesamteinsatz, vom ausgewählten Ausgang oder manuell ohne Bindung an einen Ausgang."
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Επιλέξτε μία λειτουργία: από το συνολικό ποντάρισμα, από μία επιλεγμένη έκβαση ή χειροκίνητα."
+            "value": "Χρησιμοποιήστε μία από τις τρεις λειτουργίες: από συνολικό ποντάρισμα, από επιλεγμένη έκβαση ή χειροκίνητα χωρίς σύνδεση με έκβαση."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Elija un modo: desde la apuesta total, desde un resultado seleccionado o manual."
+            "value": "Usa uno de tres modos: desde la apuesta total, desde el resultado seleccionado o manual sin vinculación a un resultado."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choisissez un mode : à partir de la mise totale, d’une issue sélectionnée ou en manuel."
+            "value": "Utilisez l’un des trois modes : à partir de la mise totale, de l’issue sélectionnée ou en manuel sans liaison à une issue."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scegli una modalità: dalla puntata totale, da un esito selezionato o manuale."
+            "value": "Usa una delle tre modalità: dalla puntata totale, dall’esito selezionato o manuale senza vincolo a un esito."
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escolha um modo: pela aposta total, por um resultado selecionado ou manual."
+            "value": "Use um dos três modos: pela aposta total, pelo resultado selecionado ou manual sem vínculo com um resultado."
           }
         }
       }

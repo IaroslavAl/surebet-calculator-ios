@@ -431,49 +431,49 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gewinn %"
+            "value": "ROI %"
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Κέρδος %"
+            "value": "ROI %"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Profit %"
+            "value": "ROI %"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ganancia %"
+            "value": "ROI %"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gain %"
+            "value": "ROI %"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Profitto %"
+            "value": "ROI %"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lucro %"
+            "value": "ROI %"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Прибыль %"
+            "value": "ROI %"
           }
         }
       }
