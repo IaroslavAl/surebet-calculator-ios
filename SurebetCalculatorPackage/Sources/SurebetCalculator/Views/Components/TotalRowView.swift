@@ -47,14 +47,11 @@ private extension TotalRowView {
     var cardCornerRadius: CGFloat { isIPad ? DesignSystem.Radius.large : DesignSystem.Radius.medium }
     var selectionIndicatorSize: CGFloat { isIPad ? 48 : 44 }
     var isSelected: Bool { state.isSelected }
+    var labelMinHeight: CGFloat { isIPad ? 36 : 32 }
 
     var totalBetSizeColumn: some View {
         VStack(spacing: labelSpacing) {
-            Text(betSizeLabel)
-                .font(DesignSystem.Typography.label)
-                .foregroundColor(DesignSystem.Color.textSecondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+            columnLabel(betSizeLabel)
             TextFieldView(
                 placeholder: "",
                 label: betSizeLabel,
@@ -69,11 +66,7 @@ private extension TotalRowView {
 
     var profitPercentageColumn: some View {
         VStack(spacing: labelSpacing) {
-            Text(profitPercentageLabel)
-                .font(DesignSystem.Typography.label)
-                .foregroundColor(DesignSystem.Color.textSecondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+            columnLabel(profitPercentageLabel)
             TextView(
                 text: state.profitPercentage,
                 isPercent: true,
@@ -91,6 +84,15 @@ private extension TotalRowView {
                 DesignSystem.Color.surface
             }
         }
+    }
+
+    func columnLabel(_ text: String) -> some View {
+        Text(text)
+            .font(DesignSystem.Typography.label)
+            .foregroundColor(DesignSystem.Color.textSecondary)
+            .lineLimit(2)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity, minHeight: labelMinHeight, alignment: .center)
     }
 }
 
