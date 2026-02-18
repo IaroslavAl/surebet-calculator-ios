@@ -1,430 +1,430 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "onboarding_page_1_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter the total bet amount and coefficients for all outcomes."
+  "sourceLanguage": "en",
+  "strings": {
+    "onboarding_page_1_description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter the total stake and odds for all outcomes."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Введите общую сумму ставки и коэффициенты для всех исходов."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Введите общую сумму ставок и коэффициенты для всех исходов."
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gib den Gesamteinsatz und die Quoten für alle Ausgänge ein."
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geben Sie den Gesamteinsatz und die Quoten für alle Ausgänge ein."
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Εισάγετε το συνολικό ποσό στοιχήματος και τις αποδόσεις για όλα τα ενδεχόμενα."
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εισαγάγετε το συνολικό ποντάρισμα και τις αποδόσεις για όλες τις εκβάσεις."
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Introduce el importe total de la apuesta y las cuotas de todos los resultados."
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduzca la apuesta total y las cuotas para todos los resultados."
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saisissez le montant total de la mise et les cotes pour toutes les issues."
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saisissez la mise totale et les cotes pour toutes les issues."
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inserisci l’importo totale della puntata e le quote per tutti gli esiti."
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inserisci la puntata totale e le quote per tutti gli esiti."
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Insira o valor total da aposta e as odds para todos os resultados."
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insira a aposta total e as odds para todos os resultados."
           }
         }
       }
     },
-    "onboarding_close" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
+    "onboarding_close": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Закрыть"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завершить"
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schließen"
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fertig"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Κλείσιμο"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Τέλος"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cerrar"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finalizar"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fermer"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminer"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chiudi"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fine"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fechar"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluir"
           }
         }
       }
     },
-    "onboarding_close_onboarding" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close onboarding"
+    "onboarding_close_onboarding": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close onboarding"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Закрыть онбординг"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрыть онбординг"
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Onboarding schließen"
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onboarding schließen"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Κλείσιμο εισαγωγής"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κλείσιμο εισαγωγής"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cerrar la introducción"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerrar introducción"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fermer l’onboarding"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fermer l’introduction"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chiudi onboarding"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiudi onboarding"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fechar a introdução"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fechar introdução"
           }
         }
       }
     },
-    "onboarding_page_3_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter the bet amount and coefficients for all outcomes. Turn off all switches first."
+    "onboarding_page_3_description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter stakes and odds manually for all outcomes. Turn off all toggles first."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Введите сумму ставки и коэффициенты для всех исходов. Сначала отключите все переключатели."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Введите суммы ставок и коэффициенты вручную для всех исходов. Сначала отключите все переключатели."
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gib den Einsatz und die Quoten für alle Ausgänge ein. Schalte zuerst alle Schalter aus."
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geben Sie Einsätze und Quoten für alle Ausgänge manuell ein. Deaktivieren Sie zuerst alle Schalter."
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Εισάγετε το ποσό στοιχήματος και τις αποδόσεις για όλα τα ενδεχόμενα. Πρώτα απενεργοποιήστε όλους τους διακόπτες."
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εισαγάγετε χειροκίνητα πονταρίσματα και αποδόσεις για όλες τις εκβάσεις. Πρώτα απενεργοποιήστε όλους τους διακόπτες."
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Introduce el importe de la apuesta y las cuotas de todos los resultados. Primero desactiva todos los interruptores."
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduzca manualmente apuestas y cuotas para todos los resultados. Primero desactive todos los interruptores."
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saisissez le montant de la mise et les cotes pour toutes les issues. Désactivez d’abord tous les interrupteurs."
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saisissez manuellement les mises et les cotes pour toutes les issues. Désactivez d’abord tous les interrupteurs."
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inserisci l’importo della puntata e le quote per tutti gli esiti. Prima disattiva tutti gli interruttori."
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inserisci manualmente puntate e quote per tutti gli esiti. Disattiva prima tutti gli interruttori."
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Insira o valor da aposta e as odds para todos os resultados. Primeiro desative todos os interruptores."
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insira manualmente apostas e odds para todos os resultados. Primeiro, desative todos os controles."
           }
         }
       }
     },
-    "onboarding_image" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Image"
+    "onboarding_image": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustration"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Изображение"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Иллюстрация"
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bild"
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustration"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Εικόνα"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εικονογράφηση"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imagen"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ilustración"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Image"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustration"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Immagine"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Illustrazione"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imagem"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ilustração"
           }
         }
       }
     },
-    "onboarding_page_2_description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter the bet size for one outcome and coefficients for all outcomes."
+    "onboarding_page_2_description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a stake for one outcome and odds for all outcomes."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Введите размер ставки для одного исхода и коэффициенты для всех исходов."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Введите ставку для одного исхода и коэффициенты для всех исходов."
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gib den Einsatz für einen Ausgang und die Quoten für alle Ausgänge ein."
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geben Sie einen Einsatz für einen Ausgang und Quoten für alle Ausgänge ein."
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Εισάγετε το ποσό στοιχήματος για ένα ενδεχόμενο και τις αποδόσεις για όλα τα ενδεχόμενα."
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εισαγάγετε ποντάρισμα για μία έκβαση και αποδόσεις για όλες τις εκβάσεις."
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Introduce el importe de la apuesta para un resultado y las cuotas de todos los resultados."
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Introduzca la apuesta de un resultado y las cuotas de todos los resultados."
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saisissez le montant de la mise pour une issue et les cotes pour toutes les issues."
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saisissez la mise d’une issue et les cotes de toutes les issues."
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inserisci l’importo della puntata per un esito e le quote per tutti gli esiti."
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inserisci la puntata di un esito e le quote di tutti gli esiti."
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Insira o valor da aposta para um resultado e as odds para todos os resultados."
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insira a aposta de um resultado e as odds de todos os resultados."
           }
         }
       }
     },
-    "onboarding_more_details" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "More details"
+    "onboarding_more_details": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learn more"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Подробнее"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подробнее"
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mehr Details"
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mehr erfahren"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Περισσότερες λεπτομέρειες"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μάθετε περισσότερα"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Más detalles"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más información"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plus de détails"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En savoir plus"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Più dettagli"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scopri di più"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mais detalhes"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saiba mais"
           }
         }
       }
     },
-    "onboarding_next" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next"
+    "onboarding_next": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Далее"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Далее"
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weiter"
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weiter"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Επόμενο"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επόμενο"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siguiente"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguiente"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suivant"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suivant"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avanti"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avanti"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Próximo"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguinte"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

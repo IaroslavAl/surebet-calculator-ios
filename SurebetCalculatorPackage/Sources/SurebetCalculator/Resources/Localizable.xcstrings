@@ -1,539 +1,536 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "%lld" : {
-
-    },
-    "calculator_bet_size" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einsatz"
+  "sourceLanguage": "en",
+  "strings": {
+    "calculator_bet_size": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einsatz"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Στοίχημα"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ποντάρισμα"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stake"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stake"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apuesta"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apuesta"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mise"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mise"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Puntata"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puntata"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aposta"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aposta"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ставка"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ставка"
           }
         }
       }
     },
-    "calculator_clear" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Löschen"
+    "calculator_clear": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Löschen"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Καθαρισμός"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Καθαρισμός"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Borrar"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpiar"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Effacer"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacer"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancella"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulisci"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Limpar"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Очистить"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить"
           }
         }
       }
     },
-    "calculator_clear_all" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alles löschen"
+    "calculator_clear_all": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alles löschen"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Καθαρισμός όλων"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Καθαρισμός όλων"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear all"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear all"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Borrar todo"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpiar todo"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tout effacer"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tout effacer"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancella tutto"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancella tutto"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Limpar tudo"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar tudo"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Очистить всё"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить всё"
           }
         }
       }
     },
-    "calculator_coefficient" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quoten"
+    "calculator_coefficient": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quote"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Απόδοση"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Απόδοση"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odds"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odds"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuota"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuota"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cote"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cote"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quota"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quota"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Odds"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odds"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Коэффициент"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Коэффициент"
           }
         }
       }
     },
-    "calculator_done" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fertig"
+    "calculator_done": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fertig"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Τέλος"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Έτοιμο"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Listo"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terminé"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminé"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fine"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fine"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Concluído"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluir"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Готово"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
           }
         }
       }
     },
-    "calculator_income" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gewinn"
+    "calculator_income": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gewinn"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Κέρδος"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κέρδος"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Profit"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profit"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beneficio"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ganancia"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bénéfice"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gain"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Profitto"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profitto"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lucro"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lucro"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Прибыль"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Прибыль"
           }
         }
       }
     },
-    "calculator_navigation_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Surebet-Rechner"
+    "calculator_navigation_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechner"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Υπολογιστής Surebet"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Υπολογιστής"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Surebet calculator"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calculator"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calculadora de surebet"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calculadora"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calculateur de surebet"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calculateur"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calcolatore surebet"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calcolatore"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calculadora de surebet"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calculadora"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Калькулятор вилок"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Калькулятор"
           }
         }
       }
     },
-    "calculator_outcomes_count" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anzahl der Ausgänge"
+    "calculator_outcomes_count": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anzahl der Ausgänge"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Αριθμός ενδεχομένων"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αριθμός εκβάσεων"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Number of outcomes"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Number of outcomes"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Número de resultados"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Número de resultados"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nombre d’issues"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre d’issues"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Numero di esiti"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Numero di esiti"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Número de resultados"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Número de resultados"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Количество исходов"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Количество исходов"
           }
         }
       }
     },
-    "calculator_profit_percentage" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ROI %"
+    "calculator_profit_percentage": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROI %"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ROI %"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROI %"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Profit %"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROI %"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ROI %"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROI %"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ROI %"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROI %"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ROI %"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROI %"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ROI %"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROI %"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ROI %"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROI %"
           }
         }
       }
     },
-    "calculator_total_bet_size" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gesamteinsatz"
+    "calculator_total_bet_size": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesamteinsatz"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Συνολικό στοίχημα"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συνολικό ποντάρισμα"
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total stake"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total stake"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apuesta total"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apuesta total"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enjeu total"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mise totale"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Puntata totale"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puntata totale"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aposta total"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aposta total"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сумма ставок"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сумма ставок"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

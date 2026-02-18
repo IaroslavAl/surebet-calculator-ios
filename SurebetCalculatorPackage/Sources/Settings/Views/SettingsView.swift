@@ -3,7 +3,6 @@ import DesignSystem
 
 private enum SettingsAccessibilityIdentifiers {
     static let view = "settings_view"
-    static let headerTitle = "settings_header_title"
     static let themeSection = "settings_theme_section"
     static let languageSection = "settings_language_section"
 }
@@ -29,7 +28,6 @@ struct SettingsView: View {
             DesignSystem.Color.background.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: sectionSpacing) {
-                    header
                     themeSection
                     languageSection
                 }
@@ -38,7 +36,7 @@ struct SettingsView: View {
             }
         }
         .navigationTitle(navigationTitle)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .accessibilityIdentifier(SettingsAccessibilityIdentifiers.view)
     }
 }
@@ -47,8 +45,6 @@ struct SettingsView: View {
 
 private extension SettingsView {
     var navigationTitle: String { SettingsLocalizationKey.navigationTitle.localized(locale) }
-    var headerTitle: String { SettingsLocalizationKey.headerTitle.localized(locale) }
-    var headerSubtitle: String { SettingsLocalizationKey.headerSubtitle.localized(locale) }
     var themeTitle: String { SettingsLocalizationKey.themeTitle.localized(locale) }
     var themeSubtitle: String { SettingsLocalizationKey.themeSubtitle.localized(locale) }
     var languageTitle: String { SettingsLocalizationKey.languageTitle.localized(locale) }
@@ -60,19 +56,6 @@ private extension SettingsView {
     var horizontalPadding: CGFloat { DesignSystem.Spacing.large }
     var verticalPadding: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
     var optionSpacing: CGFloat { DesignSystem.Spacing.small }
-
-    var header: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
-            Text(headerTitle)
-                .font(DesignSystem.Typography.title)
-                .foregroundColor(DesignSystem.Color.textPrimary)
-                .accessibilityIdentifier(SettingsAccessibilityIdentifiers.headerTitle)
-            Text(headerSubtitle)
-                .font(DesignSystem.Typography.description)
-                .foregroundColor(DesignSystem.Color.textSecondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
 
     var themeSection: some View {
         SettingsSectionCard(

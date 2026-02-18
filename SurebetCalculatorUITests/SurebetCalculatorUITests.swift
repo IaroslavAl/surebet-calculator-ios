@@ -74,8 +74,8 @@ final class SurebetCalculatorUITests: XCTestCase {
 
         tapMainMenuAction(Identifiers.MainMenu.settingsAction)
 
-        let settingsHeader = app.staticTexts[Identifiers.Settings.headerTitle]
-        XCTAssertTrue(settingsHeader.waitForExistence(timeout: 5), "Экран настроек должен отображаться")
+        let settingsView = app.otherElements[Identifiers.Settings.view]
+        XCTAssertTrue(settingsView.waitForExistence(timeout: 5), "Экран настроек должен отображаться")
     }
 
     /// Тест: Открытие экрана инструкции.
@@ -85,8 +85,8 @@ final class SurebetCalculatorUITests: XCTestCase {
 
         tapMainMenuAction(Identifiers.MainMenu.instructionsAction)
 
-        let instructionsHeader = app.staticTexts[Identifiers.Instructions.headerTitle]
-        XCTAssertTrue(instructionsHeader.waitForExistence(timeout: 5), "Экран инструкции должен отображаться")
+        let instructionsView = app.otherElements[Identifiers.Instructions.view]
+        XCTAssertTrue(instructionsView.waitForExistence(timeout: 5), "Экран инструкции должен отображаться")
     }
 
     /// Тест: Ввод данных в калькулятор (через коэффициенты и общую сумму).
@@ -497,11 +497,11 @@ private enum Identifiers {
     }
 
     enum Settings {
-        static let headerTitle = "settings_header_title"
+        static let view = "settings_view"
     }
 
     enum Instructions {
-        static let headerTitle = "menu_instructions_header_title"
+        static let view = "menu_instructions_view"
     }
 
     enum Calculator {

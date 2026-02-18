@@ -3,7 +3,6 @@ import DesignSystem
 
 private enum MenuInstructionsAccessibilityIdentifiers {
     static let view = "menu_instructions_view"
-    static let headerTitle = "menu_instructions_header_title"
 }
 
 struct MenuInstructionsView: View {
@@ -18,7 +17,6 @@ struct MenuInstructionsView: View {
             DesignSystem.Color.background.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: sectionSpacing) {
-                    header
                     ForEach(steps) { step in
                         InstructionCard(step: step)
                     }
@@ -28,7 +26,7 @@ struct MenuInstructionsView: View {
             }
         }
         .navigationTitle(instructionsTitle)
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .accessibilityIdentifier(MenuInstructionsAccessibilityIdentifiers.view)
     }
 }
@@ -37,23 +35,9 @@ struct MenuInstructionsView: View {
 
 private extension MenuInstructionsView {
     var instructionsTitle: String { MainMenuLocalizationKey.menuInstructionsTitle.localized(locale) }
-    var instructionsSubtitle: String { MainMenuLocalizationKey.instructionsSubtitle.localized(locale) }
     var sectionSpacing: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
     var horizontalPadding: CGFloat { DesignSystem.Spacing.large }
     var verticalPadding: CGFloat { isIPad ? DesignSystem.Spacing.extraLarge : DesignSystem.Spacing.large }
-
-    var header: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
-            Text(instructionsTitle)
-                .font(DesignSystem.Typography.title)
-                .foregroundColor(DesignSystem.Color.textPrimary)
-                .accessibilityIdentifier(MenuInstructionsAccessibilityIdentifiers.headerTitle)
-            Text(instructionsSubtitle)
-                .font(DesignSystem.Typography.description)
-                .foregroundColor(DesignSystem.Color.textSecondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
 
     var steps: [InstructionStep] {
         [
