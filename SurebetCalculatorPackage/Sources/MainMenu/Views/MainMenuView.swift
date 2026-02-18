@@ -18,7 +18,6 @@ struct MainMenuView: View {
             DesignSystem.Color.background.ignoresSafeArea()
             ScrollView(showsIndicators: false) {
                 VStack(spacing: sectionSpacing(layout)) {
-                    header()
                     calculatorAction(layout)
                     secondaryActions(layout)
                 }
@@ -44,37 +43,17 @@ private enum FeedbackMailConstants {
 
 private extension MainMenuView {
     var menuNavigationTitle: String { MainMenuLocalizationKey.menuNavigationTitle.localized(locale) }
-    var menuTitle: String { MainMenuLocalizationKey.menuTitle.localized(locale) }
-    var menuSubtitle: String { MainMenuLocalizationKey.menuSubtitle.localized(locale) }
     var menuCalculatorTitle: String { MainMenuLocalizationKey.menuCalculatorTitle.localized(locale) }
-    var menuCalculatorSubtitle: String { MainMenuLocalizationKey.menuCalculatorSubtitle.localized(locale) }
     var menuSettingsTitle: String { MainMenuLocalizationKey.menuSettingsTitle.localized(locale) }
-    var menuSettingsSubtitle: String { MainMenuLocalizationKey.menuSettingsSubtitle.localized(locale) }
     var menuInstructionsTitle: String { MainMenuLocalizationKey.menuInstructionsTitle.localized(locale) }
-    var menuInstructionsSubtitle: String { MainMenuLocalizationKey.menuInstructionsSubtitle.localized(locale) }
     var menuFeedbackTitle: String { MainMenuLocalizationKey.menuFeedbackTitle.localized(locale) }
-    var menuFeedbackSubtitle: String { MainMenuLocalizationKey.menuFeedbackSubtitle.localized(locale) }
-
-    func header() -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
-            Text(menuTitle)
-                .font(DesignSystem.Typography.title)
-                .foregroundColor(DesignSystem.Color.textPrimary)
-            Text(menuSubtitle)
-                .font(DesignSystem.Typography.description)
-                .foregroundColor(DesignSystem.Color.textSecondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
 
     func calculatorAction(_ layout: MenuLayout) -> some View {
         MenuCardAction(
             title: menuCalculatorTitle,
-            subtitle: menuCalculatorSubtitle,
             systemImage: "plus.slash.minus",
             style: .primary,
             layout: layout,
-            showsSubtitle: layout.showsPrimarySubtitle,
             accessibilityIdentifier: MainMenuAccessibilityIdentifiers.calculatorAction,
             onTap: {
                 onRouteRequested(.section(.calculator))
@@ -93,11 +72,9 @@ private extension MainMenuView {
     func settingsAction(_ layout: MenuLayout) -> some View {
         MenuCardAction(
             title: menuSettingsTitle,
-            subtitle: menuSettingsSubtitle,
             systemImage: "slider.horizontal.3",
             style: .standard,
             layout: layout,
-            showsSubtitle: layout.showsSecondarySubtitle,
             accessibilityIdentifier: MainMenuAccessibilityIdentifiers.settingsAction,
             onTap: {
                 onRouteRequested(.section(.settings))
@@ -108,11 +85,9 @@ private extension MainMenuView {
     func instructionsAction(_ layout: MenuLayout) -> some View {
         MenuCardAction(
             title: menuInstructionsTitle,
-            subtitle: menuInstructionsSubtitle,
             systemImage: "book.closed",
             style: .standard,
             layout: layout,
-            showsSubtitle: layout.showsSecondarySubtitle,
             accessibilityIdentifier: MainMenuAccessibilityIdentifiers.instructionsAction,
             onTap: {
                 onRouteRequested(.section(.instructions))
@@ -123,11 +98,9 @@ private extension MainMenuView {
     func feedbackAction(_ layout: MenuLayout) -> some View {
         MenuCardButton(
             title: menuFeedbackTitle,
-            subtitle: menuFeedbackSubtitle,
             systemImage: "envelope",
             style: .standard,
             layout: layout,
-            showsSubtitle: layout.showsSecondarySubtitle,
             accessibilityIdentifier: MainMenuAccessibilityIdentifiers.feedbackAction
         ) {
             onFeedbackRequested()

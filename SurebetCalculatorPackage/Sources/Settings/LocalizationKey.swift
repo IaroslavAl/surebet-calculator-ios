@@ -4,8 +4,6 @@ import Foundation
 /// Ключи локализации для модуля Settings.
 enum SettingsLocalizationKey: String {
     case navigationTitle = "settings_navigation_title"
-    case headerTitle = "settings_header_title"
-    case headerSubtitle = "settings_header_subtitle"
     case themeTitle = "settings_theme_title"
     case themeSubtitle = "settings_theme_subtitle"
     case languageTitle = "settings_language_title"

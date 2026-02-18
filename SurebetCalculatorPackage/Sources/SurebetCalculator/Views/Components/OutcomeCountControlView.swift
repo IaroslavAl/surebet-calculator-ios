@@ -61,7 +61,7 @@ private extension OutcomeCountControlView {
     var valueMinWidth: CGFloat { isIPad ? 48 : 32 }
 
     var valuePill: some View {
-        Text("\(state.selectedNumberOfRows.rawValue)")
+        Text(verbatim: "\(state.selectedNumberOfRows.rawValue)")
             .font(DesignSystem.Typography.numeric)
             .foregroundColor(DesignSystem.Color.textPrimary)
             .frame(minWidth: valueMinWidth, minHeight: controlHeight)

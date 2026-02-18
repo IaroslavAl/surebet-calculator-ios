@@ -3,11 +3,9 @@ import DesignSystem
 
 struct MenuCardAction: View {
     let title: String
-    let subtitle: String
     let systemImage: String
     let style: MenuCardStyle
     let layout: MenuLayout
-    let showsSubtitle: Bool
     let accessibilityIdentifier: String?
     let onTap: () -> Void
 
@@ -15,11 +13,9 @@ struct MenuCardAction: View {
         Button(action: onTap) {
             MenuCard(
                 title: title,
-                subtitle: subtitle,
                 systemImage: systemImage,
                 style: style,
-                layout: layout,
-                showsSubtitle: showsSubtitle
+                layout: layout
             )
         }
         .buttonStyle(MenuCardButtonStyle())
@@ -29,11 +25,9 @@ struct MenuCardAction: View {
 
 struct MenuCardButton: View {
     let title: String
-    let subtitle: String
     let systemImage: String
     let style: MenuCardStyle
     let layout: MenuLayout
-    let showsSubtitle: Bool
     let accessibilityIdentifier: String?
     let action: () -> Void
 
@@ -41,11 +35,9 @@ struct MenuCardButton: View {
         Button(action: action) {
             MenuCard(
                 title: title,
-                subtitle: subtitle,
                 systemImage: systemImage,
                 style: style,
-                layout: layout,
-                showsSubtitle: showsSubtitle
+                layout: layout
             )
         }
         .buttonStyle(MenuCardButtonStyle())
@@ -55,11 +47,9 @@ struct MenuCardButton: View {
 
 struct MenuCard: View {
     let title: String
-    let subtitle: String
     let systemImage: String
     let style: MenuCardStyle
     let layout: MenuLayout
-    let showsSubtitle: Bool
 
     var body: some View {
         HStack(spacing: contentSpacing) {
@@ -68,15 +58,6 @@ struct MenuCard: View {
                 Text(title)
                     .font(DesignSystem.Typography.body.weight(.semibold))
                     .foregroundColor(style.titleColor)
-                if showsSubtitle {
-                    Text(subtitle)
-                        .font(DesignSystem.Typography.label)
-                        .foregroundColor(style.subtitleColor)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                        .minimumScaleFactor(0.9)
-                        .allowsTightening(true)
-                }
             }
             Spacer(minLength: DesignSystem.Spacing.small)
             Image(systemName: "chevron.right")
@@ -227,15 +208,6 @@ enum MenuCardStyle {
     }
 
     var titleColor: Color { DesignSystem.Color.textPrimary }
-
-    var subtitleColor: Color {
-        switch self {
-        case .highlight:
-            DesignSystem.Color.textSecondary
-        case .primary, .standard:
-            DesignSystem.Color.textMuted
-        }
-    }
 
     var chevronColor: Color {
         switch self {
