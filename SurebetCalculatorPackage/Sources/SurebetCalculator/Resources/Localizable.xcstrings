@@ -431,49 +431,49 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rendite, %"
+            "value": "Gewinn %"
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Απόδοση, %"
+            "value": "Κέρδος %"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Yield, %"
+            "value": "Profit %"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rentabilidad, %"
+            "value": "Ganancia %"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rendement, %"
+            "value": "Gain %"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rendimento, %"
+            "value": "Profitto %"
           }
         },
         "pt": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rentabilidade, %"
+            "value": "Lucro %"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Доходность, %"
+            "value": "Прибыль %"
           }
         }
       }
