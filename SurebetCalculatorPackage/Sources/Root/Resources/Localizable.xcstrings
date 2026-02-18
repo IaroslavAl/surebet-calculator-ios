@@ -1,165 +1,165 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "review_request_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Do you enjoy using the app?"
+  "sourceLanguage": "en",
+  "strings": {
+    "review_request_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Are you enjoying the app?"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нравится приложение?"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вам нравится приложение?"
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gefällt dir die App?"
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gefällt Ihnen die App?"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Σου αρέσει η εφαρμογή;"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σας αρέσει η εφαρμογή;"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Te gusta la app?"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Te gusta la aplicación?"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous aimez l’application ?"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aimez-vous l’application ?"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ti piace l’app?"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ti piace l’app?"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Você gosta do app?"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você está gostando do app?"
           }
         }
       }
     },
-    "review_button_no" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No"
+    "review_button_no": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not really"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нет"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не очень"
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nein"
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht wirklich"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Όχι"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Όχι ιδιαίτερα"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No mucho"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas vraiment"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non molto"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não muito"
           }
         }
       }
     },
-    "review_button_yes" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yes"
+    "review_button_yes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Да"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Да"
           }
         },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ja"
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ja"
           }
         },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ναι"
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ναι"
           }
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sí"
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sí"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oui"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oui"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sì"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sì"
           }
         },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sim"
+        "pt": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sim"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }
